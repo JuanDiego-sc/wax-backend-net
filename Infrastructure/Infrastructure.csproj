@@ -6,4 +6,21 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../Application/Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Email/" />
+    <Folder Include="Payments/" />
+    <Folder Include="Photos/" />
+    <Folder Include="Security/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CloudinaryDotNet" Version="1.28.0" />
+    <PackageReference Include="Resend" Version="0.2.1" />
+    <PackageReference Include="Stripe.net" Version="50.3.0" />
+  </ItemGroup>
+
 </Project>
