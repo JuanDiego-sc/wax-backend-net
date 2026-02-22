@@ -13,8 +13,14 @@
 
   <ItemGroup>
     <Folder Include="Basket/" />
+    <Folder Include="DTOs/" />
+    <Folder Include="Interfaces/" />
     <Folder Include="Product/" />
     <Folder Include="User/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>

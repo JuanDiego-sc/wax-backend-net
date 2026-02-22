@@ -12,9 +12,12 @@
 
   <ItemGroup>
     <Folder Include="Email/" />
-    <Folder Include="Payments/" />
     <Folder Include="Photos/" />
     <Folder Include="Security/" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>
