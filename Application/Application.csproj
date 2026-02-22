@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Folder Include="Basket/" />
+    <Folder Include="Core/" />
     <Folder Include="DTOs/" />
     <Folder Include="Interfaces/" />
     <Folder Include="Product/" />
