@@ -13,10 +13,20 @@
 
   <ItemGroup>
     <Folder Include="Basket/" />
-    <Folder Include="Core/" />
+    <Folder Include="Basket/Commands/" />
+    <Folder Include="Basket/DTOs/" />
+    <Folder Include="Basket/Extensions/" />
+    <Folder Include="Basket/Queries/" />
+    <Folder Include="Basket/Validators/" />
+    <Folder Include="Core/Pagination/" />
     <Folder Include="DTOs/" />
     <Folder Include="Interfaces/" />
     <Folder Include="Product/" />
+    <Folder Include="Product/Commands/" />
+    <Folder Include="Product/DTOs/" />
+    <Folder Include="Product/Extensions/" />
+    <Folder Include="Product/Queries/" />
+    <Folder Include="Product/Validators/" />
     <Folder Include="User/" />
   </ItemGroup>
 
