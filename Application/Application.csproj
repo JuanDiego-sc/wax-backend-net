@@ -19,6 +19,8 @@
     <Folder Include="Core/Pagination/" />
     <Folder Include="DTOs/" />
     <Folder Include="Interfaces/" />
+    <Folder Include="Payment/" />
+    <Folder Include="Payment/Commands/" />
     <Folder Include="Product/" />
     <Folder Include="Product/Commands/" />
     <Folder Include="Product/DTOs/" />
