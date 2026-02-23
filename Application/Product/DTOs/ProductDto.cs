@@ -2,7 +2,7 @@ using System;
 
 namespace Application.Product.DTOs;
 
-public class ProductDto
+public record ProductDto
 {
     public required string Id { get; set; }
     public required string Name { get; set; } 
