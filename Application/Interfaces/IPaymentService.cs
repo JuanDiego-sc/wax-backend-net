@@ -1,9 +1,9 @@
 using Application.DTOs;
-using Domain.Entities;
+using DomainBasket = Domain.Entities.Basket;
 
 namespace Application.Interfaces;
 
 public interface IPaymentService
 {   
-    Task<PaymentIntentResult> CreateOrUpdatePaymentIntent(Basket basket);
+    Task<PaymentIntentResult> CreateOrUpdatePaymentIntent(DomainBasket basket);
 }

@@ -7,15 +7,11 @@ namespace Domain.Entities;
 public class BasketItem
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
-
     public int Quantity { get; set; }
-
     //navigation properties
-    public int ProductId { get; set; }
+    public string ProductId { get; set; } = "";
     public Product Product { get; set; } = null!;
-
-    public int BasketId { get; set; }
-
+    public string BasketId { get; set; } = "";
     public Basket Basket { get; set; } = null!;
 
 }

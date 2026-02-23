@@ -12,12 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Basket/" />
     <Folder Include="Basket/Commands/" />
-    <Folder Include="Basket/DTOs/" />
     <Folder Include="Basket/Extensions/" />
-    <Folder Include="Basket/Queries/" />
     <Folder Include="Basket/Validators/" />
+    <Folder Include="Basket/Extensions/" />
     <Folder Include="Core/Pagination/" />
     <Folder Include="DTOs/" />
     <Folder Include="Interfaces/" />

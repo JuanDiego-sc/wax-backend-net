@@ -7,5 +7,6 @@ namespace Persistence;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<User>(options)
 {
-    
+    public required DbSet<Product> Products { get; set; }
+    public required DbSet<Basket> Baskets { get; set; }
 }

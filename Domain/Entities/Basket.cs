@@ -32,7 +32,7 @@ public class Basket
         }
     }
 
-    public void RemoveItem(int productId, int quantity)
+    public void RemoveItem(string productId, int quantity)
     {
         if(quantity <= 0) throw new ArgumentException("Quantity should be greater than zero", nameof(quantity));
 
@@ -43,7 +43,7 @@ public class Basket
         if(item.Quantity <= 0) Items.Remove(item);
     }
 
-    private BasketItem? FindItem(int productId)
+    private BasketItem? FindItem(string productId)
     {
         return Items.FirstOrDefault(item => item.ProductId == productId);
     }
