@@ -3,6 +3,7 @@ using Application.Core;
 using Application.Interfaces;
 using Domain.Entities;
 using Infrastructure.Email;
+using Infrastructure.Payments;
 using Infrastructure.Photos;
 using Infrastructure.Security;
 using Microsoft.AspNetCore.Identity;
@@ -39,6 +40,7 @@ builder.Services.AddTransient<IEmailSender<User>, EmailSender>();
 
 builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 builder.Services.AddScoped<IPhotoService, PhotoService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 builder.Services.AddTransient<ExceptionMiddleware>();
 builder.Services.AddIdentityApiEndpoints<User>(options =>

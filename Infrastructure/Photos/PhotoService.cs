@@ -1,6 +1,6 @@
 using System;
-using Application.DTOs;
 using Application.Interfaces;
+using Application.Interfaces.DTOs;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Http;
