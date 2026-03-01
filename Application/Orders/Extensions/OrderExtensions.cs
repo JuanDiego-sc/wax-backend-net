@@ -12,7 +12,8 @@ public static class OrderExtensions
         {
             Id = order.Id,
             BuyerEmail = order.BuyerEmail,
-            OrderDate = order.OrderDate,
+            CreateAt = order.CreatedAt,
+            UpdatedAt = order.UpdatedAt,
             ShippingAddress = order.ShippingAddress,
             PaymentSummary = order.PaymentSummary,
             DeliveryFee = order.DeliveryFee,
@@ -35,7 +36,8 @@ public static class OrderExtensions
         {
             Id = order.Id,
             BuyerEmail = order.BuyerEmail,
-            OrderDate = order.OrderDate,
+            CreateAt = order.CreatedAt,
+            UpdatedAt = order.UpdatedAt,
             ShippingAddress = order.ShippingAddress,
             PaymentSummary = order.PaymentSummary,
             DeliveryFee = order.DeliveryFee,

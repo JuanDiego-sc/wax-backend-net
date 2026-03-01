@@ -22,6 +22,7 @@
     <Folder Include="Orders/Queries/" />
     <Folder Include="Orders/Validators/" />
     <Folder Include="Payment/Commands/" />
+    <Folder Include="Payment/Events/" />
     <Folder Include="Product/" />
     <Folder Include="Product/Commands/" />
     <Folder Include="Product/DTOs/" />
