@@ -1,5 +1,5 @@
 using System;
-using Application.DTOs;
+using Application.Interfaces.DTOs;
 using Microsoft.AspNetCore.Http;
 
 namespace Application.Interfaces;

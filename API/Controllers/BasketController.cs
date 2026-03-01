@@ -25,7 +25,7 @@ public class BasketController : BaseApiController
         var basketId = Request.Cookies["basketId"] ?? string.Empty;
         var command = new AddItemCommand {ProductId = productId, Quantity = quantity, BasketId = basketId};
 
-        return HandleResult(await Mediator.Send(command));
+        return HandleResult(await Mediator.Send(command)); 
     }
 
     [HttpDelete]

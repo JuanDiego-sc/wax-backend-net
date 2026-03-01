@@ -17,9 +17,10 @@
     <Folder Include="Basket/Validators/" />
     <Folder Include="Basket/Extensions/" />
     <Folder Include="Core/Pagination/" />
-    <Folder Include="DTOs/" />
-    <Folder Include="Interfaces/" />
-    <Folder Include="Payment/" />
+    <Folder Include="Orders/Commands/" />
+    <Folder Include="Orders/Extensions/" />
+    <Folder Include="Orders/Queries/" />
+    <Folder Include="Orders/Validators/" />
     <Folder Include="Payment/Commands/" />
     <Folder Include="Product/" />
     <Folder Include="Product/Commands/" />
@@ -27,6 +28,7 @@
     <Folder Include="Product/Extensions/" />
     <Folder Include="Product/Queries/" />
     <Folder Include="Product/Validators/" />
+    <Folder Include="Services/" />
     <Folder Include="User/" />
     <Folder Include="User/DTOs/" />
   </ItemGroup>

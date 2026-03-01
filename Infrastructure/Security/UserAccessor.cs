@@ -20,4 +20,9 @@ public class UserAccessor(IHttpContextAccessor httpContextAccessor, AppDbContext
         return httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) 
             ?? throw new Exception("User ID not found.");
     }
+    public string GetUserEmail()
+    {
+        return httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Email) 
+            ?? throw new Exception("User email not found.");
+    }
 }

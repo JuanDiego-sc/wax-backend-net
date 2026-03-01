@@ -1,4 +1,4 @@
-using Application.DTOs;
+using Application.Payment.DTOs;
 using DomainBasket = Domain.Entities.Basket;
 
 namespace Application.Interfaces;

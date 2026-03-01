@@ -1,4 +1,4 @@
-namespace Application.DTOs;
+namespace Application.Payment.DTOs;
 
 public class PaymentIntentResult
 {

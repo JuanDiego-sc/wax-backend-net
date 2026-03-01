@@ -1,6 +1,6 @@
 using System;
 
-namespace Application.DTOs;
+namespace Application.Interfaces.DTOs;
 
 public class PhotoUploadResult
 {
