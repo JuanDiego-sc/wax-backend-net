@@ -22,6 +22,7 @@ public class Basket
         {
             Items.Add(new BasketItem
             {
+                ProductId = product.Id,
                 Product = product,
                 Quantity = quantity,
             });

@@ -1,34 +1,37 @@
-using System;
 using Application.Basket.DTOs;
 using Application.Basket.Extensions;
 using Application.Core;
+using Application.Interfaces;
+using Application.Interfaces.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using Persistence;
 using DomainBasket = Domain.Entities.Basket;
 
 namespace Application.Basket.Commands;
 
-public class AddItemCommandHandler(AppDbContext context, IHttpContextAccessor httpContextAccessor)
-        : IRequestHandler<AddItemCommand, Result<BasketDto>>
+public class AddItemCommandHandler(
+    IBasketRepository basketRepository,
+    IProductRepository productRepository,
+    IUnitOfWork unitOfWork,
+    IHttpContextAccessor httpContextAccessor)
+    : IRequestHandler<AddItemCommand, Result<BasketDto>>
 {
     public async Task<Result<BasketDto>> Handle(AddItemCommand request, CancellationToken cancellationToken)
     {
-        var basket = await context.Baskets.GetBasketWithItems(request.BasketId);
+        var basket = await basketRepository.GetBasketWithItemsAsync(request.BasketId, cancellationToken);
 
         basket ??= CreateBasket();
 
-        var product = await context.Products.FindAsync(request.ProductId);
+        var product = await productRepository.GetByIdAsync(request.ProductId, cancellationToken);
 
         if (product == null) return Result<BasketDto>.Failure("Product not found");
 
         basket.AddItem(product, request.Quantity);
 
-        var result = await context.SaveChangesAsync(cancellationToken) > 0;
+        var result = await unitOfWork.CompleteAsync(cancellationToken);
         if (!result) return Result<BasketDto>.Failure("Failed to add item to basket");
 
         return Result<BasketDto>.Success(basket.ToDto());
-
     }
 
     #region Private Methods
@@ -45,9 +48,8 @@ public class AddItemCommandHandler(AppDbContext context, IHttpContextAccessor ht
 
         var basket = new DomainBasket { BasketId = basketId };
 
-        context.Baskets.Add(basket);
+        basketRepository.Add(basket);
         return basket;
-
     }
     #endregion
 }

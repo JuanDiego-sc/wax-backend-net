@@ -1,18 +1,23 @@
-using System;
 using Application.Core;
 using Application.Interfaces;
+using Application.Interfaces.Repositories;
 using Application.Payment.Events;
 using Domain.OrderAggregate;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Persistence;
 
 namespace Application.Payment.Commands;
 
-public class HandleStripeWebhookCommandHandler(IPaymentService paymentService, IConfiguration configuration, AppDbContext context,
-    ILogger<HandleStripeWebhookCommandHandler> logger) : IRequestHandler<HandleStripeWebhookCommand, Result<Unit>>
+public class HandleStripeWebhookCommandHandler(
+    IPaymentService paymentService,
+    IConfiguration configuration,
+    IOrderRepository orderRepository,
+    IBasketRepository basketRepository,
+    IProductRepository productRepository,
+    IUnitOfWork unitOfWork,
+    ILogger<HandleStripeWebhookCommandHandler> logger)
+    : IRequestHandler<HandleStripeWebhookCommand, Result<Unit>>
 {
     public async Task<Result<Unit>> Handle(HandleStripeWebhookCommand request, CancellationToken cancellationToken)
     {
@@ -20,8 +25,8 @@ public class HandleStripeWebhookCommandHandler(IPaymentService paymentService, I
         {
             var webhookSecret = configuration["StripeSettings:WebhookSecret"] ?? "";
             var stripeEvent = paymentService.ConstructStripeEvent(request.Payload, request.Signature, webhookSecret);
-            
-            if(stripeEvent.Type == "succeeded")
+
+            if (stripeEvent.Type == "payment_intent.succeeded")
             {
                 await HandlePaymentSucceeded(stripeEvent, cancellationToken);
             }
@@ -39,36 +44,31 @@ public class HandleStripeWebhookCommandHandler(IPaymentService paymentService, I
         }
     }
 
-    #region Private Methods        
+    #region Private Methods
     private async Task HandlePaymentFailed(StripeEventResult stripeEvent, CancellationToken cancellationToken)
     {
-        var order = await context.Orders
-            .Include(x => x.OrderItems)
-            .FirstOrDefaultAsync(x => x.PaymentIntentId == stripeEvent.IntentId, cancellationToken: cancellationToken)
-                ?? throw new Exception("Order not found");
+        var order = await orderRepository.GetByPaymentIntentIdAsync(stripeEvent.IntentId, cancellationToken)
+            ?? throw new Exception("Order not found");
 
-        foreach(var item in order.OrderItems)
+        foreach (var item in order.OrderItems)
         {
-            var productItem = await context.Products
-                .FindAsync(new object?[] { item.ItemOrdered.ProductId }, cancellationToken: cancellationToken)
-                    ?? throw new Exception("Problem updating order stock");
+            var productItem = await productRepository.GetByIdAsync(item.ItemOrdered.ProductId, cancellationToken)
+                ?? throw new Exception("Problem updating order stock");
 
             productItem.QuantityInStock += item.Quantity;
         }
 
         order.OrderStatus = OrderStatus.PaymentFailed;
 
-        await context.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CompleteAsync(cancellationToken);
     }
 
     private async Task HandlePaymentSucceeded(StripeEventResult stripeEvent, CancellationToken cancellationToken)
     {
-        var order = await context.Orders
-            .Include(x => x.OrderItems)
-            .FirstOrDefaultAsync(x => x.PaymentIntentId == stripeEvent.IntentId, cancellationToken: cancellationToken)
-                ?? throw new Exception("Order not found");
+        var order = await orderRepository.GetByPaymentIntentIdAsync(stripeEvent.IntentId, cancellationToken)
+            ?? throw new Exception("Order not found");
 
-        if(order.GetTotal() != stripeEvent.Amount)
+        if (order.GetTotal() != stripeEvent.Amount)
         {
             order.OrderStatus = OrderStatus.PaymentMismatch;
         }
@@ -77,12 +77,12 @@ public class HandleStripeWebhookCommandHandler(IPaymentService paymentService, I
             order.OrderStatus = OrderStatus.PaymentRecieved;
         }
 
-        var basket = await context.Baskets.FirstOrDefaultAsync(x => x.PaymentIntentId == stripeEvent.IntentId, cancellationToken: cancellationToken);
+        var basket = await basketRepository.GetBasketWithItemsAsync(
+            order.PaymentIntentId, cancellationToken);
 
-        if(basket != null) context.Baskets.Remove(basket);
+        if (basket != null) basketRepository.Remove(basket);
 
-        await context.SaveChangesAsync(cancellationToken);
+        await unitOfWork.CompleteAsync(cancellationToken);
     }
-    
     #endregion
 }

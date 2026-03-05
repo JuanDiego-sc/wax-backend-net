@@ -1,27 +1,31 @@
-using System;
 using Application.Core;
 using Application.Interfaces;
+using Application.Interfaces.Repositories;
 using MediatR;
-using Persistence;
 
 namespace Application.Product.Commands;
 
-public class DeleteProductCommandHandler(AppDbContext context, IImageService imageService) : IRequestHandler<DeleteProductCommand, Result<Unit>>
+public class DeleteProductCommandHandler(
+    IProductRepository productRepository,
+    IUnitOfWork unitOfWork,
+    IImageService imageService)
+    : IRequestHandler<DeleteProductCommand, Result<Unit>>
 {
     public async Task<Result<Unit>> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
     {
-        var product = await context.Products.FindAsync(request.ProductId);
+        var product = await productRepository.GetByIdAsync(request.ProductId, cancellationToken);
+
         if (product == null) return Result<Unit>.Failure("Product not found");
 
-        if(!string.IsNullOrEmpty(product.PublicId))
+        if (!string.IsNullOrEmpty(product.PublicId))
         {
             await imageService.DeleteImage(product.PublicId);
         }
 
-        context.Products.Remove(product);
+        productRepository.Remove(product);
 
-        var result = await context.SaveChangesAsync(cancellationToken) > 0;
-        if(!result) return Result<Unit>.Failure("Failed to delete product");
+        var result = await unitOfWork.CompleteAsync(cancellationToken);
+        if (!result) return Result<Unit>.Failure("Failed to delete product");
 
         return Result<Unit>.Success(Unit.Value);
     }

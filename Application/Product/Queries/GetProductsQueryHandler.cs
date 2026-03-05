@@ -1,30 +1,25 @@
-using System;
 using Application.Core;
 using Application.Core.Pagination;
+using Application.Interfaces.Repositories;
 using Application.Product.DTOs;
 using Application.Product.Extensions;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Persistence;
 
 namespace Application.Product.Queries;
 
-public class GetProductsQueryHandler(AppDbContext context) : IRequestHandler<GetProductsQuery, Result<List<ProductDto>>>
+public class GetProductsQueryHandler(IProductRepository productRepository) : IRequestHandler<GetProductsQuery, Result<List<ProductDto>>>
 {
     public async Task<Result<List<ProductDto>>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
     {
-        var productQuery = context.Products
-            .AsNoTracking()
+        var productQuery = productRepository.GetQueryable()
             .Sort(request.ProductParams.OrderBy)
             .Search(request.ProductParams.SearchTerm)
             .Filter(request.ProductParams.Brands, request.ProductParams.Types)
-            .Select(x => x.ToDto())
-            .AsQueryable();
+            .Select(x => x.ToDto());
 
-        var products = await PagedList<ProductDto>.ToPagedList(productQuery, 
+        var products = await PagedList<ProductDto>.ToPagedList(productQuery,
             request.ProductParams.PageNumber, request.ProductParams.PageSize);
 
         return Result<List<ProductDto>>.Success(products);
-
     }
 }

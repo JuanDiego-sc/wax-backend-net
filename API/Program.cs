@@ -1,10 +1,13 @@
 using API.Middleware;
+using Application.Basket.Commands;
 using Application.Core;
 using Application.Interfaces;
+using Application.Interfaces.Repositories;
 using Domain.Entities;
 using Infrastructure.Email;
 using Infrastructure.Images;
 using Infrastructure.Payments;
+using Infrastructure.Repositories;
 using Infrastructure.Security;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,8 +15,6 @@ using Persistence;
 using Resend;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -26,7 +27,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddCors();
 builder.Services.AddMediatR(x =>
 {
-    x.RegisterServicesFromAssemblyContaining<Program>();
+    x.RegisterServicesFromAssemblyContaining<AddItemCommandHandler>();
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
@@ -42,6 +43,11 @@ builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
 
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IBasketRepository, BasketRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 builder.Services.AddTransient<ExceptionMiddleware>();
 builder.Services.AddIdentityApiEndpoints<User>(options =>
 {
@@ -51,7 +57,6 @@ builder.Services.AddIdentityApiEndpoints<User>(options =>
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<AppDbContext>();
 
-//Cloudinary
 builder.Services.Configure<CloudinarySettings>(builder.Configuration
     .GetSection("CloudinarySettings"));
 
@@ -63,11 +68,11 @@ app.UseCors(x => x
     .AllowAnyHeader()
     .AllowCredentials()
     .WithOrigins(
-    "http://localhost:5005", 
-    "http://localhost:5006", 
-    "http://localhost:5007", 
-    "https://localhost:5005", 
-    "https://localhost:5006", 
+    "http://localhost:5005",
+    "http://localhost:5006",
+    "http://localhost:5007",
+    "https://localhost:5005",
+    "https://localhost:5006",
     "https://localhost:5007"));
 
 app.MapControllers();

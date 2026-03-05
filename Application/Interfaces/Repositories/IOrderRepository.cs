@@ -1,0 +1,14 @@
+using Application.Core.Pagination;
+using Application.Orders.DTOs;
+using Application.Orders.Extensions;
+using Domain.OrderAggregate;
+
+namespace Application.Interfaces.Repositories;
+
+public interface IOrderRepository
+{
+    IQueryable<Order> GetQueryable();
+    Task<Order?> GetByPaymentIntentIdAsync(string paymentIntentId, CancellationToken cancellationToken = default);
+    void Add(Order order);
+    void Update(Order order);
+}

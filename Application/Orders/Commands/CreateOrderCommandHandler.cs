@@ -1,27 +1,31 @@
-using System;
 using Application.Basket.Extensions;
 using Application.Core;
 using Application.Interfaces;
+using Application.Interfaces.Repositories;
 using Application.Orders.DTOs;
 using Application.Orders.Extensions;
 using Domain.Entities;
 using Domain.OrderAggregate;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using Persistence;
 
 namespace Application.Orders.Commands;
 
-public class CreateOrderCommandHandler(AppDbContext context, IUserAccessor userAccessor) : IRequestHandler<CreateOrderCommand, Result<OrderDto>>
+public class CreateOrderCommandHandler(
+    IBasketRepository basketRepository,
+    IOrderRepository orderRepository,
+    IUnitOfWork unitOfWork,
+    IUserAccessor userAccessor)
+    : IRequestHandler<CreateOrderCommand, Result<OrderDto>>
 {
     public async Task<Result<OrderDto>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
-        var basket = await context.Baskets.GetBasketWithItems(request.BasketId);
+        var basket = await basketRepository.GetBasketWithItemsAsync(request.BasketId, cancellationToken);
         var user = await userAccessor.GetUserAsync();
 
         if (basket == null ||
-         basket.Items.Count == 0 ||
-          string.IsNullOrEmpty(basket.PaymentIntentId)) return Result<OrderDto>.Failure("Basket not found or is empty");
+            basket.Items.Count == 0 ||
+            string.IsNullOrEmpty(basket.PaymentIntentId))
+            return Result<OrderDto>.Failure("Basket not found or is empty");
 
         var items = CreateOrderItems(basket.Items);
 
@@ -30,11 +34,9 @@ public class CreateOrderCommandHandler(AppDbContext context, IUserAccessor userA
         var subtotal = items.Sum(x => x.Price * x.Quantity);
         var deliveryFee = CalculateDeliveryFee(subtotal);
 
-        var order = await context.Orders
-            .Include(x => x.OrderItems)
-            .FirstOrDefaultAsync(x => x.PaymentIntentId == basket.PaymentIntentId, cancellationToken);
-        
-        if(order == null)
+        var order = await orderRepository.GetByPaymentIntentIdAsync(basket.PaymentIntentId, cancellationToken);
+
+        if (order == null)
         {
             order = new Order
             {
@@ -47,25 +49,22 @@ public class CreateOrderCommandHandler(AppDbContext context, IUserAccessor userA
                 PaymentSummary = request.OrderDto.PaymentSummary
             };
 
-            context.Orders.Add(order);
+            orderRepository.Add(order);
         }
         else
         {
             order.OrderItems = items;
+            orderRepository.Update(order);
         }
 
-        var result = await context.SaveChangesAsync(cancellationToken) > 0;
+        var result = await unitOfWork.CompleteAsync(cancellationToken);
 
         if (!result) return Result<OrderDto>.Failure("Failed to create order");
-        
+
         return Result<OrderDto>.Success(order.ToDto());
     }
 
-
-
-
-
-    #region private methods
+    #region Private Methods
 
     private static List<OrderItem>? CreateOrderItems(List<BasketItem> items)
     {
