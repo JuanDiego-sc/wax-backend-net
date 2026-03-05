@@ -10,7 +10,6 @@ public static class ProductExtensions
     {
         return new ProductDto
         {
-            Id = product.Id.ToString(),
             Name = product.Name,
             Description = product.Description,
             Price = product.Price,

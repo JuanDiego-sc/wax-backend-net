@@ -1,4 +1,5 @@
 using System;
+using Application.Product.Commands;
 using Application.Product.DTOs;
 using Application.Product.Extensions;
 using Application.Product.Queries;
@@ -21,4 +22,26 @@ public class ProductController : BaseApiController
         var query = new GetProductDetailsQuery { Id = id };
         return HandleResult(await Mediator.Send(query));
     }
+
+    [HttpPost]
+    public async Task<ActionResult<ProductDto>> CreateProduct(CreateProductDto productDto)
+    {
+        var command = new CreateProductCommand { ProductDto =  productDto };
+        return HandleResult(await Mediator.Send(command));
+    }
+
+    [HttpPut]
+    public async Task<ActionResult> UpdateProduct(UpdateProductDto productDto)
+    {
+        var command = new UpdateProductCommand { ProductDto = productDto };
+        return HandleResult(await Mediator.Send(command));
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteProduct(string id)
+    {
+        var command = new DeleteProductCommand { ProductId = id };
+        return HandleResult(await Mediator.Send(command));
+    }
+    
 }

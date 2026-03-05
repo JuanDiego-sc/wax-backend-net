@@ -1,6 +1,6 @@
 using System;
 
-namespace Infrastructure.Photos;
+namespace Infrastructure.Images;
 
 public class CloudinarySettings
 {

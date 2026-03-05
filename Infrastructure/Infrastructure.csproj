@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <Folder Include="Email/" />
-    <Folder Include="Photos/" />
     <Folder Include="Security/" />
   </ItemGroup>
 
