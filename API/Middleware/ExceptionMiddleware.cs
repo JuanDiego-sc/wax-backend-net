@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Middleware;
 
-public class ExceptionMiddleware(ILogger<ExceptionMiddleware> _logger, IHostEnvironment _env)
+public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IHostEnvironment env)
 {
-    public async Task InvokeAsync(HttpContext context, RequestDelegate next)
+    public async Task InvokeAsync(HttpContext context)
     {
         try
         {
@@ -26,11 +26,11 @@ public class ExceptionMiddleware(ILogger<ExceptionMiddleware> _logger, IHostEnvi
 
     private async Task HandleException(HttpContext context, Exception ex)
     {
-        _logger.LogError(ex, ex.Message);
+        logger.LogError(ex, ex.Message);
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
-        var response = _env.IsDevelopment()
+        var response = env.IsDevelopment()
         ? new AppException(context.Response.StatusCode, ex.Message, ex.StackTrace)
         : new AppException(context.Response.StatusCode, ex.Message, null);
 

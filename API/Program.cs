@@ -36,8 +36,8 @@ builder.Services.Configure<ResendClientOptions>(options =>
 {
     options.ApiToken = builder.Configuration["ResendSettings:ApiToken"]!;
 });
-builder.Services.AddTransient<IResend, ResendClient>();
-builder.Services.AddTransient<IEmailSender<User>, EmailSender>();
+builder.Services.AddScoped<IResend, ResendClient>();
+builder.Services.AddSingleton<IEmailSender<User>, EmailSender>();
 
 builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 builder.Services.AddScoped<IImageService, ImageService>();
@@ -48,7 +48,6 @@ builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-builder.Services.AddTransient<ExceptionMiddleware>();
 builder.Services.AddIdentityApiEndpoints<User>(options =>
 {
     options.User.RequireUniqueEmail = true;
@@ -83,7 +82,7 @@ var services = scope.ServiceProvider;
 try
 {
     var context = services.GetRequiredService<AppDbContext>();
-    var userManager = services.GetRequiredService<UserManager<User>>();
+    //var userManager = services.GetRequiredService<UserManager<User>>();
     await context.Database.MigrateAsync();
     //await DbInitializer.SeedData(context, userManager);
 }

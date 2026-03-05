@@ -1,12 +1,12 @@
 using System;
 using Domain.Entities;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Resend;
 
 namespace Infrastructure.Email;
 
-public class EmailSender(ResendClient resendClient) : IEmailSender<User>
+public class EmailSender(IServiceProvider serviceProvider) : IEmailSender<User>
 {
     public Task SendConfirmationLinkAsync(User user, string email, string confirmationLink)
     {
@@ -25,6 +25,9 @@ public class EmailSender(ResendClient resendClient) : IEmailSender<User>
 
     public async Task SendEmailAsync(string email, string subject, string htmlBody)
     {
+        using var scope = serviceProvider.CreateScope();
+        var resendClient = scope.ServiceProvider.GetRequiredService<IResend>();
+
         var message = new EmailMessage
         {
             From = "test@resend.dev",

@@ -1,6 +1,5 @@
 using Application.Basket.Queries;
 using Application.Interfaces.Repositories;
-using Moq;
 using UnitTests.Helpers.Fixtures;
 
 namespace UnitTests.Application.Basket;
