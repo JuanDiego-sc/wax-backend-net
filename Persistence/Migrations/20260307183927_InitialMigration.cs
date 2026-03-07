@@ -23,7 +23,9 @@ namespace Persistence.Migrations
                     City = table.Column<string>(type: "text", nullable: false),
                     State = table.Column<string>(type: "text", nullable: false),
                     PostalCode = table.Column<string>(type: "text", nullable: false),
-                    Country = table.Column<string>(type: "text", nullable: false)
+                    Country = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -51,7 +53,9 @@ namespace Persistence.Migrations
                     Id = table.Column<string>(type: "text", nullable: false),
                     BasketId = table.Column<string>(type: "text", nullable: false),
                     ClientSecret = table.Column<string>(type: "text", nullable: true),
-                    PaymentIntentId = table.Column<string>(type: "text", nullable: true)
+                    PaymentIntentId = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -100,7 +104,9 @@ namespace Persistence.Migrations
                     Type = table.Column<string>(type: "text", nullable: false),
                     Brand = table.Column<string>(type: "text", nullable: false),
                     QuantityInStock = table.Column<int>(type: "integer", nullable: false),
-                    PublicId = table.Column<string>(type: "text", nullable: true)
+                    PublicId = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -168,7 +174,9 @@ namespace Persistence.Migrations
                     ItemOrdered_Name = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<long>(type: "bigint", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
-                    OrderId = table.Column<string>(type: "text", nullable: true)
+                    OrderId = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -187,7 +195,9 @@ namespace Persistence.Migrations
                     Id = table.Column<string>(type: "text", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     ProductId = table.Column<string>(type: "text", nullable: false),
-                    BasketId = table.Column<string>(type: "text", nullable: false)
+                    BasketId = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -291,6 +301,36 @@ namespace Persistence.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "SupportTickets",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Category = table.Column<int>(type: "integer", nullable: false),
+                    Subject = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: false),
+                    OrderId = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SupportTickets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_SupportTickets_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_SupportTickets_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -347,6 +387,16 @@ namespace Persistence.Migrations
                 name: "IX_OrderItems_OrderId",
                 table: "OrderItems",
                 column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SupportTickets_OrderId",
+                table: "SupportTickets",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SupportTickets_UserId",
+                table: "SupportTickets",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -374,16 +424,19 @@ namespace Persistence.Migrations
                 name: "OrderItems");
 
             migrationBuilder.DropTable(
-                name: "AspNetRoles");
+                name: "SupportTickets");
 
             migrationBuilder.DropTable(
-                name: "AspNetUsers");
+                name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "Baskets");
 
             migrationBuilder.DropTable(
                 name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "Orders");

@@ -35,6 +35,9 @@ namespace Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Line1")
                         .IsRequired()
                         .HasColumnType("text");
@@ -55,6 +58,9 @@ namespace Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.ToTable("Address");
@@ -72,8 +78,14 @@ namespace Persistence.Migrations
                     b.Property<string>("ClientSecret")
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("PaymentIntentId")
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -89,12 +101,18 @@ namespace Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("ProductId")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -113,6 +131,9 @@ namespace Persistence.Migrations
                     b.Property<string>("Brand")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -138,6 +159,9 @@ namespace Persistence.Migrations
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
@@ -254,6 +278,9 @@ namespace Persistence.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("OrderId")
                         .HasColumnType("text");
 
@@ -263,11 +290,53 @@ namespace Persistence.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
 
                     b.ToTable("OrderItems");
+                });
+
+            modelBuilder.Entity("Domain.SupportAssistAggregate.SupportTicket", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("SupportTickets");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -537,6 +606,25 @@ namespace Persistence.Migrations
 
                     b.Navigation("ItemOrdered")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.SupportAssistAggregate.SupportTicket", b =>
+                {
+                    b.HasOne("Domain.OrderAggregate.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
