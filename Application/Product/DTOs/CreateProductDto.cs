@@ -25,6 +25,7 @@ public record CreateProductDto
     [Range(0, 200)]
     public int QuantityInStock { get; set; }
     public string? PublicId { get; set; }
+    
     public ProductDomain ToEntity() => new()
     {
         Name = Name,

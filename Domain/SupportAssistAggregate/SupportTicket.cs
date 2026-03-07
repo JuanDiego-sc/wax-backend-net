@@ -6,6 +6,7 @@ namespace Domain.SupportAssistAggregate;
 public class SupportTicket : BaseEntity
 {
     public TicketCategory Category { get; set; }
+    public TicketStatus Status { get; set; }
     public required string Subject { get; set; }
     public required string Description { get; set; }
 
