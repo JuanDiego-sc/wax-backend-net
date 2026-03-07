@@ -6,7 +6,7 @@ namespace Infrastructure.Repositories;
 
 public class BasketRepository(AppDbContext context) : IBasketRepository
 {
-    public async Task<Domain.Entities.Basket?> GetBasketWithItemsAsync(string? basketId, CancellationToken cancellationToken = default)
+    public async Task<Domain.Entities.Basket?> GetBasketWithItemsAsync(string? basketId, CancellationToken cancellationToken)
     {
         return await context.Baskets.GetBasketWithItems(basketId);
     }

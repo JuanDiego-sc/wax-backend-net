@@ -1,4 +1,5 @@
 
+using API.Logging;
 using Application.Core;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -9,16 +10,32 @@ namespace API.Controllers
     [ApiController]
     public class BaseApiController : ControllerBase
     {
-        private IMediator? _mediator;
-        protected IMediator Mediator => _mediator ??= HttpContext.RequestServices.GetRequiredService<IMediator>()
+        private IMediator Mediator => field ??= HttpContext.RequestServices.GetRequiredService<IMediator>()
             ?? throw new InvalidOperationException("Mediator service is not registered or is not working");
 
-        protected ActionResult HandleResult<T>(Result<T> result)
-        {
-            if(!result.IsSuccess && result.Code == 404) return NotFound();
-            if(result.IsSuccess && result.Value != null) return Ok(result.Value);
+        private ILogger Logger => field ??= HttpContext.RequestServices.GetRequiredService<ILoggerFactory>()
+            .CreateLogger(GetType());
 
-            return BadRequest(result.Error);
+        protected async Task<ActionResult> HandleCommand<T>(IRequest<Result<T>> command)
+        {
+            Logger.SendingCommand(command.GetType().Name, command);
+            var result = await Mediator.Send(command);
+            return HandleResult(result);
         }
+
+        protected async Task<ActionResult> HandleQuery<T>(IRequest<Result<T>> query)
+        {
+            Logger.SendingQuery(query.GetType().Name, query);
+            var result = await Mediator.Send(query);
+            return HandleResult(result);
+        }
+
+        private ActionResult HandleResult<T>(Result<T> result) =>
+            result switch
+            {
+                { IsSuccess: false, Code: 404 } => NotFound(),
+                { IsSuccess: true, Value: not null } => Ok(result.Value),
+                _ => BadRequest(result.Error)
+            };
     }
 }

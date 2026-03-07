@@ -1,4 +1,3 @@
-using System;
 using Application.Product.Commands;
 using Application.Product.DTOs;
 using Application.Product.Extensions;
@@ -12,36 +11,30 @@ public class ProductController : BaseApiController
     [HttpGet]
     public async Task<ActionResult<List<ProductDto>>> GetProducts([FromQuery] ProductParams productParams)
     {
-        var query = new GetProductsQuery { ProductParams = productParams };
-        return HandleResult(await Mediator.Send(query));
+        return await HandleQuery(new GetProductsQuery { ProductParams = productParams });
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<ProductDto>> GetProductDetails(string id)
     {
-        var query = new GetProductDetailsQuery { Id = id };
-        return HandleResult(await Mediator.Send(query));
+        return await HandleQuery(new GetProductDetailsQuery { Id = id });
     }
 
     [HttpPost]
     public async Task<ActionResult<ProductDto>> CreateProduct(CreateProductDto productDto)
     {
-        var command = new CreateProductCommand { ProductDto =  productDto };
-        return HandleResult(await Mediator.Send(command));
+        return await HandleCommand(new CreateProductCommand { ProductDto = productDto });
     }
 
     [HttpPut]
     public async Task<ActionResult> UpdateProduct(UpdateProductDto productDto)
     {
-        var command = new UpdateProductCommand { ProductDto = productDto };
-        return HandleResult(await Mediator.Send(command));
+        return await HandleCommand(new UpdateProductCommand { ProductDto = productDto });
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteProduct(string id)
     {
-        var command = new DeleteProductCommand { ProductId = id };
-        return HandleResult(await Mediator.Send(command));
+        return await HandleCommand(new DeleteProductCommand { ProductId = id });
     }
-    
 }

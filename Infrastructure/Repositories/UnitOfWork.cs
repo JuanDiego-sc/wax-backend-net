@@ -5,7 +5,7 @@ namespace Infrastructure.Repositories;
 
 public class UnitOfWork(AppDbContext context) : IUnitOfWork
 {
-    public async Task<bool> CompleteAsync(CancellationToken cancellationToken = default)
+    public async Task<bool> CompleteAsync(CancellationToken cancellationToken)
     {
         return await context.SaveChangesAsync(cancellationToken) > 0;
     }

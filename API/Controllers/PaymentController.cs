@@ -1,4 +1,3 @@
-using System;
 using Application.Basket.DTOs;
 using Application.Payment.Commands;
 using Microsoft.AspNetCore.Mvc;
@@ -12,22 +11,15 @@ public class PaymentController : BaseApiController
     {
         var basketId = Request.Cookies["basketId"] ?? string.Empty;
         
-        var command = new CreateOrUpdateIntentCommand { BasketId = basketId };
-        return HandleResult(await Mediator.Send(command));
+        return await HandleCommand(new CreateOrUpdateIntentCommand { BasketId = basketId });
     }
 
     [HttpPost("webhook")]
     public async Task<IActionResult> StripeWebhook()
     {
         var payload = await new StreamReader(Request.Body).ReadToEndAsync();
-        var signature = Request.Headers["Stripe-Signature"].ToString() ?? string.Empty;
+        var signature = Request.Headers["Stripe-Signature"].ToString();
         
-        var command = new HandleStripeWebhookCommand
-        {
-            Payload = payload,
-            Signature = signature
-        };
-
-        return HandleResult(await Mediator.Send(command));
+        return await HandleCommand(new HandleStripeWebhookCommand { Signature = signature, Payload = payload });
     }
 }

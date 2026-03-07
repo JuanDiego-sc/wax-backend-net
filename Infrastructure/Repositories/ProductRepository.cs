@@ -6,7 +6,7 @@ namespace Infrastructure.Repositories;
 
 public class ProductRepository(AppDbContext context) : IProductRepository
 {
-    public async Task<Product?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<Product?> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         return await context.Products.FindAsync([id], cancellationToken);
     }

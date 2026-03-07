@@ -12,7 +12,7 @@ public class OrderRepository(AppDbContext context) : IOrderRepository
         return context.Orders.AsQueryable();
     }
 
-    public async Task<Order?> GetByPaymentIntentIdAsync(string paymentIntentId, CancellationToken cancellationToken = default)
+    public async Task<Order?> GetByPaymentIntentIdAsync(string paymentIntentId, CancellationToken cancellationToken)
     {
         return await context.Orders
             .Include(x => x.OrderItems)

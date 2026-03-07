@@ -1,8 +1,6 @@
-using System;
 using Application.Basket.Commands;
 using Application.Basket.DTOs;
 using Application.Basket.Queries;
-using Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,25 +12,20 @@ public class BasketController : BaseApiController
     public async Task<ActionResult<BasketDto>> GetBasket()
     {
         var basketId = Request.Cookies["basketId"] ?? string.Empty;
-        var query = new GetBasketQuery { BasketId = basketId };
-
-        return HandleResult(await Mediator.Send(query));
+        return await HandleQuery(new GetBasketQuery { BasketId = basketId });
     }
 
     [HttpPost]
     public async Task<ActionResult<BasketDto>> AddItemToBasket(string productId, int quantity)
     {
         var basketId = Request.Cookies["basketId"] ?? string.Empty;
-        var command = new AddItemCommand {ProductId = productId, Quantity = quantity, BasketId = basketId};
-
-        return HandleResult(await Mediator.Send(command)); 
+        return await HandleCommand(new AddItemCommand { ProductId = productId, Quantity = quantity, BasketId = basketId });
     }
 
     [HttpDelete]
     public async Task<ActionResult<Unit>> RemoveItemFromBasket(string productId, int quantity)
     {
         var basketId = Request.Cookies["basketId"] ?? string.Empty;
-        var command = new RemoveBasketItemCommand { ProductId = productId, Quantity = quantity, BasketId = basketId };
-        return HandleResult(await Mediator.Send(command));
+        return await HandleCommand(new RemoveBasketItemCommand { ProductId = productId, Quantity = quantity, BasketId = basketId });
     }
 }
