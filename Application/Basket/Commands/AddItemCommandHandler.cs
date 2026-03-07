@@ -5,6 +5,7 @@ using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using DomainBasket = Domain.Entities.Basket;
 
 namespace Application.Basket.Commands;

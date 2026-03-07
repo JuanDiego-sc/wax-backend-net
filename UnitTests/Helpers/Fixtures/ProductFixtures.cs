@@ -18,7 +18,6 @@ public static class ProductFixtures
     {
         return new Product
         {
-            Id = id ?? Guid.NewGuid().ToString(),
             Name = name,
             Description = description,
             Price = price,

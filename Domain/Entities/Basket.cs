@@ -2,9 +2,8 @@ using System;
 
 namespace Domain.Entities;
 
-public class Basket
-{
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+public class Basket : BaseEntity
+{ 
     public required string BasketId { get; set; } 
     public List<BasketItem> Items { get; set; } = [];
     public string? ClientSecret { get; set; } 
