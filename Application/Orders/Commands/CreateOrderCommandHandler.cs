@@ -1,4 +1,3 @@
-using Application.Basket.Extensions;
 using Application.Core;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
@@ -59,9 +58,9 @@ public class CreateOrderCommandHandler(
 
         var result = await unitOfWork.CompleteAsync(cancellationToken);
 
-        if (!result) return Result<OrderDto>.Failure("Failed to create order");
-
-        return Result<OrderDto>.Success(order.ToDto());
+        return !result
+            ? Result<OrderDto>.Failure("Failed to create order")
+            : Result<OrderDto>.Success(order.ToDto());
     }
 
     #region Private Methods

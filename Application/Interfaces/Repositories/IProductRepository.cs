@@ -1,12 +1,11 @@
-using Domain.Entities;
-
+using ProductDomain = Domain.Entities.Product;
 namespace Application.Interfaces.Repositories;
 
 public interface IProductRepository
 {
-    Task<Domain.Entities.Product?> GetByIdAsync(string id, CancellationToken cancellationToken = default);
-    IQueryable<Domain.Entities.Product> GetQueryable();
-    void Add(Domain.Entities.Product product);
-    void Update(Domain.Entities.Product product);
-    void Remove(Domain.Entities.Product product);
+    Task<ProductDomain?> GetByIdAsync(string id, CancellationToken cancellationToken = default);
+    IQueryable<ProductDomain> GetQueryable();
+    void Add(ProductDomain product);
+    void Update(ProductDomain product);
+    void Remove(ProductDomain product);
 }

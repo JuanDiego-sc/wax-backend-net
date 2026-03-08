@@ -19,6 +19,12 @@ public class OrderRepository(AppDbContext context) : IOrderRepository
             .FirstOrDefaultAsync(x => x.PaymentIntentId == paymentIntentId, cancellationToken);
     }
 
+    public async Task<Order?> GetByOrderIdAsync(string orderId, CancellationToken cancellationToken = default)
+    {
+        return await context.Orders
+            .FindAsync([orderId], cancellationToken);
+    }
+
     public void Add(Order order)
     {
         context.Orders.Add(order);

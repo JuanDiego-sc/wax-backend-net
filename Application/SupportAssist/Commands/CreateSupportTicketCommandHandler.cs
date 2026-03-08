@@ -1,6 +1,37 @@
+using Application.Core;
+using Application.Interfaces;
+using Application.Interfaces.Repositories;
+using MediatR;
+using Persistence;
+
 namespace Application.SupportAssist.Commands;
 
-public class CreateSupportTicketCommandHandler
+public class CreateSupportTicketCommandHandler(
+    ISupportTicketRepository supportTicketRepository,
+    IOrderRepository orderRepository,
+    IUserAccessor userAccessor,
+    IUnitOfWork unitOfWork)
+    : IRequestHandler<CreateSupportTicketCommand, Result<string>>
 {
-    
+    public async Task<Result<string>> Handle(CreateSupportTicketCommand request, CancellationToken cancellationToken)
+    {
+        var order = await orderRepository
+            .GetByOrderIdAsync(request.TicketDto.OrderId, cancellationToken);
+
+        if (order == null) return Result<string>.Failure("Order not found");
+
+        var user = await userAccessor.GetUserAsync();
+
+        if (user == null) return Result<string>.Failure("User not found");
+        
+        var ticket = request.TicketDto.ToEntity(user.Id);
+        
+        supportTicketRepository.Add(ticket);
+
+        var result = await unitOfWork.CompleteAsync(cancellationToken);
+        
+        return !result
+               ? Result<string>.Failure("An error occured saving the data")
+               : Result<string>.Success(ticket.Id);
+    }
 }

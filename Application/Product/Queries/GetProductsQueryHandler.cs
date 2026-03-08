@@ -4,12 +4,14 @@ using Application.Interfaces.Repositories;
 using Application.Product.DTOs;
 using Application.Product.Extensions;
 using MediatR;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Application.Product.Queries;
 
-public class GetProductsQueryHandler(IProductRepository productRepository) : IRequestHandler<GetProductsQuery, Result<List<ProductDto>>>
+public class GetProductsQueryHandler(IProductRepository productRepository) 
+    : IRequestHandler<GetProductsQuery, Result<PagedList<ProductDto>>>
 {
-    public async Task<Result<List<ProductDto>>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<PagedList<ProductDto>>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
     {
         var productQuery = productRepository.GetQueryable()
             .Sort(request.ProductParams.OrderBy)
@@ -20,6 +22,6 @@ public class GetProductsQueryHandler(IProductRepository productRepository) : IRe
         var products = await PagedList<ProductDto>.ToPagedList(productQuery,
             request.ProductParams.PageNumber, request.ProductParams.PageSize);
 
-        return Result<List<ProductDto>>.Success(products);
+        return Result<PagedList<ProductDto>>.Success(products);
     }
 }
