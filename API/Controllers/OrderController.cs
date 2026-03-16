@@ -1,3 +1,4 @@
+using Application.Basket.Interfaces;
 using Application.Core.Pagination;
 using Application.Orders.Commands;
 using Application.Orders.DTOs;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
-public class OrderController : BaseApiController
+public class OrderController(IBasketProvider basketProvider) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<InfinityPagedList<OrderDto, DateTime?>>> GetOrders([FromQuery] OrderParams orderParams)
@@ -24,7 +25,7 @@ public class OrderController : BaseApiController
     [HttpPost]
     public async Task<ActionResult<OrderDto>> CreateOrder(CreateOrderDto orderDto)
     {
-        var basketId = Request.Cookies["basketId"] ?? string.Empty;
+        var basketId = basketProvider.GetBasketId() ?? string.Empty;
         return await HandleCommand(new CreateOrderCommand { OrderDto = orderDto, BasketId = basketId });
     }
 }
