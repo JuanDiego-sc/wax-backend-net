@@ -5,9 +5,8 @@ using Application.SupportAssist.DTOs;
 using Domain.Entities;
 using Domain.OrderAggregate;
 using Domain.SupportAssistAggregate;
-using Moq;
 using UnitTests.Helpers.Fixtures;
-using FluentAssertions;
+
 
 namespace UnitTests.Application.SupportAssist;
 

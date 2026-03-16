@@ -7,5 +7,5 @@ namespace Application.Interfaces;
 public interface IUserAccessor
 {
     string GetUserId();
-    Task<DomainUser> GetUserAsync();
+    Task<DomainUser?> GetUserAsync();
 }

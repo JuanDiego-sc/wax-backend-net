@@ -21,6 +21,8 @@ public class CreateOrderCommandHandler(
         var basket = await basketRepository.GetBasketWithItemsAsync(request.BasketId, cancellationToken);
         var user = await userAccessor.GetUserAsync();
 
+        if (user == null) return Result<OrderDto>.Failure("User not found");
+
         if (basket == null ||
             basket.Items.Count == 0 ||
             string.IsNullOrEmpty(basket.PaymentIntentId))
