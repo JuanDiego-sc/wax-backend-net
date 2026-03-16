@@ -1,8 +1,7 @@
-using System;
 using FluentValidation;
 using MediatR;
 
-namespace Application.Core;
+namespace Application.Core.Validations;
 
 public class ValidationBehavior<TRequest, TResponse>(IValidator<TRequest>? validator = null) :
     IPipelineBehavior<TRequest, TResponse> where TRequest : notnull

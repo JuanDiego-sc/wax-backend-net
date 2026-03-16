@@ -24,7 +24,7 @@ public static class OrderFixtures
             Discount = discount,
             OrderStatus = status,
             OrderItems = items ?? [CreateOrderItem()],
-            ShippingAddress = CreateBillingAddress(),
+            BillingAddress = CreateBillingAddress(),
             PaymentSummary = CreatePaymentSummary()
         };
     }

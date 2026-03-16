@@ -25,8 +25,8 @@ public class DeleteProductCommandHandler(
         productRepository.Remove(product);
 
         var result = await unitOfWork.CompleteAsync(cancellationToken);
-        if (!result) return Result<Unit>.Failure("Failed to delete product");
-
-        return Result<Unit>.Success(Unit.Value);
+        return !result 
+            ? Result<Unit>.Failure("Failed to delete product")
+            : Result<Unit>.Success(Unit.Value);
     }
 }

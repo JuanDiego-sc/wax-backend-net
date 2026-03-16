@@ -1,3 +1,4 @@
+using Application.Interfaces.DTOs;
 using Application.Product.Commands;
 using Application.Product.DTOs;
 using Application.Product.Extensions;
@@ -21,15 +22,21 @@ public class ProductController : BaseApiController
     }
 
     [HttpPost]
-    public async Task<ActionResult<ProductDto>> CreateProduct(CreateProductDto productDto)
+    public async Task<ActionResult<ProductDto>> CreateProduct(CreateProductDto productDto, IFormFile file )
     {
-        return await HandleCommand(new CreateProductCommand { ProductDto = productDto });
+        ImageUploadRequest? imageUploadRequest = null;
+        imageUploadRequest = new ImageUploadRequest(file.OpenReadStream(), file.FileName, file.ContentType);
+        
+        return await HandleCommand(new CreateProductCommand { ProductDto = productDto,  ImageRequest = imageUploadRequest! });
     }
 
     [HttpPut]
-    public async Task<ActionResult> UpdateProduct(UpdateProductDto productDto)
+    public async Task<ActionResult> UpdateProduct(UpdateProductDto productDto, IFormFile? file)
     {
-        return await HandleCommand(new UpdateProductCommand { ProductDto = productDto });
+        ImageUploadRequest? imageUploadRequest = null;
+        imageUploadRequest = new ImageUploadRequest(file!.OpenReadStream(), file.FileName, file.ContentType);
+        
+        return await HandleCommand(new UpdateProductCommand { ProductDto = productDto, ImageRequest = imageUploadRequest });
     }
 
     [HttpDelete("{id}")]

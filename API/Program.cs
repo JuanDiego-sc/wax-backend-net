@@ -1,9 +1,11 @@
 using API.Middleware;
 using Application.Basket.Commands;
-using Application.Core;
+using Application.Basket.Interfaces;
+using Application.Core.Validations;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Domain.Entities;
+using Infrastructure.Cookies;
 using Infrastructure.Email;
 using Infrastructure.Images;
 using Infrastructure.Payments;
@@ -42,10 +44,12 @@ builder.Services.AddSingleton<IEmailSender<User>, EmailSender>();
 builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddScoped<IBasketProvider, BasketCookieService>();
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<ISupportTicketRepository, SupportTicketRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddIdentityApiEndpoints<User>(options =>
@@ -92,4 +96,4 @@ catch (Exception ex)
     logger.LogError(ex, "An error occurred during migration and seeding data");
 }
 
-app.Run();
+app.RunAsync();

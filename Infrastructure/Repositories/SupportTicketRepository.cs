@@ -25,9 +25,5 @@ public class SupportTicketRepository(AppDbContext context) : ISupportTicketRepos
     {
         context.SupportTickets.Add(ticket);
     }
-
-    public void Update(SupportTicket ticket)
-    {
-        context.SupportTickets.Update(ticket);
-    }
+    
 }

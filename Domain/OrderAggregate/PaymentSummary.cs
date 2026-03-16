@@ -1,10 +1,7 @@
-using System;
 using System.Text.Json.Serialization;
-using Microsoft.EntityFrameworkCore;
 
 namespace Domain.OrderAggregate;
 
-[Owned]
 public class PaymentSummary
 {
     public int Last4 { get; set; }

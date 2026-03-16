@@ -1,10 +1,7 @@
-using System;
 using System.Text.Json.Serialization;
-using Microsoft.EntityFrameworkCore;
 
 namespace Domain.OrderAggregate;
 
-[Owned]
 public class BillingAddress
 {
     public required string Name { get; set; }

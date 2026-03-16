@@ -1,9 +1,5 @@
-using System;
-using System.ComponentModel.DataAnnotations.Schema;
-
 namespace Domain.Entities;
 
-[Table("BasketItems")]
 public class BasketItem : BaseEntity
 {
     public int Quantity { get; set; }

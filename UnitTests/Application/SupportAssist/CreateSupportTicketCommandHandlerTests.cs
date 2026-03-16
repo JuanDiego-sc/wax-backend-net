@@ -6,8 +6,8 @@ using Domain.Entities;
 using Domain.OrderAggregate;
 using Domain.SupportAssistAggregate;
 using Moq;
-using Persistence;
 using UnitTests.Helpers.Fixtures;
+using FluentAssertions;
 
 namespace UnitTests.Application.SupportAssist;
 

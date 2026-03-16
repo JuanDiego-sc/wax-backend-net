@@ -4,8 +4,6 @@ using Application.Interfaces.DTOs;
 using Application.Product.Commands;
 using Application.Product.DTOs;
 using MediatR;
-using Moq;
-using UnitTests.Helpers;
 using UnitTests.Helpers.Fixtures;
 
 namespace UnitTests.Application.Product;
@@ -46,8 +44,11 @@ public class UpdateProductCommandHandlerTests
         _productRepo
             .Setup(r => r.GetByIdAsync(product.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(product);
+
+        var imageRequest = new ImageUploadRequest(new MemoryStream(), "new.jpg", "image/jpeg");
+
         _imageService
-            .Setup(s => s.UploadImage(It.IsAny<Microsoft.AspNetCore.Http.IFormFile>()))
+            .Setup(s => s.UploadImage(imageRequest, It.IsAny<CancellationToken>()))
             .ReturnsAsync((ImageUploadResult?)null);
 
         var dto = new UpdateProductDto
@@ -56,12 +57,11 @@ public class UpdateProductCommandHandlerTests
             Name = "New",
             Description = "New Desc",
             Price = 2000,
-            File = new FormFileMock("img.jpg"),
             Type = "Resin",
             Brand = "Brand"
         };
 
-        var result = await _handler.Handle(new UpdateProductCommand { ProductDto = dto }, CancellationToken.None);
+        var result = await _handler.Handle(new UpdateProductCommand { ProductDto = dto, ImageRequest = imageRequest }, CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be("Image upload failed");
@@ -92,6 +92,5 @@ public class UpdateProductCommandHandlerTests
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be(Unit.Value);
-        _productRepo.Verify(r => r.Update(It.IsAny<global::Domain.Entities.Product>()), Times.Once);
     }
 }

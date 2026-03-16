@@ -12,7 +12,7 @@ public class OrderRepository(AppDbContext context) : IOrderRepository
         return context.Orders.AsQueryable();
     }
 
-    public async Task<Order?> GetByPaymentIntentIdAsync(string paymentIntentId, CancellationToken cancellationToken)
+    public async Task<Order?> GetByPaymentIntentIdAsync(string paymentIntentId, CancellationToken cancellationToken = default)
     {
         return await context.Orders
             .Include(x => x.OrderItems)
@@ -29,9 +29,5 @@ public class OrderRepository(AppDbContext context) : IOrderRepository
     {
         context.Orders.Add(order);
     }
-
-    public void Update(Order order)
-    {
-        context.Orders.Update(order);
-    }
+    
 }

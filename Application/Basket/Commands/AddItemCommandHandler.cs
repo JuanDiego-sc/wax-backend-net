@@ -1,11 +1,10 @@
 using Application.Basket.DTOs;
 using Application.Basket.Extensions;
+using Application.Basket.Interfaces;
 using Application.Core;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using DomainBasket = Domain.Entities.Basket;
 
 namespace Application.Basket.Commands;
@@ -13,8 +12,7 @@ namespace Application.Basket.Commands;
 public class AddItemCommandHandler(
     IBasketRepository basketRepository,
     IProductRepository productRepository,
-    IUnitOfWork unitOfWork,
-    IHttpContextAccessor httpContextAccessor)
+    IUnitOfWork unitOfWork)
     : IRequestHandler<AddItemCommand, Result<BasketDto>>
 {
     public async Task<Result<BasketDto>> Handle(AddItemCommand request, CancellationToken cancellationToken)
@@ -39,14 +37,6 @@ public class AddItemCommandHandler(
     private DomainBasket CreateBasket()
     {
         var basketId = Guid.NewGuid().ToString();
-        var cookieOptions = new CookieOptions
-        {
-            IsEssential = true,
-            Expires = DateTime.UtcNow.AddDays(30)
-        };
-
-        httpContextAccessor.HttpContext?.Response.Cookies.Append("basketId", basketId, cookieOptions);
-
         var basket = new DomainBasket { BasketId = basketId };
 
         basketRepository.Add(basket);

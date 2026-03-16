@@ -40,7 +40,7 @@ public class CreateOrderCommandHandler(
             order = new Order
             {
                 BuyerEmail = user.Email ?? string.Empty,
-                ShippingAddress = request.OrderDto.BillingAddress,
+                BillingAddress = request.OrderDto.BillingAddress,
                 OrderItems = items,
                 Subtotal = subtotal,
                 DeliveryFee = deliveryFee,
@@ -53,7 +53,6 @@ public class CreateOrderCommandHandler(
         else
         {
             order.OrderItems = items;
-            orderRepository.Update(order);
         }
 
         var result = await unitOfWork.CompleteAsync(cancellationToken);

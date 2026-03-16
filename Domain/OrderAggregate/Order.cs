@@ -6,7 +6,7 @@ public class Order
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
     public required string BuyerEmail { get; set; }
-    public required BillingAddress ShippingAddress { get; set; }
+    public required BillingAddress BillingAddress { get; set; }
     public List<OrderItem> OrderItems { get; set; } = [];
     public long Subtotal { get; set; }
     public long DeliveryFee { get; set; }

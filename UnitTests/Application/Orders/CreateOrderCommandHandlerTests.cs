@@ -6,6 +6,7 @@ using Domain.Entities;
 using Domain.OrderAggregate;
 using Moq;
 using UnitTests.Helpers.Fixtures;
+using FluentAssertions;
 
 namespace UnitTests.Application.Orders;
 
@@ -134,7 +135,6 @@ public class CreateOrderCommandHandlerTests
         var result = await _handler.Handle(command, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        _orderRepo.Verify(r => r.Update(existingOrder), Times.Once);
         _orderRepo.Verify(r => r.Add(It.IsAny<Order>()), Times.Never);
     }
 

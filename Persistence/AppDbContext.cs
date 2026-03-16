@@ -13,5 +13,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<Basket> Baskets { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<SupportTicket> SupportTickets { get; set; }
+
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+        builder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+    }
     
 }

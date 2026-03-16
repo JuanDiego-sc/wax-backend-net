@@ -488,4 +488,5 @@ API/appsettings.json
 .opencode
 #agents
 .agents
+.docs
 AGENTS.md

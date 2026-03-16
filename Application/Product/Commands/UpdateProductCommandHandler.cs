@@ -17,26 +17,25 @@ public class UpdateProductCommandHandler(
 
         if (product == null) return Result<Unit>.Failure("Product not found");
 
-        if (request.ProductDto.File != null)
+        if (request.ImageRequest?.Content != null)
         {
             if (!string.IsNullOrEmpty(product.PublicId))
             {
-                await imageService.DeleteImage(product.PublicId);
+                await imageService.DeleteImage(product.PublicId, cancellationToken);
             }
 
-            var imageResult = await imageService.UploadImage(request.ProductDto.File);
+            var imageResult = await imageService.UploadImage(request.ImageRequest, cancellationToken);
             if (imageResult == null) return Result<Unit>.Failure("Image upload failed");
 
             product.PictureUrl = imageResult.Url;
             product.PublicId = imageResult.PublicId;
         }
 
-        var updatedProduct = request.ProductDto.ApplyTo(product);
-        productRepository.Update(updatedProduct);
+        request.ProductDto.ApplyTo(product);
 
         var result = await unitOfWork.CompleteAsync(cancellationToken);
-        if (!result) return Result<Unit>.Failure("Failed to update product");
-
-        return Result<Unit>.Success(Unit.Value);
+        return !result 
+               ? Result<Unit>.Failure("Failed to update product")
+               : Result<Unit>.Success(Unit.Value);
     }
 }

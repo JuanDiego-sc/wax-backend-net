@@ -1,67 +1,60 @@
+using System.Configuration;
 using Application.Interfaces;
+using Application.Interfaces.DTOs;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using ImageUploadResultDto = Application.Interfaces.DTOs.ImageUploadResult;
 
-namespace Infrastructure.Images
+namespace Infrastructure.Images;
+
+public class ImageService : IImageService
 {
-    public class ImageService : IImageService
+    private readonly Cloudinary _cloudinary;
+
+    public ImageService(IOptions<CloudinarySettings> configuration)
     {
-        private readonly Cloudinary _cloudinary;
+        var account = new Account(
+            configuration.Value.CloudName,
+            configuration.Value.ApiKey,
+            configuration.Value.ApiSecret
+        );
 
-        public ImageService(IOptions<CloudinarySettings> configuration)
+        _cloudinary = new Cloudinary(account);
+    }
+
+    public async Task<string> DeleteImage(string publicId, CancellationToken cancellationToken = default)
+    {
+        var deleteParams = new DeletionParams(publicId);
+
+        var result = await _cloudinary.DestroyAsync(deleteParams);
+
+        if (result.Error != null) throw new ConfigurationErrorsException(result.Error.Message);
+
+        return result.Result;
+    }
+
+    public async Task<ImageUploadResultDto?> UploadImage(ImageUploadRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (request.Content.Length < 0) return null;
+
+        await using var stream = request.Content;
+
+        var uploadParams = new ImageUploadParams
         {
-            var account = new Account(
-                configuration.Value.CloudName,
-                configuration.Value.ApiKey,
-                configuration.Value.ApiSecret
-            );
+            File = new FileDescription(request.FileName, stream),
+            Folder = "WaxImages"
+        };
 
-            _cloudinary = new Cloudinary(account);
-        }
+        var uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
-        public async Task<string> DeleteImage(string publicId)
+        if (uploadResult.Error != null) throw new ConfigurationErrorsException(uploadResult.Error.Message);
+
+        return new ImageUploadResultDto
         {
-            var deleteParams = new DeletionParams(publicId);
-
-            var result = await _cloudinary.DestroyAsync(deleteParams);
-
-            if(result.Error != null)
-            {
-                throw new Exception(result.Error.Message);
-            }
-
-            return result.Result;
-        }
-
-        public async Task<ImageUploadResultDto?> UploadImage(IFormFile file)
-        {
-            if(file.Length > 0 )
-            {
-                await using var stream = file.OpenReadStream();
-
-                var uploadParams = new ImageUploadParams
-                {
-                    File = new FileDescription(file.FileName, stream),
-                    Folder = "WaxImages"
-                };
-
-                var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-
-                if(uploadResult.Error != null)
-                {
-                    throw new Exception(uploadResult.Error.Message);
-                }
-
-                return new ImageUploadResultDto
-                {
-                    PublicId = uploadResult.PublicId,
-                    Url = uploadResult.SecureUrl.ToString()
-                };
-            }
-            return null;
-        }
+            PublicId = uploadResult.PublicId,
+            Url = uploadResult.SecureUrl.ToString()
+        };
     }
 }

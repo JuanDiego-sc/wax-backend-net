@@ -1,10 +1,6 @@
-using System;
-using System.ComponentModel.DataAnnotations.Schema;
 using Domain.Entities;
-
 namespace Domain.OrderAggregate;
 
-[Table("OrderItems")]
 public class OrderItem : BaseEntity
 {
     public required ProductOrderItem ItemOrdered { get; set; }

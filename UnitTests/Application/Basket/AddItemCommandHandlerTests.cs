@@ -1,12 +1,10 @@
 using Application.Basket.Commands;
 using Application.Basket.DTOs;
-using Application.Core;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
-using MediatR;
-using Microsoft.AspNetCore.Http;
 using Moq;
 using UnitTests.Helpers.Fixtures;
+using FluentAssertions;
 
 namespace UnitTests.Application.Basket;
 
@@ -15,24 +13,14 @@ public class AddItemCommandHandlerTests
     private readonly Mock<IBasketRepository> _basketRepo = new();
     private readonly Mock<IProductRepository> _productRepo = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
-    private readonly Mock<IHttpContextAccessor> _httpContextAccessor = new();
     private readonly AddItemCommandHandler _handler;
 
     public AddItemCommandHandlerTests()
     {
-        var responseMock = new Mock<HttpResponse>();
-        var cookiesMock = new Mock<IResponseCookies>();
-        responseMock.Setup(r => r.Cookies).Returns(cookiesMock.Object);
-
-        var httpContextMock = new Mock<HttpContext>();
-        httpContextMock.Setup(c => c.Response).Returns(responseMock.Object);
-        _httpContextAccessor.Setup(a => a.HttpContext).Returns(httpContextMock.Object);
-
         _handler = new AddItemCommandHandler(
             _basketRepo.Object,
             _productRepo.Object,
-            _unitOfWork.Object,
-            _httpContextAccessor.Object);
+            _unitOfWork.Object);
     }
 
     [Fact]

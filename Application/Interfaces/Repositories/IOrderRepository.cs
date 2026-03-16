@@ -11,5 +11,4 @@ public interface IOrderRepository
     Task<Order?> GetByPaymentIntentIdAsync(string paymentIntentId, CancellationToken cancellationToken = default);
     Task<Order?> GetByOrderIdAsync(string orderId, CancellationToken cancellationToken = default);
     void Add(Order order);
-    void Update(Order order);
 }

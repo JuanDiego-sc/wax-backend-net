@@ -15,21 +15,19 @@ public class CreateProductCommandHandler(
     public async Task<Result<CreateProductDto>> Handle(CreateProductCommand request, CancellationToken cancellationToken)
     {
         var product = request.ProductDto;
+        
+        var imageResult = await imageService.UploadImage(request.ImageRequest, cancellationToken);
+        if (imageResult == null) return Result<CreateProductDto>.Failure("Image upload failed");
 
-        if (product.File != null)
-        {
-            var imageResult = await imageService.UploadImage(product.File);
-            if (imageResult == null) return Result<CreateProductDto>.Failure("Image upload failed");
-
-            product.PictureUrl = imageResult.Url;
-            product.PublicId = imageResult.PublicId;
-        }
+        product.PictureUrl = imageResult.Url;
+        product.PublicId = imageResult.PublicId;
+        
 
         productRepository.Add(product.ToEntity());
 
         var result = await unitOfWork.CompleteAsync(cancellationToken);
-        if (!result) return Result<CreateProductDto>.Failure("Failed to create product");
-
-        return Result<CreateProductDto>.Success(product);
+        return !result 
+            ? Result<CreateProductDto>.Failure("Failed to update product")
+            : Result<CreateProductDto>.Success(product);
     }
 }

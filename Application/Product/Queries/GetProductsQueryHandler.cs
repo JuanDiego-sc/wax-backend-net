@@ -4,7 +4,6 @@ using Application.Interfaces.Repositories;
 using Application.Product.DTOs;
 using Application.Product.Extensions;
 using MediatR;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Application.Product.Queries;
 
