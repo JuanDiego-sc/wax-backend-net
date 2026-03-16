@@ -17,6 +17,8 @@ public class UpdateProductCommandHandler(
 
         if (product == null) return Result<Unit>.Failure("Product not found");
 
+        request.ProductDto.ApplyTo(product);
+
         if (request.ImageRequest?.Content != null)
         {
             if (!string.IsNullOrEmpty(product.PublicId))
@@ -30,9 +32,7 @@ public class UpdateProductCommandHandler(
             product.PictureUrl = imageResult.Url;
             product.PublicId = imageResult.PublicId;
         }
-
-        request.ProductDto.ApplyTo(product);
-
+        
         var result = await unitOfWork.CompleteAsync(cancellationToken);
         return !result 
                ? Result<Unit>.Failure("Failed to update product")

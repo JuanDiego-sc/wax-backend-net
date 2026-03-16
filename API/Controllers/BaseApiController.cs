@@ -22,6 +22,12 @@ namespace API.Controllers
             var result = await Mediator.Send(command);
             return HandleResult(result);
         }
+        
+        protected async Task<Result<T>> HandleCommandWithResult<T>(IRequest<Result<T>> command)                                                                         
+        {                                                                                                                                                               
+            Logger.SendingCommand(command.GetType().Name, command);                                                                                                     
+            return await Mediator.Send(command);                                                                                                                        
+        } 
 
         protected async Task<ActionResult> HandleQuery<T>(IRequest<Result<T>> query)
         {
@@ -30,7 +36,7 @@ namespace API.Controllers
             return HandleResult(result);
         }
 
-        private ActionResult HandleResult<T>(Result<T> result) =>
+        protected ActionResult HandleResult<T>(Result<T> result) =>
             result switch
             {
                 { IsSuccess: false, Code: 404 } => NotFound(),

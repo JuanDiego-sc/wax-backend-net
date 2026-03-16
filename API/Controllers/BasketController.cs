@@ -19,20 +19,20 @@ public class BasketController(IBasketProvider basketProvider) : BaseApiControlle
     [HttpPost]
     public async Task<ActionResult<BasketDto>> AddItemToBasket(string productId, int quantity)
     {
-        var basketId = basketProvider.GetBasketId() ?? string.Empty;
-        var result = await HandleCommand(new AddItemCommand
+        var basketId = basketProvider.GetBasketId();
+        var result = await HandleCommandWithResult(new AddItemCommand
             { 
                 ProductId = productId, 
                 Quantity = quantity, 
-                BasketId = basketId 
+                BasketId = basketId ?? string.Empty
             });
 
-        if (result != null && string.IsNullOrWhiteSpace(basketId))
+        if (result.IsSuccess && string.IsNullOrWhiteSpace(basketId))
         {
-            basketProvider.SetBasketId(basketId);
+            basketProvider.SetBasketId(result.Value!.BasketId);
         }
         
-        return result!;
+        return HandleResult(result);
     }
 
     [HttpDelete]
