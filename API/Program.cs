@@ -11,6 +11,7 @@ using Infrastructure.Images;
 using Infrastructure.Payments;
 using Infrastructure.Repositories;
 using Infrastructure.Security;
+using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -31,6 +32,25 @@ builder.Services.AddMediatR(x =>
 {
     x.RegisterServicesFromAssemblyContaining<AddItemCommandHandler>();
     x.AddOpenBehavior(typeof(ValidationBehavior<,>));
+});
+
+builder.Services.AddMassTransit(configuration =>
+{
+    configuration.AddEntityFrameworkOutbox<AppDbContext>(options =>
+    {
+        options.UsePostgres();
+        options.UseBusOutbox();
+    });
+    configuration.UsingRabbitMq((context, configuration) =>
+    {
+        configuration.Host(builder.Configuration["RabbitMQ:Host"], host =>
+        {
+            host.Username(builder.Configuration["RabbitMQ:Username"]!);
+            host.Password(builder.Configuration["RabbitMQ:Password"]!);
+        });
+        configuration.UseMessageRetry(retry => retry.Interval(3, TimeSpan.FromSeconds(5)));
+        configuration.ConfigureEndpoints(context);
+    });
 });
 
 builder.Services.AddHttpClient<ResendClient>();
