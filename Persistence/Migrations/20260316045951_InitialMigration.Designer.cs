@@ -12,7 +12,7 @@ using Persistence;
 namespace Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260307183927_InitialMigration")]
+    [Migration("20260316045951_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -92,6 +92,9 @@ namespace Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BasketId")
+                        .IsUnique();
+
                     b.ToTable("Baskets");
                 });
 
@@ -123,7 +126,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("BasketItems");
+                    b.ToTable("BasketItems", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Product", b =>
@@ -300,7 +303,7 @@ namespace Persistence.Migrations
 
                     b.HasIndex("OrderId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderItems", (string)null);
                 });
 
             modelBuilder.Entity("Domain.SupportAssistAggregate.SupportTicket", b =>
@@ -321,6 +324,9 @@ namespace Persistence.Migrations
                     b.Property<string>("OrderId")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Subject")
                         .IsRequired()
@@ -504,38 +510,45 @@ namespace Persistence.Migrations
 
             modelBuilder.Entity("Domain.OrderAggregate.Order", b =>
                 {
-                    b.OwnsOne("Domain.OrderAggregate.BillingAddress", "ShippingAddress", b1 =>
+                    b.OwnsOne("Domain.OrderAggregate.BillingAddress", "BillingAddress", b1 =>
                         {
                             b1.Property<string>("OrderId")
                                 .HasColumnType("text");
 
                             b1.Property<string>("City")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasColumnType("text")
+                                .HasColumnName("Billing_City");
 
                             b1.Property<string>("Country")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasColumnType("text")
+                                .HasColumnName("Billing_Country");
 
                             b1.Property<string>("Line1")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasColumnType("text")
+                                .HasColumnName("Billing_Line1");
 
                             b1.Property<string>("Line2")
-                                .HasColumnType("text");
+                                .HasColumnType("text")
+                                .HasColumnName("Billing_Line2");
 
                             b1.Property<string>("Name")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasColumnType("text")
+                                .HasColumnName("Billing_Address");
 
                             b1.Property<string>("PostalCode")
                                 .IsRequired()
                                 .HasColumnType("text")
+                                .HasColumnName("Billing_PostalCode")
                                 .HasJsonPropertyName("postal_code");
 
                             b1.Property<string>("State")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasColumnType("text")
+                                .HasColumnName("Billing_State");
 
                             b1.HasKey("OrderId");
 
@@ -552,18 +565,22 @@ namespace Persistence.Migrations
 
                             b1.Property<string>("Brand")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasColumnType("text")
+                                .HasColumnName("Payment_Brand");
 
                             b1.Property<int>("ExpMonth")
                                 .HasColumnType("integer")
+                                .HasColumnName("Payment_ExpMonth")
                                 .HasJsonPropertyName("exp_month");
 
                             b1.Property<int>("ExpYear")
                                 .HasColumnType("integer")
+                                .HasColumnName("Payment_ExpYear")
                                 .HasJsonPropertyName("exp_year");
 
                             b1.Property<int>("Last4")
-                                .HasColumnType("integer");
+                                .HasColumnType("integer")
+                                .HasColumnName("Payment_Last4");
 
                             b1.HasKey("OrderId");
 
@@ -573,10 +590,10 @@ namespace Persistence.Migrations
                                 .HasForeignKey("OrderId");
                         });
 
-                    b.Navigation("PaymentSummary")
+                    b.Navigation("BillingAddress")
                         .IsRequired();
 
-                    b.Navigation("ShippingAddress")
+                    b.Navigation("PaymentSummary")
                         .IsRequired();
                 });
 
@@ -584,7 +601,8 @@ namespace Persistence.Migrations
                 {
                     b.HasOne("Domain.OrderAggregate.Order", null)
                         .WithMany("OrderItems")
-                        .HasForeignKey("OrderId");
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.OwnsOne("Domain.OrderAggregate.ProductOrderItem", "ItemOrdered", b1 =>
                         {
@@ -593,11 +611,13 @@ namespace Persistence.Migrations
 
                             b1.Property<string>("Name")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasColumnType("text")
+                                .HasColumnName("Item_ProductName");
 
                             b1.Property<string>("ProductId")
                                 .IsRequired()
-                                .HasColumnType("text");
+                                .HasColumnType("text")
+                                .HasColumnName("Item_ProductId");
 
                             b1.HasKey("OrderItemId");
 

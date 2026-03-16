@@ -96,4 +96,4 @@ catch (Exception ex)
     logger.LogError(ex, "An error occurred during migration and seeding data");
 }
 
-app.RunAsync();
+await app.RunAsync();

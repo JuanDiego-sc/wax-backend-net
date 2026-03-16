@@ -68,22 +68,22 @@ namespace Persistence.Migrations
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
                     BuyerEmail = table.Column<string>(type: "text", nullable: false),
-                    ShippingAddress_Name = table.Column<string>(type: "text", nullable: false),
-                    ShippingAddress_Line1 = table.Column<string>(type: "text", nullable: false),
-                    ShippingAddress_Line2 = table.Column<string>(type: "text", nullable: true),
-                    ShippingAddress_City = table.Column<string>(type: "text", nullable: false),
-                    ShippingAddress_State = table.Column<string>(type: "text", nullable: false),
-                    ShippingAddress_PostalCode = table.Column<string>(type: "text", nullable: false),
-                    ShippingAddress_Country = table.Column<string>(type: "text", nullable: false),
+                    Billing_Address = table.Column<string>(type: "text", nullable: false),
+                    Billing_Line1 = table.Column<string>(type: "text", nullable: false),
+                    Billing_Line2 = table.Column<string>(type: "text", nullable: true),
+                    Billing_City = table.Column<string>(type: "text", nullable: false),
+                    Billing_State = table.Column<string>(type: "text", nullable: false),
+                    Billing_PostalCode = table.Column<string>(type: "text", nullable: false),
+                    Billing_Country = table.Column<string>(type: "text", nullable: false),
                     Subtotal = table.Column<long>(type: "bigint", nullable: false),
                     DeliveryFee = table.Column<long>(type: "bigint", nullable: false),
                     Discount = table.Column<long>(type: "bigint", nullable: false),
                     PaymentIntentId = table.Column<string>(type: "text", nullable: false),
                     OrderStatus = table.Column<int>(type: "integer", nullable: false),
-                    PaymentSummary_Last4 = table.Column<int>(type: "integer", nullable: false),
-                    PaymentSummary_Brand = table.Column<string>(type: "text", nullable: false),
-                    PaymentSummary_ExpMonth = table.Column<int>(type: "integer", nullable: false),
-                    PaymentSummary_ExpYear = table.Column<int>(type: "integer", nullable: false),
+                    Payment_Last4 = table.Column<int>(type: "integer", nullable: false),
+                    Payment_Brand = table.Column<string>(type: "text", nullable: false),
+                    Payment_ExpMonth = table.Column<int>(type: "integer", nullable: false),
+                    Payment_ExpYear = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
@@ -170,8 +170,8 @@ namespace Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    ItemOrdered_ProductId = table.Column<string>(type: "text", nullable: false),
-                    ItemOrdered_Name = table.Column<string>(type: "text", nullable: false),
+                    Item_ProductId = table.Column<string>(type: "text", nullable: false),
+                    Item_ProductName = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<long>(type: "bigint", nullable: false),
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     OrderId = table.Column<string>(type: "text", nullable: true),
@@ -185,7 +185,8 @@ namespace Persistence.Migrations
                         name: "FK_OrderItems_Orders_OrderId",
                         column: x => x.OrderId,
                         principalTable: "Orders",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -307,6 +308,7 @@ namespace Persistence.Migrations
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
                     Category = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
                     Subject = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     UserId = table.Column<string>(type: "text", nullable: false),
@@ -382,6 +384,12 @@ namespace Persistence.Migrations
                 name: "IX_BasketItems_ProductId",
                 table: "BasketItems",
                 column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Baskets_BasketId",
+                table: "Baskets",
+                column: "BasketId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderItems_OrderId",
