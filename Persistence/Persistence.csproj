@@ -12,10 +12,12 @@
 
   <ItemGroup>
     <Folder Include="Migrations/" />
+    <Folder Include="Migrations\ReadMigrations\" />
+    <Folder Include="Migrations\WriteMigrations\" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MassTransit.EntityFrameworkCore" Version="9.0.1" />
+    <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.3.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
   </ItemGroup>

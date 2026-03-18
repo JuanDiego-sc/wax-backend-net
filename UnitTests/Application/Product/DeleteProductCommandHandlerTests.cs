@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
+using Application.Interfaces.Repositories.WriteRepositores;
 using Application.Product.Commands;
 using MediatR;
 using Moq;

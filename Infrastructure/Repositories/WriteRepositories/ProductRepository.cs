@@ -1,10 +1,11 @@
 using Application.Interfaces.Repositories;
+using Application.Interfaces.Repositories.WriteRepositores;
 using Domain.Entities;
 using Persistence;
 
 namespace Infrastructure.Repositories;
 
-public class ProductRepository(AppDbContext context) : IProductRepository
+public class ProductRepository(WriteDbContext context) : IProductRepository
 {
     public async Task<Product?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {

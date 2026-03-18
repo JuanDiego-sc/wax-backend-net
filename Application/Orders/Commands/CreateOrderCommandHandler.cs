@@ -1,6 +1,7 @@
 using Application.Core;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
+using Application.Interfaces.Repositories.WriteRepositores;
 using Application.Orders.DTOs;
 using Application.Orders.Extensions;
 using Domain.Entities;

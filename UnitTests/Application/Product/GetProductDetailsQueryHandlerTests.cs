@@ -1,29 +1,31 @@
-using Application.Interfaces.Repositories;
+using Application.Interfaces.Repositories.ReadRepositories;
+using Application.Product.DTOs;
 using Application.Product.Queries;
-using Microsoft.EntityFrameworkCore;
 using Moq;
-using Persistence;
-using UnitTests.Helpers.Fixtures;
+using UnitTests.Helpers;
 
 namespace UnitTests.Application.Product;
 
 public class GetProductDetailsQueryHandlerTests
 {
-    private AppDbContext CreateInMemoryContext()
+    private ProductDto CreateDto(string id, string name = "N") => new()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        return new AppDbContext(options);
-    }
+        Id = id,
+        Name = name,
+        Description = "D",
+        Price = 1000,
+        PictureUrl = "P",
+        Brand = "B",
+        Type = "T",
+        QuantityInStock = 10,
+        PublicId = null
+    };
 
     [Fact]
     public async Task Handle_WhenProductNotFound_ReturnsFailureWith404()
     {
-        using var context = CreateInMemoryContext();
-
-        var repoMock = new Mock<IProductRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.Products.AsQueryable());
+        var repoMock = new Mock<IProductReadRepository>();
+        repoMock.Setup(r => r.GetQueryable()).Returns(new TestAsyncEnumerable<ProductDto>(new List<ProductDto>()));
 
         var handler = new GetProductDetailsQueryHandler(repoMock.Object);
         var result = await handler.Handle(new GetProductDetailsQuery { Id = "missing" }, CancellationToken.None);
@@ -36,16 +38,16 @@ public class GetProductDetailsQueryHandlerTests
     [Fact]
     public async Task Handle_WhenProductFound_ReturnsMappedDto()
     {
-        using var context = CreateInMemoryContext();
-        var product = ProductFixtures.CreateProduct(name: "Test Item");
-        context.Products.Add(product);
-        await context.SaveChangesAsync();
+        var productId = Guid.NewGuid().ToString();
+        var productDto = CreateDto(productId, "Test Item");
+        
+        var data = new TestAsyncEnumerable<ProductDto>(new List<ProductDto> { productDto });
 
-        var repoMock = new Mock<IProductRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.Products.AsQueryable());
+        var repoMock = new Mock<IProductReadRepository>();
+        repoMock.Setup(r => r.GetQueryable()).Returns(data);
 
         var handler = new GetProductDetailsQueryHandler(repoMock.Object);
-        var result = await handler.Handle(new GetProductDetailsQuery { Id = product.Id }, CancellationToken.None);
+        var result = await handler.Handle(new GetProductDetailsQuery { Id = productId }, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value!.Name.Should().Be("Test Item");

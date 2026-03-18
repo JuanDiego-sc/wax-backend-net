@@ -7,7 +7,7 @@ using Persistence;
 
 namespace Infrastructure.Security;
 
-public class UserAccessor(IHttpContextAccessor httpContextAccessor, AppDbContext dbContext) : IUserAccessor
+public class UserAccessor(IHttpContextAccessor httpContextAccessor, WriteDbContext dbContext) : IUserAccessor
 {
     public async Task<User?> GetUserAsync()
     {

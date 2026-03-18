@@ -1,4 +1,3 @@
-using System;
 using Application.Product.DTOs;
 using ProductDomain = Domain.Entities.Product;
 
@@ -10,17 +9,19 @@ public static class ProductExtensions
     {
         return new ProductDto
         {
+            Id = product.Id,
             Name = product.Name,
             Description = product.Description,
             Price = product.Price,
             PictureUrl = product.PictureUrl,
             Type = product.Type,
             Brand = product.Brand,
-            QuantityInStock = product.QuantityInStock
+            QuantityInStock = product.QuantityInStock,
+            PublicId =  product.PublicId
         };
     }
 
-    public static IQueryable<ProductDomain> Sort(this IQueryable<ProductDomain> query, string? orderBy)
+    public static IQueryable<ProductDto> Sort(this IQueryable<ProductDto> query, string? orderBy)
     {
         query = orderBy switch
             {
@@ -32,7 +33,7 @@ public static class ProductExtensions
         return query;
     }
 
-    public static IQueryable<ProductDomain> Search(this IQueryable<ProductDomain> query, string? searchTerm)
+    public static IQueryable<ProductDto> Search(this IQueryable<ProductDto> query, string? searchTerm)
     {
         if (string.IsNullOrEmpty(searchTerm)) return query;
 
@@ -41,7 +42,7 @@ public static class ProductExtensions
         return query.Where(x => x.Name.ToLower().Contains(lowerCaseSearchTerm));
     }
 
-    public static IQueryable<ProductDomain> Filter(this IQueryable<ProductDomain> query, string? brands, string? types)
+    public static IQueryable<ProductDto> Filter(this IQueryable<ProductDto> query, string? brands, string? types)
     {
         var brandList = new List<string>();
         var typeList = new List<string>();

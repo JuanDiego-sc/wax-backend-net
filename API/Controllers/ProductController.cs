@@ -22,7 +22,7 @@ public class ProductController : BaseApiController
     }
 
     [HttpPost]
-    public async Task<ActionResult<ProductDto>> CreateProduct(CreateProductDto productDto, IFormFile file )
+    public async Task<ActionResult<ProductDto>> CreateProduct([FromForm] CreateProductDto productDto, IFormFile file )
     {
         ImageUploadRequest? imageUploadRequest = null;
         imageUploadRequest = new ImageUploadRequest(file.OpenReadStream(), file.FileName, file.ContentType);

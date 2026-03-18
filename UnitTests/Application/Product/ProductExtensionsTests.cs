@@ -1,10 +1,22 @@
 using Application.Product.Extensions;
+using Application.Product.DTOs;
 using UnitTests.Helpers.Fixtures;
 
 namespace UnitTests.Application.Product;
 
 public class ProductExtensionsTests
 {
+    private ProductDto CreateDto(string name = "N", long price = 0, string brand = "B", string type = "T") => new()
+    {
+        Id = Guid.NewGuid().ToString(),
+        Name = name,
+        Description = "D",
+        Price = price,
+        PictureUrl = "P",
+        Brand = brand,
+        Type = type
+    };
+
     [Fact]
     public void ToDto_MapsAllPropertiesCorrectly()
     {
@@ -31,11 +43,11 @@ public class ProductExtensionsTests
     [Fact]
     public void Sort_ByPrice_OrdersAscending()
     {
-        var products = new List<global::Domain.Entities.Product>
+        var products = new List<ProductDto>
         {
-            ProductFixtures.CreateProduct(price: 3000),
-            ProductFixtures.CreateProduct(price: 1000),
-            ProductFixtures.CreateProduct(price: 2000),
+            CreateDto(name: "C", price: 3000),
+            CreateDto(name: "A", price: 1000),
+            CreateDto(name: "B", price: 2000),
         }.AsQueryable();
 
         var sorted = products.Sort("price").ToList();
@@ -48,11 +60,11 @@ public class ProductExtensionsTests
     [Fact]
     public void Sort_ByPriceDesc_OrdersDescending()
     {
-        var products = new List<global::Domain.Entities.Product>
+        var products = new List<ProductDto>
         {
-            ProductFixtures.CreateProduct(price: 1000),
-            ProductFixtures.CreateProduct(price: 3000),
-            ProductFixtures.CreateProduct(price: 2000),
+            CreateDto(name: "A", price: 1000),
+            CreateDto(name: "C", price: 3000),
+            CreateDto(name: "B", price: 2000),
         }.AsQueryable();
 
         var sorted = products.Sort("priceDesc").ToList();
@@ -64,11 +76,11 @@ public class ProductExtensionsTests
     [Fact]
     public void Sort_DefaultOrUnknownKey_OrdersByName()
     {
-        var products = new List<global::Domain.Entities.Product>
+        var products = new List<ProductDto>
         {
-            ProductFixtures.CreateProduct(name: "Zebra"),
-            ProductFixtures.CreateProduct(name: "Apple"),
-            ProductFixtures.CreateProduct(name: "Mango"),
+            CreateDto(name: "Zebra"),
+            CreateDto(name: "Apple"),
+            CreateDto(name: "Mango"),
         }.AsQueryable();
 
         var sorted = products.Sort(null).ToList();
@@ -79,10 +91,10 @@ public class ProductExtensionsTests
     [Fact]
     public void Search_WhenEmpty_ReturnsAll()
     {
-        var products = new List<global::Domain.Entities.Product>
+        var products = new List<ProductDto>
         {
-            ProductFixtures.CreateProduct(name: "Alpha"),
-            ProductFixtures.CreateProduct(name: "Beta"),
+            CreateDto(name: "Alpha"),
+            CreateDto(name: "Beta"),
         }.AsQueryable();
 
         var result = products.Search(null).ToList();
@@ -93,11 +105,11 @@ public class ProductExtensionsTests
     [Fact]
     public void Search_WithTerm_FiltersMatchingNames()
     {
-        var products = new List<global::Domain.Entities.Product>
+        var products = new List<ProductDto>
         {
-            ProductFixtures.CreateProduct(name: "Candle"),
-            ProductFixtures.CreateProduct(name: "Wax Seal"),
-            ProductFixtures.CreateProduct(name: "Candle Holder"),
+            CreateDto(name: "Candle"),
+            CreateDto(name: "Wax Seal"),
+            CreateDto(name: "Candle Holder"),
         }.AsQueryable();
 
         var result = products.Search("candle").ToList();
@@ -108,10 +120,10 @@ public class ProductExtensionsTests
     [Fact]
     public void Filter_WithBrandFilter_FiltersCorrectly()
     {
-        var products = new List<global::Domain.Entities.Product>
+        var products = new List<ProductDto>
         {
-            ProductFixtures.CreateProduct(brand: "WaxCo"),
-            ProductFixtures.CreateProduct(brand: "OtherBrand"),
+            CreateDto(name: "A", brand: "WaxCo"),
+            CreateDto(name: "B", brand: "OtherBrand"),
         }.AsQueryable();
 
         var result = products.Filter(brands: "waxco", types: null).ToList();
@@ -123,11 +135,11 @@ public class ProductExtensionsTests
     [Fact]
     public void Filter_WithTypeFilter_FiltersCorrectly()
     {
-        var products = new List<global::Domain.Entities.Product>
+        var products = new List<ProductDto>
         {
-            ProductFixtures.CreateProduct(type: "Candle"),
-            ProductFixtures.CreateProduct(type: "Jewelry"),
-            ProductFixtures.CreateProduct(type: "Candle"),
+            CreateDto(name: "A", type: "Candle"),
+            CreateDto(name: "B", type: "Jewelry"),
+            CreateDto(name: "C", type: "Candle"),
         }.AsQueryable();
 
         var result = products.Filter(brands: null, types: "candle").ToList();
@@ -138,10 +150,10 @@ public class ProductExtensionsTests
     [Fact]
     public void Filter_WithNoFilters_ReturnsAll()
     {
-        var products = new List<global::Domain.Entities.Product>
+        var products = new List<ProductDto>
         {
-            ProductFixtures.CreateProduct(),
-            ProductFixtures.CreateProduct(),
+            CreateDto(),
+            CreateDto(),
         }.AsQueryable();
 
         var result = products.Filter(null, null).ToList();

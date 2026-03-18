@@ -4,10 +4,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Persistence.Migrations
+namespace Persistence.Migrations.WriteMigrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitialWriteMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -136,14 +136,14 @@ namespace Persistence.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Description = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<long>(type: "bigint", nullable: false),
-                    PictureUrl = table.Column<string>(type: "text", nullable: false),
-                    Type = table.Column<string>(type: "text", nullable: false),
-                    Brand = table.Column<string>(type: "text", nullable: false),
+                    PictureUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Type = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Brand = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     QuantityInStock = table.Column<int>(type: "integer", nullable: false),
-                    PublicId = table.Column<string>(type: "text", nullable: true),
+                    PublicId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },

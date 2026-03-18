@@ -1,4 +1,4 @@
-using Application.Interfaces.Repositories;
+using Application.Interfaces.Repositories.WriteRepositores;
 using Application.Orders.Queries;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -9,12 +9,12 @@ namespace UnitTests.Application.Orders;
 
 public class GetOrderDetailsQueryHandlerTests
 {
-    private AppDbContext CreateInMemoryContext()
+    private static WriteDbContext CreateInMemoryContext()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
+        var options = new DbContextOptionsBuilder<WriteDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        var context = new AppDbContext(options);
+        var context = new WriteDbContext(options);
         return context;
     }
 

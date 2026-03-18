@@ -1,4 +1,5 @@
 using Application.Interfaces.Repositories;
+using Application.Interfaces.Repositories.WriteRepositores;
 using Application.SupportAssist.Extensions;
 using Application.SupportAssist.Queries;
 using Domain.SupportAssistAggregate;
@@ -11,12 +12,12 @@ namespace UnitTests.Application.SupportAssist;
 
 public class GetSupportTicketsQueryHandlerTests
 {
-    private AppDbContext CreateInMemoryContext()
+    private static WriteDbContext CreateInMemoryContext()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
+        var options = new DbContextOptionsBuilder<WriteDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        return new AppDbContext(options);
+        return new WriteDbContext(options);
     }
 
     [Fact]

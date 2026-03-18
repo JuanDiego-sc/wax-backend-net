@@ -4,6 +4,7 @@ using Application.Basket.Interfaces;
 using Application.Core;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
+using Application.Interfaces.Repositories.WriteRepositores;
 using MediatR;
 using DomainBasket = Domain.Entities.Basket;
 

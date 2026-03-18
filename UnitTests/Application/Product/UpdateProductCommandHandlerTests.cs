@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.DTOs;
+using Application.Interfaces.Repositories.WriteRepositores;
 using Application.Product.Commands;
 using Application.Product.DTOs;
 using MediatR;

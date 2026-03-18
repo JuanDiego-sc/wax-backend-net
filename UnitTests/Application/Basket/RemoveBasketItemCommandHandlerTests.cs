@@ -2,6 +2,7 @@ using Application.Basket.Commands;
 using Application.Core;
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
+using Application.Interfaces.Repositories.WriteRepositores;
 using MediatR;
 using Moq;
 using UnitTests.Helpers.Fixtures;

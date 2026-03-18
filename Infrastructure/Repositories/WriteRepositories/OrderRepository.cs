@@ -1,11 +1,12 @@
 using Application.Interfaces.Repositories;
+using Application.Interfaces.Repositories.WriteRepositores;
 using Domain.OrderAggregate;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 namespace Infrastructure.Repositories;
 
-public class OrderRepository(AppDbContext context) : IOrderRepository
+public class OrderRepository(WriteDbContext context) : IOrderRepository
 {
     public IQueryable<Order> GetQueryable()
     {

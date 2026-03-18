@@ -1,8 +1,10 @@
 using Application.Interfaces;
-using Application.Interfaces.Repositories;
 using Application.Interfaces.DTOs;
+using Application.Interfaces.Repositories.WriteRepositores;
+using Application.Interfaces.Publish;
 using Application.Product.Commands;
 using Application.Product.DTOs;
+using Application.IntegrationEvents.ProductEvents;
 
 
 namespace UnitTests.Application.Product;
@@ -12,6 +14,7 @@ public class CreateProductCommandHandlerTests
     private readonly Mock<IProductRepository> _productRepo = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IImageService> _imageService = new();
+    private readonly Mock<IEventPublisher> _eventPublisher = new();
     private readonly CreateProductCommandHandler _handler;
 
     public CreateProductCommandHandlerTests()
@@ -19,7 +22,8 @@ public class CreateProductCommandHandlerTests
         _handler = new CreateProductCommandHandler(
             _productRepo.Object,
             _unitOfWork.Object,
-            _imageService.Object);
+            _imageService.Object,
+            _eventPublisher.Object);
     }
 
     [Fact]
@@ -105,7 +109,12 @@ public class CreateProductCommandHandlerTests
         var result = await _handler.Handle(command, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value!.PictureUrl.Should().Be("https://cdn/img.jpg");
-        result.Value.PublicId.Should().Be("pub123");
+
+        _eventPublisher.Verify(e => e.PublishEventAsync(
+            It.Is<ProductCreatedIntegrationEvent>(ev =>
+                ev.Name == dto.Name &&
+                ev.PictureUrl == "https://cdn/img.jpg" &&
+                ev.PublicId == "pub123"),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 }

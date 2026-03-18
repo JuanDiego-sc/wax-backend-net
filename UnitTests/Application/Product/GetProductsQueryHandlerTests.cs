@@ -1,35 +1,39 @@
-using Application.Interfaces.Repositories;
-using Application.Product.Extensions;
+using Application.Interfaces.Repositories.ReadRepositories;
+using Application.Product.DTOs;
 using Application.Product.Queries;
-using Microsoft.EntityFrameworkCore;
+using Application.Product.Extensions;
 using Moq;
-using Persistence;
-using UnitTests.Helpers.Fixtures;
+using UnitTests.Helpers;
 
 namespace UnitTests.Application.Product;
 
 public class GetProductsQueryHandlerTests
 {
-    private AppDbContext CreateInMemoryContext()
+    private ProductDto CreateDto(string name = "N", string brand = "B", string type = "T") => new()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        return new AppDbContext(options);
-    }
+        Id = Guid.NewGuid().ToString(),
+        Name = name,
+        Description = "D",
+        Price = 1000,
+        PictureUrl = "P",
+        Brand = brand,
+        Type = type,
+        QuantityInStock = 10,
+        PublicId = null
+    };
 
     [Fact]
     public async Task Handle_WithNoFilters_ReturnsAllProducts()
     {
-        using var context = CreateInMemoryContext();
-        context.Products.AddRange(
-            ProductFixtures.CreateProduct(name: "Alpha"),
-            ProductFixtures.CreateProduct(name: "Beta"),
-            ProductFixtures.CreateProduct(name: "Gamma"));
-        await context.SaveChangesAsync();
+        var data = new TestAsyncEnumerable<ProductDto>(new List<ProductDto>
+        {
+            CreateDto(name: "Alpha"),
+            CreateDto(name: "Beta"),
+            CreateDto(name: "Gamma")
+        });
 
-        var repoMock = new Mock<IProductRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.Products.AsQueryable());
+        var repoMock = new Mock<IProductReadRepository>();
+        repoMock.Setup(r => r.GetQueryable()).Returns(data);
 
         var handler = new GetProductsQueryHandler(repoMock.Object);
         var query = new GetProductsQuery { ProductParams = new ProductParams { PageNumber = 1, PageSize = 10 } };
@@ -43,15 +47,15 @@ public class GetProductsQueryHandlerTests
     [Fact]
     public async Task Handle_WithSearchTerm_FiltersByName()
     {
-        using var context = CreateInMemoryContext();
-        context.Products.AddRange(
-            ProductFixtures.CreateProduct(name: "Candle Light"),
-            ProductFixtures.CreateProduct(name: "Wax Seal"),
-            ProductFixtures.CreateProduct(name: "Candle Holder"));
-        await context.SaveChangesAsync();
+        var data = new TestAsyncEnumerable<ProductDto>(new List<ProductDto>
+        {
+            CreateDto(name: "Candle Light"),
+            CreateDto(name: "Wax Seal"),
+            CreateDto(name: "Candle Holder")
+        });
 
-        var repoMock = new Mock<IProductRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.Products.AsQueryable());
+        var repoMock = new Mock<IProductReadRepository>();
+        repoMock.Setup(r => r.GetQueryable()).Returns(data);
 
         var handler = new GetProductsQueryHandler(repoMock.Object);
         var query = new GetProductsQuery
@@ -68,15 +72,15 @@ public class GetProductsQueryHandlerTests
     [Fact]
     public async Task Handle_WithBrandFilter_FiltersByBrand()
     {
-        using var context = CreateInMemoryContext();
-        context.Products.AddRange(
-            ProductFixtures.CreateProduct(name: "A", brand: "WaxCo"),
-            ProductFixtures.CreateProduct(name: "B", brand: "OtherBrand"),
-            ProductFixtures.CreateProduct(name: "C", brand: "WaxCo"));
-        await context.SaveChangesAsync();
+        var data = new TestAsyncEnumerable<ProductDto>(new List<ProductDto>
+        {
+            CreateDto(name: "A", brand: "WaxCo"),
+            CreateDto(name: "B", brand: "OtherBrand"),
+            CreateDto(name: "C", brand: "WaxCo")
+        });
 
-        var repoMock = new Mock<IProductRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.Products.AsQueryable());
+        var repoMock = new Mock<IProductReadRepository>();
+        repoMock.Setup(r => r.GetQueryable()).Returns(data);
 
         var handler = new GetProductsQueryHandler(repoMock.Object);
         var query = new GetProductsQuery
@@ -93,13 +97,14 @@ public class GetProductsQueryHandlerTests
     [Fact]
     public async Task Handle_ReturnsPagedResults_WhenExceedsPageSize()
     {
-        using var context = CreateInMemoryContext();
+        var list = new List<ProductDto>();
         for (var i = 1; i <= 5; i++)
-            context.Products.Add(ProductFixtures.CreateProduct(name: $"Product {i}"));
-        await context.SaveChangesAsync();
+            list.Add(CreateDto(name: $"Product {i}"));
 
-        var repoMock = new Mock<IProductRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.Products.AsQueryable());
+        var data = new TestAsyncEnumerable<ProductDto>(list);
+
+        var repoMock = new Mock<IProductReadRepository>();
+        repoMock.Setup(r => r.GetQueryable()).Returns(data);
 
         var handler = new GetProductsQueryHandler(repoMock.Object);
         var query = new GetProductsQuery

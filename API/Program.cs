@@ -3,13 +3,17 @@ using Application.Basket.Commands;
 using Application.Basket.Interfaces;
 using Application.Core.Validations;
 using Application.Interfaces;
-using Application.Interfaces.Repositories;
+using Application.Interfaces.Publish;
+using Application.Interfaces.Repositories.ReadRepositories;
+using Application.Interfaces.Repositories.WriteRepositores;
 using Domain.Entities;
 using Infrastructure.Cookies;
 using Infrastructure.Email;
 using Infrastructure.Images;
+using Infrastructure.Messaging;
 using Infrastructure.Payments;
 using Infrastructure.Repositories;
+using Infrastructure.Repositories.ReadRepositories;
 using Infrastructure.Security;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
@@ -22,9 +26,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
+builder.Services.AddDbContext<WriteDbContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("WriteConnection"));
+});
+
+builder.Services.AddDbContext<ReadDbContext>(options =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("ReadConnection"));
+    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
 
 builder.Services.AddCors();
@@ -36,7 +47,8 @@ builder.Services.AddMediatR(x =>
 
 builder.Services.AddMassTransit(configuration =>
 {
-    configuration.AddEntityFrameworkOutbox<AppDbContext>(options =>
+    configuration.AddConsumers(typeof(Infrastructure.AssemblyMarker).Assembly);
+    configuration.AddEntityFrameworkOutbox<WriteDbContext>(options =>
     {
         options.UsePostgres();
         options.UseBusOutbox();
@@ -72,16 +84,17 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<ISupportTicketRepository, SupportTicketRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+builder.Services.AddScoped<IProductReadRepository, ProductReadRepository>();
+
+builder.Services.AddScoped<IEventPublisher, EventPublisher>();
+
 builder.Services.AddIdentityApiEndpoints<User>(options =>
 {
     options.User.RequireUniqueEmail = true;
     options.SignIn.RequireConfirmedEmail = false;
 })
 .AddRoles<IdentityRole>()
-.AddEntityFrameworkStores<AppDbContext>();
-
-builder.Services.Configure<CloudinarySettings>(builder.Configuration
-    .GetSection("CloudinarySettings"));
+.AddEntityFrameworkStores<WriteDbContext>();
 
 var app = builder.Build();
 
@@ -105,7 +118,7 @@ using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 try
 {
-    var context = services.GetRequiredService<AppDbContext>();
+    var context = services.GetRequiredService<WriteDbContext>();
     //var userManager = services.GetRequiredService<UserManager<User>>();
     await context.Database.MigrateAsync();
     //await DbInitializer.SeedData(context, userManager);

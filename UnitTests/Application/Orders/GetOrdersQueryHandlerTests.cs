@@ -1,4 +1,5 @@
 using Application.Interfaces.Repositories;
+using Application.Interfaces.Repositories.WriteRepositores;
 using Application.Orders.Queries;
 using Domain.OrderAggregate;
 using Microsoft.EntityFrameworkCore;
@@ -10,12 +11,12 @@ namespace UnitTests.Application.Orders;
 
 public class GetOrdersQueryHandlerTests
 {
-    private AppDbContext CreateInMemoryContext()
+    private static WriteDbContext CreateInMemoryContext()
     {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
+        var options = new DbContextOptionsBuilder<WriteDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
-        return new AppDbContext(options);
+        return new WriteDbContext(options);
     }
 
     [Fact]

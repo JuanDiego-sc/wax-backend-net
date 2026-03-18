@@ -1,6 +1,7 @@
 using Application.Core;
 using Application.Core.Pagination;
 using Application.Interfaces.Repositories;
+using Application.Interfaces.Repositories.WriteRepositores;
 using Application.SupportAssist.DTOs;
 using Application.SupportAssist.Extensions;
 using MediatR;

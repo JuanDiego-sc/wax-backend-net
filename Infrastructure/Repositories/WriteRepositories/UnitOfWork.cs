@@ -1,9 +1,10 @@
 using Application.Interfaces;
+using Application.Interfaces.Repositories.WriteRepositores;
 using Persistence;
 
 namespace Infrastructure.Repositories;
 
-public class UnitOfWork(AppDbContext context) : IUnitOfWork
+public class UnitOfWork(WriteDbContext context) : IUnitOfWork
 {
     public async Task<bool> CompleteAsync(CancellationToken cancellationToken)
     {

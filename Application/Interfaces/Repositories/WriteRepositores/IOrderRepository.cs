@@ -1,9 +1,6 @@
-using Application.Core.Pagination;
-using Application.Orders.DTOs;
-using Application.Orders.Extensions;
 using Domain.OrderAggregate;
 
-namespace Application.Interfaces.Repositories;
+namespace Application.Interfaces.Repositories.WriteRepositores;
 
 public interface IOrderRepository
 {

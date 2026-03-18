@@ -1,5 +1,6 @@
 using Application.Basket.Queries;
 using Application.Interfaces.Repositories;
+using Application.Interfaces.Repositories.WriteRepositores;
 using UnitTests.Helpers.Fixtures;
 
 namespace UnitTests.Application.Basket;
