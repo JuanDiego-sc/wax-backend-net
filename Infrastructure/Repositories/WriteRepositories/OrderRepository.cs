@@ -1,10 +1,9 @@
-using Application.Interfaces.Repositories;
-using Application.Interfaces.Repositories.WriteRepositores;
+using Application.Interfaces.Repositories.WriteRepositories;
 using Domain.OrderAggregate;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
-namespace Infrastructure.Repositories;
+namespace Infrastructure.Repositories.WriteRepositories;
 
 public class OrderRepository(WriteDbContext context) : IOrderRepository
 {

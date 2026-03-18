@@ -9,7 +9,10 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
     public void Configure(EntityTypeBuilder<Order> builder)
     {
         builder.HasKey(o => o.Id);
+        builder.Property(o => o.BuyerEmail).IsRequired().HasMaxLength(200);
+        builder.Property(o => o.PaymentIntentId).IsRequired().HasMaxLength(200);
         
+        //todo: in the write approach this config must be an objetc 
         builder.OwnsOne(o => o.BillingAddress, ba =>
         {
             ba.Property(a => a.Name).HasColumnName("Billing_Address");
@@ -20,7 +23,8 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             ba.Property(a => a.PostalCode).HasColumnName("Billing_PostalCode");
             ba.Property(a => a.Country).HasColumnName("Billing_Country");
         });
-
+        
+        //todo: in the write approach this config must be an objetc 
         builder.OwnsOne(o => o.PaymentSummary, ps =>
         {
             ps.Property(p => p.Last4).HasColumnName("Payment_Last4");

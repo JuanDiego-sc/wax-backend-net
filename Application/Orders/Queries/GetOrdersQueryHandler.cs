@@ -1,7 +1,6 @@
 using Application.Core;
 using Application.Core.Pagination;
-using Application.Interfaces.Repositories;
-using Application.Interfaces.Repositories.WriteRepositores;
+using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Orders.DTOs;
 using Application.Orders.Extensions;
 using Domain.OrderAggregate;

@@ -1,6 +1,6 @@
 using Domain.OrderAggregate;
 
-namespace Application.Interfaces.Repositories.WriteRepositores;
+namespace Application.Interfaces.Repositories.WriteRepositories;
 
 public interface IOrderRepository
 {

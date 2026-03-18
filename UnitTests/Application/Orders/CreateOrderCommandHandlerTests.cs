@@ -1,13 +1,12 @@
 using Application.Interfaces;
-using Application.Interfaces.Repositories;
+using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.WriteRepositores;
+using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Orders.Commands;
 using Application.Orders.DTOs;
 using Domain.Entities;
 using Domain.OrderAggregate;
-using Moq;
 using UnitTests.Helpers.Fixtures;
-using FluentAssertions;
 
 namespace UnitTests.Application.Orders;
 
@@ -17,6 +16,7 @@ public class CreateOrderCommandHandlerTests
     private readonly Mock<IOrderRepository> _orderRepo = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IUserAccessor> _userAccessor = new();
+    private readonly Mock<IEventPublisher> _eventPublisher = new();
     private readonly CreateOrderCommandHandler _handler;
 
     public CreateOrderCommandHandlerTests()
@@ -25,7 +25,8 @@ public class CreateOrderCommandHandlerTests
             _basketRepo.Object,
             _orderRepo.Object,
             _unitOfWork.Object,
-            _userAccessor.Object);
+            _userAccessor.Object,
+            _eventPublisher.Object);
     }
 
     private static CreateOrderDto BuildOrderDto() => new()

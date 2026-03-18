@@ -1,5 +1,6 @@
 using Application.IntegrationEvents.ProductEvents;
 using Infrastructure.Messaging.Consumers;
+using Infrastructure.Messaging.Consumers.ProductConsumers;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Moq;

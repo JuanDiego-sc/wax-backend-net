@@ -1,5 +1,6 @@
 using Application.IntegrationEvents.ProductEvents;
 using Infrastructure.Messaging.Consumers;
+using Infrastructure.Messaging.Consumers.ProductConsumers;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -10,7 +11,7 @@ namespace UnitTests.Infrastructure.Messaging.Consumers;
 
 public class ProductDeletedConsumerTests
 {
-    private ReadDbContext CreateInMemoryContext()
+    private static ReadDbContext CreateInMemoryContext()
     {
         var options = new DbContextOptionsBuilder<ReadDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())

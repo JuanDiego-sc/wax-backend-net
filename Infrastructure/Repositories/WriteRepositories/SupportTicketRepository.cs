@@ -1,11 +1,10 @@
-using Application.Interfaces.Repositories;
+
 using Application.Interfaces.Repositories.WriteRepositores;
 using Domain.SupportAssistAggregate;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
-namespace Infrastructure.Repositories;
-
+namespace Infrastructure.Repositories.WriteRepositories;
 public class SupportTicketRepository(WriteDbContext context) : ISupportTicketRepository
 {
     public IQueryable<SupportTicket> GetQueryable()

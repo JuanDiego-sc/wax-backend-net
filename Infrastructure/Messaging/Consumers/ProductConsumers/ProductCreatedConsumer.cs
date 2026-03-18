@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Persistence;
 using Persistence.ReadModels;
 
-namespace Infrastructure.Messaging.Consumers;
+namespace Infrastructure.Messaging.Consumers.ProductConsumers;
 
 public class ProductCreatedConsumer(ReadDbContext readContext) : IConsumer<ProductCreatedIntegrationEvent>
 {

@@ -28,7 +28,6 @@
     <Folder Include="Product/Extensions/" />
     <Folder Include="Product/Queries/" />
     <Folder Include="Product/Validators/" />
-    <Folder Include="Services/" />
     <Folder Include="SupportAssist\Validators\" />
     <Folder Include="User/" />
     <Folder Include="User/DTOs/" />

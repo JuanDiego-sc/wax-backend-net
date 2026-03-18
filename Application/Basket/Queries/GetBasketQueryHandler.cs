@@ -1,13 +1,13 @@
 using Application.Basket.DTOs;
 using Application.Basket.Extensions;
 using Application.Core;
-using Application.Interfaces.Repositories;
 using Application.Interfaces.Repositories.WriteRepositores;
 using MediatR;
 
 namespace Application.Basket.Queries;
 
-public class GetBasketQueryHandler(IBasketRepository basketRepository) : IRequestHandler<GetBasketQuery, Result<BasketDto>>
+public class GetBasketQueryHandler(IBasketRepository basketRepository) 
+    : IRequestHandler<GetBasketQuery, Result<BasketDto>>
 {
     public async Task<Result<BasketDto>> Handle(GetBasketQuery request, CancellationToken cancellationToken)
     {

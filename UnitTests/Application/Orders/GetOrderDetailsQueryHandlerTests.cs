@@ -1,7 +1,6 @@
-using Application.Interfaces.Repositories.WriteRepositores;
+using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Orders.Queries;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 using Persistence;
 using UnitTests.Helpers.Fixtures;
 

@@ -1,5 +1,5 @@
-using Application.Interfaces.Repositories;
-using Application.Interfaces.Repositories.WriteRepositores;
+
+using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Orders.Queries;
 using Domain.OrderAggregate;
 using Microsoft.EntityFrameworkCore;

@@ -14,8 +14,23 @@ public static class OrderExtensions
             BuyerEmail = order.BuyerEmail,
             CreateAt = order.CreatedAt,
             UpdatedAt = order.UpdatedAt,
-            ShippingAddress = order.BillingAddress,
-            PaymentSummary = order.PaymentSummary,
+            BillingAddress = new BillingAddressDto
+            {
+                Name = order.BillingAddress.Name,
+                Line1 = order.BillingAddress.Line1,
+                Line2 = order.BillingAddress.Line2,
+                City = order.BillingAddress.City,
+                State = order.BillingAddress.State,
+                PostalCode = order.BillingAddress.PostalCode,
+                Country = order.BillingAddress.Country
+            },
+            PaymentSummary = new PaymentSummaryDto
+            {
+                Last4 = order.PaymentSummary.Last4,
+                Brand = order.PaymentSummary.Brand,
+                ExpMonth = order.PaymentSummary.ExpMonth,
+                ExpYear = order.PaymentSummary.ExpYear
+            },
             DeliveryFee = order.DeliveryFee,
             Subtotal = order.Subtotal,
             OrderStatus = order.OrderStatus.ToString(),
@@ -38,8 +53,23 @@ public static class OrderExtensions
             BuyerEmail = order.BuyerEmail,
             CreateAt = order.CreatedAt,
             UpdatedAt = order.UpdatedAt,
-            ShippingAddress = order.BillingAddress,
-            PaymentSummary = order.PaymentSummary,
+            BillingAddress = new BillingAddressDto
+            {
+                Name = order.BillingAddress.Name,
+                Line1 = order.BillingAddress.Line1,
+                Line2 = order.BillingAddress.Line2,
+                City = order.BillingAddress.City,
+                State = order.BillingAddress.State,
+                PostalCode = order.BillingAddress.PostalCode,
+                Country = order.BillingAddress.Country
+            },
+            PaymentSummary = new PaymentSummaryDto
+            {
+                Last4 = order.PaymentSummary.Last4,
+                Brand = order.PaymentSummary.Brand,
+                ExpMonth = order.PaymentSummary.ExpMonth,
+                ExpYear = order.PaymentSummary.ExpYear
+            },
             DeliveryFee = order.DeliveryFee,
             Subtotal = order.Subtotal,
             OrderStatus = order.OrderStatus.ToString(),

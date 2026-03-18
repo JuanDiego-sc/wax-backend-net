@@ -3,7 +3,7 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
-namespace Infrastructure.Messaging.Consumers;
+namespace Infrastructure.Messaging.Consumers.ProductConsumers;
 
 
 public class ProductDeletedConsumer(ReadDbContext readContext) : IConsumer<ProductDeletedIntegrationEvent>

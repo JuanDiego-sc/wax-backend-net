@@ -1,7 +1,10 @@
+using System.Text.Json;
 using Application.Core;
+using Application.IntegrationEvents.OrderEvents;
 using Application.Interfaces;
-using Application.Interfaces.Repositories;
+using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.WriteRepositores;
+using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Orders.DTOs;
 using Application.Orders.Extensions;
 using Domain.Entities;
@@ -14,7 +17,8 @@ public class CreateOrderCommandHandler(
     IBasketRepository basketRepository,
     IOrderRepository orderRepository,
     IUnitOfWork unitOfWork,
-    IUserAccessor userAccessor)
+    IUserAccessor userAccessor,
+    IEventPublisher eventPublisher)
     : IRequestHandler<CreateOrderCommand, Result<OrderDto>>
 {
     public async Task<Result<OrderDto>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
@@ -57,6 +61,30 @@ public class CreateOrderCommandHandler(
         {
             order.OrderItems = items;
         }
+        
+        await eventPublisher.PublishEventAsync(new OrderCreatedIntegrationEvent
+        {
+            OrderId = order.Id,
+            BuyerEmail = order.BuyerEmail,
+            OrderStatus = order.OrderStatus.ToString(),
+            Subtotal = order.Subtotal,
+            DeliveryFee = order.DeliveryFee,
+            Total = order.GetTotal(),
+            BillingName = order.BillingAddress.Name,
+            BillingLine1 = order.BillingAddress.Line1,
+            BillingLine2 = order.BillingAddress.Line2,
+            BillingCity = order.BillingAddress.City,
+            BillingState = order.BillingAddress.State,
+            BillingPostalCode = order.BillingAddress.PostalCode,
+            BillingCountry = order.BillingAddress.Country,
+            PaymentLast4 = order.PaymentSummary.Last4,
+            PaymentBrand = order.PaymentSummary.Brand,
+            PaymentExpMonth = order.PaymentSummary.ExpMonth,
+            PaymentExpYear = order.PaymentSummary.ExpYear,
+            OrderItems = JsonSerializer.Serialize(order.OrderItems),
+            PaymentIntentId = order.PaymentIntentId,
+            OccurredAt = DateTime.UtcNow
+        }, cancellationToken);
 
         var result = await unitOfWork.CompleteAsync(cancellationToken);
 

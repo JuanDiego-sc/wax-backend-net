@@ -40,7 +40,8 @@ public class CreateProductCommandHandler(
             Type = product.Type,
             Brand = product.Brand,
             QuantityInStock = product.QuantityInStock,
-            PublicId = product.PublicId
+            PublicId = product.PublicId,
+            OccurredAt = DateTime.UtcNow
         }, cancellationToken);
 
         var result = await unitOfWork.CompleteAsync(cancellationToken);
