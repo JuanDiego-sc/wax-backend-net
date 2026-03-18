@@ -1,115 +1,67 @@
+using System.Linq.Expressions;
 using System.Text.Json;
 using Application.Interfaces.Repositories.ReadRepositories;
 using Application.Orders.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
+using Persistence.ReadModels;
 
 namespace Infrastructure.Repositories.ReadRepositories;
 
 public class OrderReadRepository(ReadDbContext context) : IOrderReadRepository
 {
+    private static readonly Expression<Func<OrderReadModel, OrderDto>> MapToDto = o => new OrderDto
+    {
+        Id = o.Id,
+        BuyerEmail = o.BuyerEmail,
+        OrderStatus = o.OrderStatus,
+        Subtotal = o.Subtotal,
+        DeliveryFee = o.DeliveryFee,
+        Total = o.Total,
+        CreateAt = o.CreatedAt,
+        UpdatedAt = o.UpdatedAt ?? DateTime.MinValue,
+        BillingAddress = new BillingAddressDto
+        {
+            Name = o.BillingName,
+            Line1 = o.BillingLine1,
+            Line2 = o.BillingLine2,
+            City = o.BillingCity,
+            State = o.BillingState,
+            PostalCode = o.BillingPostalCode,
+            Country = o.BillingCountry
+        },
+        PaymentSummary = new PaymentSummaryDto
+        {
+            Last4 = o.PaymentLast4,
+            Brand = o.PaymentBrand,
+            ExpMonth = o.PaymentExpMonth,
+            ExpYear = o.PaymentExpYear
+        },
+        OrderItems = JsonSerializer.Deserialize<List<OrderItemDto>>(o.OrderItems, JsonSerializerOptions.Default) ??
+                     new List<OrderItemDto>()
+    };
+
     public async Task<OrderDto?> GetOrderByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         return await context.Orders
             .Where(o => o.Id == id)
-            .Select(o => new OrderDto
-            {
-                Id = o.Id,
-                BuyerEmail = o.BuyerEmail,
-                OrderStatus = o.OrderStatus,
-                Subtotal = o.Subtotal,
-                DeliveryFee = o.DeliveryFee,
-                Total = o.Total,
-                CreateAt = o.CreatedAt,
-                UpdatedAt = o.UpdatedAt ?? DateTime.MinValue,
-                BillingAddress = new BillingAddressDto
-                {
-                    Name = o.BillingName,
-                    Line1 = o.BillingLine1,
-                    Line2 = o.BillingLine2,
-                    City = o.BillingCity,
-                    State = o.BillingState,
-                    PostalCode = o.BillingPostalCode,
-                    Country = o.BillingCountry
-                },
-                PaymentSummary = new PaymentSummaryDto
-                {
-                    Last4 = o.PaymentLast4,
-                    Brand = o.PaymentBrand,
-                    ExpMonth = o.PaymentExpMonth,
-                    ExpYear = o.PaymentExpYear
-                },
-                OrderItems = JsonSerializer.Deserialize<List<OrderItemDto>>(o.OrderItems, JsonSerializerOptions.Default) ?? new List<OrderItemDto>()
-            })
+            .Select(MapToDto)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<OrderDto?> GetByPaymentIntentIdAsync(string paymentIntentId, CancellationToken cancellationToken = default)
+    public async Task<OrderDto?> GetByPaymentIntentIdAsync(string paymentIntentId,
+        CancellationToken cancellationToken = default)
     {
         return await context.Orders
             .Where(o => o.PaymentIntentId == paymentIntentId)
-            .Select(o => new OrderDto
-            {
-                Id = o.Id,
-                BuyerEmail = o.BuyerEmail,
-                OrderStatus = o.OrderStatus,
-                Subtotal = o.Subtotal,
-                DeliveryFee = o.DeliveryFee,
-                Total = o.Total,
-                CreateAt = o.CreatedAt,
-                UpdatedAt = o.UpdatedAt ?? DateTime.MinValue,
-                BillingAddress = new BillingAddressDto
-                {
-                    Name = o.BillingName,
-                    Line1 = o.BillingLine1,
-                    Line2 = o.BillingLine2,
-                    City = o.BillingCity,
-                    State = o.BillingState,
-                    PostalCode = o.BillingPostalCode,
-                    Country = o.BillingCountry
-                },
-                PaymentSummary = new PaymentSummaryDto
-                {
-                    Last4 = o.PaymentLast4,
-                    Brand = o.PaymentBrand,
-                    ExpMonth = o.PaymentExpMonth,
-                    ExpYear = o.PaymentExpYear
-                },
-                OrderItems = JsonSerializer.Deserialize<List<OrderItemDto>>(o.OrderItems, JsonSerializerOptions.Default) ?? new List<OrderItemDto>()
-            })
+            .Select(MapToDto)
             .FirstOrDefaultAsync(cancellationToken);
     }
-
+    
     public IQueryable<OrderDto> GetOrders()
     {
-        return context.Orders.Select(o => new OrderDto
-        {
-            Id = o.Id,
-            BuyerEmail = o.BuyerEmail,
-            OrderStatus = o.OrderStatus,
-            Subtotal = o.Subtotal,
-            DeliveryFee = o.DeliveryFee,
-            Total = o.Total,
-            CreateAt = o.CreatedAt,
-            UpdatedAt = o.UpdatedAt ?? DateTime.MinValue,
-            BillingAddress = new BillingAddressDto
-            {
-                Name = o.BillingName,
-                Line1 = o.BillingLine1,
-                Line2 = o.BillingLine2,
-                City = o.BillingCity,
-                State = o.BillingState,
-                PostalCode = o.BillingPostalCode,
-                Country = o.BillingCountry
-            },
-            PaymentSummary = new PaymentSummaryDto
-            {
-                Last4 = o.PaymentLast4,
-                Brand = o.PaymentBrand,
-                ExpMonth = o.PaymentExpMonth,
-                ExpYear = o.PaymentExpYear
-            },
-            OrderItems = JsonSerializer.Deserialize<List<OrderItemDto>>(o.OrderItems, JsonSerializerOptions.Default) ?? new List<OrderItemDto>()
-        });
+        return context.Orders.Select(MapToDto);
     }
+    
+    
 }

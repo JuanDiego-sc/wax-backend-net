@@ -13,5 +13,5 @@ public record OrderDto
     public required string OrderStatus { get; set; } 
     public required PaymentSummaryDto PaymentSummary { get; set; }
     public DateTime CreateAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }

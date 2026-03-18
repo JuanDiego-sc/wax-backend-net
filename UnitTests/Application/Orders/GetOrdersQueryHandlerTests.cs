@@ -1,5 +1,7 @@
 
-using Application.Interfaces.Repositories.WriteRepositories;
+using Application.Interfaces.Repositories.ReadRepositories;
+using Application.Orders.DTOs;
+using Application.Orders.Extensions;
 using Application.Orders.Queries;
 using Domain.OrderAggregate;
 using Microsoft.EntityFrameworkCore;
@@ -29,8 +31,8 @@ public class GetOrdersQueryHandlerTests
             OrderFixtures.CreateOrder());
         await context.SaveChangesAsync();
 
-        var repoMock = new Mock<IOrderRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.Orders.Include(o => o.OrderItems).AsQueryable());
+        var repoMock = new Mock<IOrderReadRepository>();
+        repoMock.Setup(r => r.GetOrders()).Returns(context.Orders.Include(o => o.OrderItems).ProjectToDto().AsQueryable());
 
         var handler = new GetOrdersQueryHandler(repoMock.Object);
         var query = new GetOrdersQuery
@@ -54,8 +56,8 @@ public class GetOrdersQueryHandlerTests
             OrderFixtures.CreateOrder(status: OrderStatus.Pending));
         await context.SaveChangesAsync();
 
-        var repoMock = new Mock<IOrderRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.Orders.Include(o => o.OrderItems).AsQueryable());
+        var repoMock = new Mock<IOrderReadRepository>();
+        repoMock.Setup(r => r.GetOrders()).Returns(context.Orders.Include(o => o.OrderItems).ProjectToDto().AsQueryable());
 
         var handler = new GetOrdersQueryHandler(repoMock.Object);
         var query = new GetOrdersQuery
@@ -77,8 +79,8 @@ public class GetOrdersQueryHandlerTests
             context.Orders.Add(OrderFixtures.CreateOrder());
         await context.SaveChangesAsync();
 
-        var repoMock = new Mock<IOrderRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.Orders.Include(o => o.OrderItems).AsQueryable());
+        var repoMock = new Mock<IOrderReadRepository>();
+        repoMock.Setup(r => r.GetOrders()).Returns(context.Orders.Include(o => o.OrderItems).ProjectToDto().AsQueryable());
 
         var handler = new GetOrdersQueryHandler(repoMock.Object);
         var query = new GetOrdersQuery

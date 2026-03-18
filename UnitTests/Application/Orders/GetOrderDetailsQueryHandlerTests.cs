@@ -1,6 +1,9 @@
-using Application.Interfaces.Repositories.WriteRepositories;
+using Application.Interfaces.Repositories.ReadRepositories;
+using Application.Orders.DTOs;
+using Application.Orders.Extensions;
 using Application.Orders.Queries;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Persistence;
 using UnitTests.Helpers.Fixtures;
 
@@ -22,8 +25,13 @@ public class GetOrderDetailsQueryHandlerTests
     {
         using var context = CreateInMemoryContext();
 
-        var repoMock = new Mock<IOrderRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.Orders.Include(o => o.OrderItems).AsQueryable());
+        var repoMock = new Mock<IOrderReadRepository>();
+        repoMock.Setup(r => r.GetOrderByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string id, CancellationToken ct) => 
+                context.Orders.Include(o => o.OrderItems)
+                    .Where(x => x.Id == id)
+                    .ProjectToDto()
+                    .FirstOrDefault());
 
         var handler = new GetOrderDetailsQueryHandler(repoMock.Object);
         var result = await handler.Handle(new GetOrderDetailsQuery { OrderId = "missing" }, CancellationToken.None);
@@ -41,8 +49,13 @@ public class GetOrderDetailsQueryHandlerTests
         context.Orders.Add(order);
         await context.SaveChangesAsync();
 
-        var repoMock = new Mock<IOrderRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.Orders.Include(o => o.OrderItems).AsQueryable());
+        var repoMock = new Mock<IOrderReadRepository>();
+        repoMock.Setup(r => r.GetOrderByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string id, CancellationToken ct) => 
+                context.Orders.Include(o => o.OrderItems)
+                    .Where(x => x.Id == id)
+                    .ProjectToDto()
+                    .FirstOrDefault());
 
         var handler = new GetOrderDetailsQueryHandler(repoMock.Object);
         var result = await handler.Handle(new GetOrderDetailsQuery { OrderId = order.Id }, CancellationToken.None);
