@@ -37,7 +37,6 @@ public class UpdateProductCommandHandler(
             product.PublicId = imageResult.PublicId;
         }
         
-        //TODO: FIX THIS EVENT
         await eventPublisher.PublishEventAsync(new ProductUpdatedIntegrationEvent
         {
             ProductId = product.Id,

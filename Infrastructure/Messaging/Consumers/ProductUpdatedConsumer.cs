@@ -44,6 +44,8 @@ public class ProductUpdatedConsumer(ReadDbContext readContext) : IConsumer<Produ
             readModel.PublicId = message.PublicId;
             readModel.UpdatedAt = message.OccurredAt;
             readModel.LastSyncedAt = DateTime.UtcNow;
+            
+            readContext.Entry(readModel).State = EntityState.Modified;
         }
 
         await readContext.SaveChangesAsync(context.CancellationToken);
