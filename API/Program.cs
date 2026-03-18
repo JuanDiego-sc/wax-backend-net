@@ -53,15 +53,15 @@ builder.Services.AddMassTransit(configuration =>
         options.UsePostgres();
         options.UseBusOutbox();
     });
-    configuration.UsingRabbitMq((context, configuration) =>
+    configuration.UsingRabbitMq((context, config) =>
     {
-        configuration.Host(builder.Configuration["RabbitMQ:Host"], host =>
+        config.Host(builder.Configuration["RabbitMQ:Host"], host =>
         {
             host.Username(builder.Configuration["RabbitMQ:Username"]!);
             host.Password(builder.Configuration["RabbitMQ:Password"]!);
         });
-        configuration.UseMessageRetry(retry => retry.Interval(3, TimeSpan.FromSeconds(5)));
-        configuration.ConfigureEndpoints(context);
+        config.UseMessageRetry(retry => retry.Interval(3, TimeSpan.FromSeconds(5)));
+        config.ConfigureEndpoints(context);
     });
 });
 

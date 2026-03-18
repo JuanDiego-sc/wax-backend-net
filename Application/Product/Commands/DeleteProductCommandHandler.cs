@@ -1,5 +1,7 @@
 using Application.Core;
+using Application.IntegrationEvents.ProductEvents;
 using Application.Interfaces;
+using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Repositories.WriteRepositores;
 using MediatR;
@@ -9,7 +11,8 @@ namespace Application.Product.Commands;
 public class DeleteProductCommandHandler(
     IProductRepository productRepository,
     IUnitOfWork unitOfWork,
-    IImageService imageService)
+    IImageService imageService,
+    IEventPublisher eventPublisher)
     : IRequestHandler<DeleteProductCommand, Result<Unit>>
 {
     public async Task<Result<Unit>> Handle(DeleteProductCommand request, CancellationToken cancellationToken)
@@ -22,6 +25,11 @@ public class DeleteProductCommandHandler(
         {
             await imageService.DeleteImage(product.PublicId);
         }
+        
+        await eventPublisher.PublishEventAsync(new ProductDeletedIntegrationEvent
+        {
+            ProductId = request.ProductId,
+        }, cancellationToken);
 
         productRepository.Remove(product);
 

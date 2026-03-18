@@ -26,8 +26,7 @@ services:
       POSTGRES_PASSWORD: wax_secret
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
-
+      
 volumes:
   rabbitmq_data:
   postgres_data:

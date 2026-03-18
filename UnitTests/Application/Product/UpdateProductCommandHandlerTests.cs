@@ -1,6 +1,7 @@
 using Application.Interfaces;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.DTOs;
+using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.WriteRepositores;
 using Application.Product.Commands;
 using Application.Product.DTOs;
@@ -14,6 +15,7 @@ public class UpdateProductCommandHandlerTests
     private readonly Mock<IProductRepository> _productRepo = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IImageService> _imageService = new();
+    private readonly Mock<IEventPublisher> _eventPublisher = new();
     private readonly UpdateProductCommandHandler _handler;
 
     public UpdateProductCommandHandlerTests()
@@ -21,7 +23,9 @@ public class UpdateProductCommandHandlerTests
         _handler = new UpdateProductCommandHandler(
             _productRepo.Object,
             _unitOfWork.Object,
-            _imageService.Object);
+            _imageService.Object,
+            _eventPublisher.Object
+            );
     }
 
     [Fact]

@@ -1,4 +1,3 @@
-using System;
 using Domain.Entities;
 using Domain.OrderAggregate;
 using Domain.SupportAssistAggregate;
@@ -29,7 +28,6 @@ public class WriteDbContext(DbContextOptions<WriteDbContext> options) : Identity
         builder.ApplyConfiguration(new BasketConfiguration());
         builder.ApplyConfiguration(new BasketItemConfiguration());
         builder.ApplyConfiguration(new SupportTicketConfiguration());
-        builder.ApplyConfiguration(new ProductConfiguration());
         
         //MassTransit outbox tables
         builder.AddInboxStateEntity();

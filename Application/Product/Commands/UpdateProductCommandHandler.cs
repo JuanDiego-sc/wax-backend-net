@@ -1,5 +1,7 @@
 using Application.Core;
+using Application.IntegrationEvents.ProductEvents;
 using Application.Interfaces;
+using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Repositories.WriteRepositores;
 using MediatR;
@@ -9,7 +11,8 @@ namespace Application.Product.Commands;
 public class UpdateProductCommandHandler(
     IProductRepository productRepository,
     IUnitOfWork unitOfWork,
-    IImageService imageService)
+    IImageService imageService,
+    IEventPublisher eventPublisher)
     : IRequestHandler<UpdateProductCommand, Result<Unit>>
 {
     public async Task<Result<Unit>> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
@@ -33,6 +36,20 @@ public class UpdateProductCommandHandler(
             product.PictureUrl = imageResult.Url;
             product.PublicId = imageResult.PublicId;
         }
+        
+        //TODO: FIX THIS EVENT
+        await eventPublisher.PublishEventAsync(new ProductUpdatedIntegrationEvent
+        {
+            ProductId = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            Price = product.Price,
+            PictureUrl = product.PictureUrl,
+            Type = product.Type,
+            Brand = product.Brand,
+            QuantityInStock = product.QuantityInStock,
+            PublicId = product.PublicId
+        }, cancellationToken);
         
         var result = await unitOfWork.CompleteAsync(cancellationToken);
         return !result 

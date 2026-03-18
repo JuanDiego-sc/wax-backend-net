@@ -31,10 +31,11 @@ public class ProductController : BaseApiController
     }
 
     [HttpPut]
-    public async Task<ActionResult> UpdateProduct(UpdateProductDto productDto, IFormFile? file)
+    public async Task<ActionResult> UpdateProduct([FromForm] UpdateProductDto productDto, IFormFile? file)
     {
         ImageUploadRequest? imageUploadRequest = null;
-        imageUploadRequest = new ImageUploadRequest(file!.OpenReadStream(), file.FileName, file.ContentType);
+        if(file != null)
+            imageUploadRequest = new ImageUploadRequest(file!.OpenReadStream(), file.FileName, file.ContentType);
         
         return await HandleCommand(new UpdateProductCommand { ProductDto = productDto, ImageRequest = imageUploadRequest });
     }

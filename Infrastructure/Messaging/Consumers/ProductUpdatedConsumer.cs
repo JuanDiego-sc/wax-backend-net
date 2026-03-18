@@ -6,7 +6,7 @@ using Persistence.ReadModels;
 
 namespace Infrastructure.Messaging.Consumers;
 
-public class ProductUpdatedConsumer(ReadDbContext readContext) : IConsumer
+public class ProductUpdatedConsumer(ReadDbContext readContext) : IConsumer<ProductUpdatedIntegrationEvent>
 {
     public async Task Consume(ConsumeContext<ProductUpdatedIntegrationEvent> context)
     {

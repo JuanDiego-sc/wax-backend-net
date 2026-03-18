@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories;
 using Application.Interfaces.Repositories.WriteRepositores;
 using Application.Product.Commands;
@@ -13,6 +14,7 @@ public class DeleteProductCommandHandlerTests
     private readonly Mock<IProductRepository> _productRepo = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly Mock<IImageService> _imageService = new();
+    private readonly Mock<IEventPublisher> _eventPublisher = new();
     private readonly DeleteProductCommandHandler _handler;
 
     public DeleteProductCommandHandlerTests()
@@ -20,7 +22,8 @@ public class DeleteProductCommandHandlerTests
         _handler = new DeleteProductCommandHandler(
             _productRepo.Object,
             _unitOfWork.Object,
-            _imageService.Object);
+            _imageService.Object,
+            _eventPublisher.Object);
     }
 
     [Fact]
