@@ -1,12 +1,13 @@
 using Application.IntegrationEvents.ProductEvents;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Persistence;
 using Persistence.ReadModels;
 
 namespace Infrastructure.Messaging.Consumers.ProductConsumers;
 
-public class ProductUpdatedConsumer(ReadDbContext readContext) : IConsumer<ProductUpdatedIntegrationEvent>
+public class ProductUpdatedConsumer(ReadDbContext readContext, ILogger<ProductUpdatedConsumer> logger) : IConsumer<ProductUpdatedIntegrationEvent>
 {
     public async Task Consume(ConsumeContext<ProductUpdatedIntegrationEvent> context)
     {
@@ -17,6 +18,7 @@ public class ProductUpdatedConsumer(ReadDbContext readContext) : IConsumer<Produ
 
         if (readModel == null)
         {
+            logger.LogInformation($"Product with id {message.ProductId} not found, creating a new one");
             readContext.Products.Add(new ProductReadModel
             {
                 Id = message.ProductId,
@@ -34,6 +36,7 @@ public class ProductUpdatedConsumer(ReadDbContext readContext) : IConsumer<Produ
         }
         else
         {
+            logger.LogInformation($"Product with id {message.ProductId} found, updating new one");
             readModel.Name = message.Name;
             readModel.Description = message.Description;
             readModel.Price = message.Price;
@@ -49,5 +52,6 @@ public class ProductUpdatedConsumer(ReadDbContext readContext) : IConsumer<Produ
         }
 
         await readContext.SaveChangesAsync(context.CancellationToken);
+        logger.LogInformation($"Product with id {message.ProductId} updated successfully");
     }
 }

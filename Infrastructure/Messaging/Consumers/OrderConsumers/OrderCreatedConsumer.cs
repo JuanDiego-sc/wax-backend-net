@@ -1,12 +1,15 @@
 using Application.IntegrationEvents.OrderEvents;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Persistence;
 using Persistence.ReadModels;
+using Stripe.Climate;
 
 namespace Infrastructure.Messaging.Consumers.OrderConsumers;
 
-public class OrderCreatedConsumer(ReadDbContext readContext) : IConsumer<OrderCreatedIntegrationEvent>
+public class OrderCreatedConsumer(ReadDbContext readContext, ILogger<OrderCreatedConsumer> logger) 
+    : IConsumer<OrderCreatedIntegrationEvent>
 {
     public async Task Consume(ConsumeContext<OrderCreatedIntegrationEvent> context)
     {
@@ -14,8 +17,12 @@ public class OrderCreatedConsumer(ReadDbContext readContext) : IConsumer<OrderCr
 
         var alreadyExists = await readContext.Orders
             .AnyAsync(o => o.Id == message.OrderId, context.CancellationToken);
-            
-        if (alreadyExists) return;
+
+        if (alreadyExists)
+        {
+            logger.LogWarning($"Order with id {message.OrderId} has already been added");
+            return;
+        }
 
         var readModel = new OrderReadModel
         {
@@ -44,5 +51,6 @@ public class OrderCreatedConsumer(ReadDbContext readContext) : IConsumer<OrderCr
 
         readContext.Orders.Add(readModel);
         await readContext.SaveChangesAsync(context.CancellationToken);
+        logger.LogInformation($"Order with id {message.OrderId} has been added");
     }
 }

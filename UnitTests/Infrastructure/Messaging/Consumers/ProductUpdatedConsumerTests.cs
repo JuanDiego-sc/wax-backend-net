@@ -3,6 +3,7 @@ using Infrastructure.Messaging.Consumers;
 using Infrastructure.Messaging.Consumers.ProductConsumers;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Persistence;
 using Persistence.ReadModels;
@@ -17,6 +18,12 @@ public class ProductUpdatedConsumerTests
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         return new ReadDbContext(options);
+    }
+    
+    private static ILogger<ProductUpdatedConsumer> CreateLogger()
+    {
+        var logger = new Mock<ILogger<ProductUpdatedConsumer>>();
+        return logger.Object;
     }
 
     private ProductUpdatedIntegrationEvent CreateEvent(string productId = "pid1", string name = "Updated Product") => new()
@@ -54,7 +61,8 @@ public class ProductUpdatedConsumerTests
         context.Products.Add(existingProduct);
         await context.SaveChangesAsync();
 
-        var consumer = new ProductUpdatedConsumer(context);
+        var logger = CreateLogger();
+        var consumer = new ProductUpdatedConsumer(context, logger);
         var @event = CreateEvent(productId: "update-test", name: "New Name");
 
         var contextMock = new Mock<ConsumeContext<ProductUpdatedIntegrationEvent>>();
@@ -81,7 +89,8 @@ public class ProductUpdatedConsumerTests
     public async Task Consume_WhenProductDoesNotExist_CreatesNewProduct()
     {
         using var context = CreateInMemoryContext();
-        var consumer = new ProductUpdatedConsumer(context);
+        var logger = CreateLogger();
+        var consumer = new ProductUpdatedConsumer(context, logger);
         var @event = CreateEvent(productId: "new-product", name: "New Product");
 
         var contextMock = new Mock<ConsumeContext<ProductUpdatedIntegrationEvent>>();
@@ -120,7 +129,8 @@ public class ProductUpdatedConsumerTests
         context.Products.Add(existingProduct);
         await context.SaveChangesAsync();
 
-        var consumer = new ProductUpdatedConsumer(context);
+        var logger = CreateLogger();
+        var consumer = new ProductUpdatedConsumer(context, logger);
         var @event = CreateEvent(productId: "timestamp-test");
 
         var contextMock = new Mock<ConsumeContext<ProductUpdatedIntegrationEvent>>();

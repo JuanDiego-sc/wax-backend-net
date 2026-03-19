@@ -1,12 +1,14 @@
 using Application.IntegrationEvents.ProductEvents;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Persistence;
 using Persistence.ReadModels;
 
 namespace Infrastructure.Messaging.Consumers.ProductConsumers;
 
-public class ProductCreatedConsumer(ReadDbContext readContext) : IConsumer<ProductCreatedIntegrationEvent>
+public class ProductCreatedConsumer(ReadDbContext readContext, ILogger<ProductCreatedConsumer> logger) 
+    : IConsumer<ProductCreatedIntegrationEvent>
 {
     public async Task Consume(ConsumeContext<ProductCreatedIntegrationEvent> context)
     {
@@ -14,7 +16,11 @@ public class ProductCreatedConsumer(ReadDbContext readContext) : IConsumer<Produ
 
         var alreadyExists = await readContext.Products
             .AnyAsync(p => p.Id == message.ProductId, context.CancellationToken);
-        if (alreadyExists) return;
+        if (alreadyExists)
+        {
+            logger.LogInformation($"Product with id {message.ProductId} has already been added");
+            return;
+        }
         
         var readModel = new ProductReadModel
         {
@@ -33,5 +39,6 @@ public class ProductCreatedConsumer(ReadDbContext readContext) : IConsumer<Produ
         
         readContext.Products.Add(readModel);
         await readContext.SaveChangesAsync(context.CancellationToken);
+        logger.LogInformation($"Product with id {message.ProductId} has been added");
     }
 }

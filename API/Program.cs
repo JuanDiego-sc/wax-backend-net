@@ -61,6 +61,7 @@ builder.Services.AddMassTransit(configuration =>
             host.Username(builder.Configuration["RabbitMQ:Username"]!);
             host.Password(builder.Configuration["RabbitMQ:Password"]!);
         });
+        
         config.UseMessageRetry(retry => retry.Interval(3, TimeSpan.FromSeconds(5)));
         config.ConfigureEndpoints(context);
     });

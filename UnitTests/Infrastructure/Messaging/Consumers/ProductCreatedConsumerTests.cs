@@ -1,9 +1,8 @@
 using Application.IntegrationEvents.ProductEvents;
-using Infrastructure.Messaging.Consumers;
 using Infrastructure.Messaging.Consumers.ProductConsumers;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using Moq;
+using Microsoft.Extensions.Logging;
 using Persistence;
 using Persistence.ReadModels;
 
@@ -17,6 +16,12 @@ public class ProductCreatedConsumerTests
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         return new ReadDbContext(options);
+    }
+
+    private static ILogger<ProductCreatedConsumer> CreateLogger()
+    {
+        var logger = new Mock<ILogger<ProductCreatedConsumer>>();
+        return logger.Object;
     }
 
     private ProductCreatedIntegrationEvent CreateEvent(string productId = "pid1", string name = "Product") => new()
@@ -37,7 +42,8 @@ public class ProductCreatedConsumerTests
     public async Task Consume_WhenProductDoesNotExist_AddsNewProductReadModel()
     {
         using var context = CreateInMemoryContext();
-        var consumer = new ProductCreatedConsumer(context);
+        var logger = CreateLogger();
+        var consumer = new ProductCreatedConsumer(context, logger);
         var @event = CreateEvent(productId: "new-product", name: "New Product");
 
         var contextMock = new Mock<ConsumeContext<ProductCreatedIntegrationEvent>>();
@@ -80,7 +86,8 @@ public class ProductCreatedConsumerTests
         context.Products.Add(existingProduct);
         await context.SaveChangesAsync();
 
-        var consumer = new ProductCreatedConsumer(context);
+        var logger = CreateLogger();
+        var consumer = new ProductCreatedConsumer(context, logger);
         var @event = CreateEvent(productId: "existing-id", name: "Updated Name");
 
         var contextMock = new Mock<ConsumeContext<ProductCreatedIntegrationEvent>>();
@@ -98,7 +105,8 @@ public class ProductCreatedConsumerTests
     public async Task Consume_WhenEventHasNullPublicId_CreatesProductWithNullPublicId()
     {
         using var context = CreateInMemoryContext();
-        var consumer = new ProductCreatedConsumer(context);
+        var logger = CreateLogger();
+        var consumer = new ProductCreatedConsumer(context, logger);
         var @event = CreateEvent(productId: "nullpublicid-test");
         @event.PublicId = null;
 

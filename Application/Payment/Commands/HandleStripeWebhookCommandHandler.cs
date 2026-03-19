@@ -1,5 +1,8 @@
 using Application.Core;
+using Application.IntegrationEvents.OrderEvents;
+using Application.IntegrationEvents.ProductEvents;
 using Application.Interfaces;
+using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.WriteRepositores;
 using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Payment.Events;
@@ -17,6 +20,7 @@ public class HandleStripeWebhookCommandHandler(
     IBasketRepository basketRepository,
     IProductRepository productRepository,
     IUnitOfWork unitOfWork,
+    IEventPublisher eventPublisher,
     ILogger<HandleStripeWebhookCommandHandler> logger)
     : IRequestHandler<HandleStripeWebhookCommand, Result<Unit>>
 {
@@ -57,9 +61,21 @@ public class HandleStripeWebhookCommandHandler(
                 ?? throw new Exception("Problem updating order stock");
 
             productItem.QuantityInStock += item.Quantity;
+
+            await eventPublisher.PublishEventAsync(new ProductStockChangedIntegrationEvent
+            {
+                ProductId = productItem.Id,
+                NewQuantity = productItem.QuantityInStock
+            }, cancellationToken);
         }
 
         order.OrderStatus = OrderStatus.PaymentFailed;
+        
+        await eventPublisher.PublishEventAsync(new OrderStatusChangedIntegrationEvent
+        {
+            OrderId = order.Id,
+            NewStatus = order.OrderStatus.ToString()
+        }, cancellationToken);
 
         await unitOfWork.CompleteAsync(cancellationToken);
     }
@@ -82,6 +98,12 @@ public class HandleStripeWebhookCommandHandler(
             order.PaymentIntentId, cancellationToken);
 
         if (basket != null) basketRepository.Remove(basket);
+
+        await eventPublisher.PublishEventAsync(new OrderStatusChangedIntegrationEvent
+        {
+            OrderId = order.Id,
+            NewStatus = order.OrderStatus.ToString()
+        }, cancellationToken);
 
         await unitOfWork.CompleteAsync(cancellationToken);
     }

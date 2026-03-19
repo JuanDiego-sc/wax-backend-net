@@ -3,6 +3,7 @@ using Infrastructure.Messaging.Consumers;
 using Infrastructure.Messaging.Consumers.ProductConsumers;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Persistence;
 using Persistence.ReadModels;
@@ -17,6 +18,12 @@ public class ProductDeletedConsumerTests
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         return new ReadDbContext(options);
+    }
+    
+    private static ILogger<ProductDeletedConsumer> CreateLogger()
+    {
+        var logger = new Mock<ILogger<ProductDeletedConsumer>>();
+        return logger.Object;
     }
 
     [Fact]
@@ -39,7 +46,8 @@ public class ProductDeletedConsumerTests
         context.Products.Add(existingProduct);
         await context.SaveChangesAsync();
 
-        var consumer = new ProductDeletedConsumer(context);
+        var logger = CreateLogger();
+        var consumer = new ProductDeletedConsumer(context, logger);
         var @event = new ProductDeletedIntegrationEvent
         {
             ProductId = "delete-test",
@@ -60,7 +68,8 @@ public class ProductDeletedConsumerTests
     public async Task Consume_WhenProductDoesNotExist_DoesNotThrowException()
     {
         using var context = CreateInMemoryContext();
-        var consumer = new ProductDeletedConsumer(context);
+        var logger = CreateLogger();
+        var consumer = new ProductDeletedConsumer(context, logger);
         var @event = new ProductDeletedIntegrationEvent
         {
             ProductId = "non-existent",
@@ -109,7 +118,8 @@ public class ProductDeletedConsumerTests
         context.Products.AddRange(product1, product2);
         await context.SaveChangesAsync();
 
-        var consumer = new ProductDeletedConsumer(context);
+        var logger = CreateLogger();
+        var consumer = new ProductDeletedConsumer(context, logger);
         var @event = new ProductDeletedIntegrationEvent
         {
             ProductId = "delete-this",

@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Application.Core;
 using Application.IntegrationEvents.OrderEvents;
+using Application.IntegrationEvents.ProductEvents;
 using Application.Interfaces;
 using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.WriteRepositores;
@@ -85,6 +86,15 @@ public class CreateOrderCommandHandler(
             PaymentIntentId = order.PaymentIntentId,
             OccurredAt = DateTime.UtcNow
         }, cancellationToken);
+        
+        foreach (var product in basket.Items.Select(basketItem => basketItem.Product))
+        {
+            await eventPublisher.PublishEventAsync(new ProductStockChangedIntegrationEvent
+            {
+                ProductId = product.Id,
+                NewQuantity = product.QuantityInStock
+            }, cancellationToken);
+        }
 
         var result = await unitOfWork.CompleteAsync(cancellationToken);
 
