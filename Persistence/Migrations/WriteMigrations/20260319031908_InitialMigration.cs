@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Persistence.Migrations.WriteMigrations
 {
     /// <inheritdoc />
-    public partial class InitialWriteMigration : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,7 +25,7 @@ namespace Persistence.Migrations.WriteMigrations
                     PostalCode = table.Column<string>(type: "text", nullable: false),
                     Country = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -55,7 +55,7 @@ namespace Persistence.Migrations.WriteMigrations
                     ClientSecret = table.Column<string>(type: "text", nullable: true),
                     PaymentIntentId = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -90,7 +90,7 @@ namespace Persistence.Migrations.WriteMigrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    BuyerEmail = table.Column<string>(type: "text", nullable: false),
+                    BuyerEmail = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Billing_Address = table.Column<string>(type: "text", nullable: false),
                     Billing_Line1 = table.Column<string>(type: "text", nullable: false),
                     Billing_Line2 = table.Column<string>(type: "text", nullable: true),
@@ -101,14 +101,14 @@ namespace Persistence.Migrations.WriteMigrations
                     Subtotal = table.Column<long>(type: "bigint", nullable: false),
                     DeliveryFee = table.Column<long>(type: "bigint", nullable: false),
                     Discount = table.Column<long>(type: "bigint", nullable: false),
-                    PaymentIntentId = table.Column<string>(type: "text", nullable: false),
+                    PaymentIntentId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     OrderStatus = table.Column<int>(type: "integer", nullable: false),
                     Payment_Last4 = table.Column<int>(type: "integer", nullable: false),
                     Payment_Brand = table.Column<string>(type: "text", nullable: false),
                     Payment_ExpMonth = table.Column<int>(type: "integer", nullable: false),
                     Payment_ExpYear = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -145,7 +145,7 @@ namespace Persistence.Migrations.WriteMigrations
                     QuantityInStock = table.Column<int>(type: "integer", nullable: false),
                     PublicId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -215,7 +215,7 @@ namespace Persistence.Migrations.WriteMigrations
                     Quantity = table.Column<int>(type: "integer", nullable: false),
                     OrderId = table.Column<string>(type: "text", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -279,7 +279,7 @@ namespace Persistence.Migrations.WriteMigrations
                     ProductId = table.Column<string>(type: "text", nullable: false),
                     BasketId = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -395,7 +395,7 @@ namespace Persistence.Migrations.WriteMigrations
                     UserId = table.Column<string>(type: "text", nullable: false),
                     OrderId = table.Column<string>(type: "text", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {

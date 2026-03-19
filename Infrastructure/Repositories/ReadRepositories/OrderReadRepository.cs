@@ -19,7 +19,7 @@ public class OrderReadRepository(ReadDbContext context) : IOrderReadRepository
         DeliveryFee = o.DeliveryFee,
         Total = o.Total,
         CreateAt = o.CreatedAt,
-        UpdatedAt = o.UpdatedAt ?? DateTime.MinValue,
+        UpdatedAt = o.UpdatedAt,
         BillingAddress = new BillingAddressDto
         {
             Name = o.BillingName,

@@ -24,5 +24,6 @@ public class UpdateProductDto
         product.Brand = Brand;
         product.QuantityInStock = QuantityInStock;
         product.PublicId = PublicId;
+        product.UpdatedAt = DateTime.UtcNow;
     }
 }

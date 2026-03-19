@@ -9,11 +9,11 @@ using Persistence;
 
 #nullable disable
 
-namespace Persistence.Migrations.ReadDb
+namespace Persistence.Migrations.ReadMigrations
 {
     [DbContext(typeof(ReadDbContext))]
-    [Migration("20260319003653_InitialReadDbSchema")]
-    partial class InitialReadDbSchema
+    [Migration("20260319031926_InitialReadMigration")]
+    partial class InitialReadMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -200,7 +200,8 @@ namespace Persistence.Migrations.ReadDb
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<DateTime>("LastSyncedAt")
                         .HasColumnType("timestamp with time zone");

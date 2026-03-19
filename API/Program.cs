@@ -122,9 +122,12 @@ using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 try
 {
-    var context = services.GetRequiredService<WriteDbContext>();
+    var writeContext = services.GetRequiredService<WriteDbContext>();
+    var readContext = services.GetRequiredService<ReadDbContext>();
     //var userManager = services.GetRequiredService<UserManager<User>>();
-    await context.Database.MigrateAsync();
+    await writeContext.Database.MigrateAsync();
+    await readContext.Database.MigrateAsync();
+    
     //await DbInitializer.SeedData(context, userManager);
 }
 catch (Exception ex)
