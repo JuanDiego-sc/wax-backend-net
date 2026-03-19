@@ -1,32 +1,43 @@
-using Application.Interfaces.Repositories;
-using Application.Interfaces.Repositories.WriteRepositores;
+using Application.Interfaces.Repositories.ReadRepositories;
+using Application.SupportAssist.DTOs;
 using Application.SupportAssist.Queries;
-using Domain.SupportAssistAggregate;
-using Microsoft.EntityFrameworkCore;
-using Moq;
-using Persistence;
-using UnitTests.Helpers.Fixtures;
 
 namespace UnitTests.Application.SupportAssist;
 
 public class GetSupportTicketDetailsQueryHandlerTests
 {
-    private static WriteDbContext CreateInMemoryContext()
+    private static SupportTicketDto CreateTicketDto(
+        string? id = null,
+        string? userId = null,
+        string? userEmail = null,
+        string? userFullName = null,
+        string? orderId = null,
+        string? subject = null,
+        string? description = null,
+        string? status = null,
+        string? category = null)
     {
-        var options = new DbContextOptionsBuilder<WriteDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        return new WriteDbContext(options);
+        return new SupportTicketDto
+        {
+            Id = id ?? Guid.NewGuid().ToString(),
+            UserId = userId ?? Guid.NewGuid().ToString(),
+            UserEmail = userEmail ?? "test@example.com",
+            UserFullName = userFullName ?? "Test User",
+            OrderId = orderId ?? Guid.NewGuid().ToString(),
+            Subject = subject ?? "Test Subject",
+            Description = description ?? "Test Description",
+            Status = status ?? "Open",
+            Category = category ?? "Other",
+            CreatedAt = DateTime.UtcNow
+        };
     }
 
     [Fact]
     public async Task Handle_WhenTicketNotFound_ReturnsFailure()
     {
-        using var context = CreateInMemoryContext();
-
-        var repoMock = new Mock<ISupportTicketRepository>();
-        repoMock.Setup(r => r.GetTicketByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((SupportTicket?)null);
+        var repoMock = new Mock<ISupportTicketReadRepository>();
+        repoMock.Setup(r => r.GetByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((SupportTicketDto?)null);
 
         var handler = new GetSupportTicketDetailsQueryHandler(repoMock.Object);
         var result = await handler.Handle(
@@ -38,62 +49,67 @@ public class GetSupportTicketDetailsQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenTicketFound_ReturnsMappedDto()
+    public async Task Handle_WhenTicketFound_ReturnsDto()
     {
-        var ticket = SupportTicketFixtures.CreateSupportTicket(
+        var ticketDto = CreateTicketDto(
+            id: "ticket-123",
             subject: "Test Ticket",
             description: "Test Description");
 
-        var repoMock = new Mock<ISupportTicketRepository>();
-        repoMock.Setup(r => r.GetTicketByIdAsync(ticket.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(ticket);
+        var repoMock = new Mock<ISupportTicketReadRepository>();
+        repoMock.Setup(r => r.GetByIdAsync("ticket-123", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ticketDto);
 
         var handler = new GetSupportTicketDetailsQueryHandler(repoMock.Object);
         var result = await handler.Handle(
-            new GetSupportTicketDetailsQuery { TicketId = ticket.Id },
+            new GetSupportTicketDetailsQuery { TicketId = "ticket-123" },
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value!.Id.Should().Be(ticket.Id);
+        result.Value!.Id.Should().Be("ticket-123");
         result.Value.Subject.Should().Be("Test Ticket");
         result.Value.Description.Should().Be("Test Description");
     }
 
     [Fact]
-    public async Task Handle_WhenTicketFound_MapsUserInformation()
+    public async Task Handle_WhenTicketFound_ReturnsUserInformation()
     {
-        var user = SupportTicketFixtures.CreateUser(userName: "testuser", email: "test@example.com");
-        var ticket = SupportTicketFixtures.CreateSupportTicket(user: user);
+        var ticketDto = CreateTicketDto(
+            id: "ticket-456",
+            userId: "user-123",
+            userEmail: "test@example.com",
+            userFullName: "John Doe");
 
-        var repoMock = new Mock<ISupportTicketRepository>();
-        repoMock.Setup(r => r.GetTicketByIdAsync(ticket.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(ticket);
+        var repoMock = new Mock<ISupportTicketReadRepository>();
+        repoMock.Setup(r => r.GetByIdAsync("ticket-456", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ticketDto);
 
         var handler = new GetSupportTicketDetailsQueryHandler(repoMock.Object);
         var result = await handler.Handle(
-            new GetSupportTicketDetailsQuery { TicketId = ticket.Id },
+            new GetSupportTicketDetailsQuery { TicketId = "ticket-456" },
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value!.UserId.Should().Be(user.Id);
-        result.Value.UserEmail.Should().Be("testuser");
-        result.Value.UserFullName.Should().Be("testuser");
+        result.Value!.UserId.Should().Be("user-123");
+        result.Value.UserEmail.Should().Be("test@example.com");
+        result.Value.UserFullName.Should().Be("John Doe");
     }
 
     [Fact]
-    public async Task Handle_WhenTicketFound_MapsStatusAndCategory()
+    public async Task Handle_WhenTicketFound_ReturnsStatusAndCategory()
     {
-        var ticket = SupportTicketFixtures.CreateSupportTicket(
-            status: TicketStatus.Open,
-            category: TicketCategory.PaymentIssue);
+        var ticketDto = CreateTicketDto(
+            id: "ticket-789",
+            status: "Open",
+            category: "PaymentIssue");
 
-        var repoMock = new Mock<ISupportTicketRepository>();
-        repoMock.Setup(r => r.GetTicketByIdAsync(ticket.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(ticket);
+        var repoMock = new Mock<ISupportTicketReadRepository>();
+        repoMock.Setup(r => r.GetByIdAsync("ticket-789", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ticketDto);
 
         var handler = new GetSupportTicketDetailsQueryHandler(repoMock.Object);
         var result = await handler.Handle(
-            new GetSupportTicketDetailsQuery { TicketId = ticket.Id },
+            new GetSupportTicketDetailsQuery { TicketId = "ticket-789" },
             CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();

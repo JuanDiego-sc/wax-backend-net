@@ -1,42 +1,48 @@
-using Application.Interfaces.Repositories;
-using Application.Interfaces.Repositories.WriteRepositores;
+using Application.Interfaces.Repositories.ReadRepositories;
+using Application.SupportAssist.DTOs;
 using Application.SupportAssist.Extensions;
 using Application.SupportAssist.Queries;
-using Domain.SupportAssistAggregate;
-using Microsoft.EntityFrameworkCore;
-using Moq;
-using Persistence;
-using UnitTests.Helpers.Fixtures;
+using MockQueryable;
 
 namespace UnitTests.Application.SupportAssist;
 
 public class GetSupportTicketsQueryHandlerTests
 {
-    private static WriteDbContext CreateInMemoryContext()
+    private static List<SupportTicketDto> CreateTicketDtos(int count, string? status = null, string? category = null)
     {
-        var options = new DbContextOptionsBuilder<WriteDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        return new WriteDbContext(options);
+        var tickets = new List<SupportTicketDto>();
+        for (var i = 0; i < count; i++)
+        {
+            tickets.Add(new SupportTicketDto
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = Guid.NewGuid().ToString(),
+                UserEmail = $"user{i}@test.com",
+                UserFullName = $"User {i}",
+                OrderId = Guid.NewGuid().ToString(),
+                Category = category ?? "Other",
+                Status = status ?? "Open",
+                Subject = $"Test Subject {i}",
+                Description = $"Test Description {i}",
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+        return tickets;
     }
 
     [Fact]
     public async Task Handle_ReturnsAllTicketsWithoutFilter()
     {
-        using var context = CreateInMemoryContext();
-        context.SupportTickets.AddRange(
-            SupportTicketFixtures.CreateSupportTicket(),
-            SupportTicketFixtures.CreateSupportTicket(),
-            SupportTicketFixtures.CreateSupportTicket());
-        await context.SaveChangesAsync();
+        var tickets = CreateTicketDtos(3);
+        var mockQueryable = tickets.BuildMock();
 
-        var repoMock = new Mock<ISupportTicketRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.SupportTickets.Include(t => t.User).AsQueryable());
+        var repoMock = new Mock<ISupportTicketReadRepository>();
+        repoMock.Setup(r => r.GetSupportTickets()).Returns(mockQueryable);
 
         var handler = new GetSupportTicketsQueryHandler(repoMock.Object);
         var query = new GetSupportTicketsQuery
         {
-            TicketParams = new() { PageSize = 10, PageNumber = 1 }
+            TicketParams = new SupportTicketParams { PageSize = 10, PageNumber = 1 }
         };
 
         var result = await handler.Handle(query, CancellationToken.None);
@@ -48,20 +54,21 @@ public class GetSupportTicketsQueryHandlerTests
     [Fact]
     public async Task Handle_WithStatusFilter_ReturnsOnlyMatchingTickets()
     {
-        using var context = CreateInMemoryContext();
-        context.SupportTickets.AddRange(
-            SupportTicketFixtures.CreateSupportTicket(status: TicketStatus.Open),
-            SupportTicketFixtures.CreateSupportTicket(status: TicketStatus.Closed),
-            SupportTicketFixtures.CreateSupportTicket(status: TicketStatus.Open));
-        await context.SaveChangesAsync();
+        var tickets = new List<SupportTicketDto>
+        {
+            new() { Id = "1", UserId = "u1", UserEmail = "a@test.com", UserFullName = "A", OrderId = "o1", Category = "Other", Status = "Open", Subject = "S1", Description = "D1", CreatedAt = DateTime.UtcNow },
+            new() { Id = "2", UserId = "u2", UserEmail = "b@test.com", UserFullName = "B", OrderId = "o2", Category = "Other", Status = "Closed", Subject = "S2", Description = "D2", CreatedAt = DateTime.UtcNow },
+            new() { Id = "3", UserId = "u3", UserEmail = "c@test.com", UserFullName = "C", OrderId = "o3", Category = "Other", Status = "Open", Subject = "S3", Description = "D3", CreatedAt = DateTime.UtcNow }
+        };
+        var mockQueryable = tickets.BuildMock();
 
-        var repoMock = new Mock<ISupportTicketRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.SupportTickets.Include(t => t.User).AsQueryable());
+        var repoMock = new Mock<ISupportTicketReadRepository>();
+        repoMock.Setup(r => r.GetSupportTickets()).Returns(mockQueryable);
 
         var handler = new GetSupportTicketsQueryHandler(repoMock.Object);
         var query = new GetSupportTicketsQuery
         {
-            TicketParams = new() { Status = "open", PageSize = 10, PageNumber = 1 }
+            TicketParams = new SupportTicketParams { Status = "open", PageSize = 10, PageNumber = 1 }
         };
 
         var result = await handler.Handle(query, CancellationToken.None);
@@ -73,20 +80,21 @@ public class GetSupportTicketsQueryHandlerTests
     [Fact]
     public async Task Handle_WithCategoryFilter_ReturnsOnlyMatchingTickets()
     {
-        using var context = CreateInMemoryContext();
-        context.SupportTickets.AddRange(
-            SupportTicketFixtures.CreateSupportTicket(category: TicketCategory.OrderIssue),
-            SupportTicketFixtures.CreateSupportTicket(category: TicketCategory.OrderIssue),
-            SupportTicketFixtures.CreateSupportTicket(category: TicketCategory.ProductIssue));
-        await context.SaveChangesAsync();
+        var tickets = new List<SupportTicketDto>
+        {
+            new() { Id = "1", UserId = "u1", UserEmail = "a@test.com", UserFullName = "A", OrderId = "o1", Category = "OrderIssue", Status = "Open", Subject = "S1", Description = "D1", CreatedAt = DateTime.UtcNow },
+            new() { Id = "2", UserId = "u2", UserEmail = "b@test.com", UserFullName = "B", OrderId = "o2", Category = "OrderIssue", Status = "Open", Subject = "S2", Description = "D2", CreatedAt = DateTime.UtcNow },
+            new() { Id = "3", UserId = "u3", UserEmail = "c@test.com", UserFullName = "C", OrderId = "o3", Category = "ProductIssue", Status = "Open", Subject = "S3", Description = "D3", CreatedAt = DateTime.UtcNow }
+        };
+        var mockQueryable = tickets.BuildMock();
 
-        var repoMock = new Mock<ISupportTicketRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.SupportTickets.Include(t => t.User).AsQueryable());
+        var repoMock = new Mock<ISupportTicketReadRepository>();
+        repoMock.Setup(r => r.GetSupportTickets()).Returns(mockQueryable);
 
         var handler = new GetSupportTicketsQueryHandler(repoMock.Object);
         var query = new GetSupportTicketsQuery
         {
-            TicketParams = new() { Category = "orderIssue", PageSize = 10, PageNumber = 1 }
+            TicketParams = new SupportTicketParams { Category = "orderissue", PageSize = 10, PageNumber = 1 }
         };
 
         var result = await handler.Handle(query, CancellationToken.None);
@@ -98,29 +106,24 @@ public class GetSupportTicketsQueryHandlerTests
     [Fact]
     public async Task Handle_WithCreatedOnFilter_ReturnsOnlyMatchingTickets()
     {
-        using var context = CreateInMemoryContext();
         var today = DateTime.UtcNow;
         var yesterday = today.AddDays(-1);
 
-        var ticket1 = SupportTicketFixtures.CreateSupportTicket();
-        var ticket2 = SupportTicketFixtures.CreateSupportTicket();
-        var ticket3 = SupportTicketFixtures.CreateSupportTicket();
+        var tickets = new List<SupportTicketDto>
+        {
+            new() { Id = "1", UserId = "u1", UserEmail = "a@test.com", UserFullName = "A", OrderId = "o1", Category = "Other", Status = "Open", Subject = "S1", Description = "D1", CreatedAt = yesterday },
+            new() { Id = "2", UserId = "u2", UserEmail = "b@test.com", UserFullName = "B", OrderId = "o2", Category = "Other", Status = "Open", Subject = "S2", Description = "D2", CreatedAt = today },
+            new() { Id = "3", UserId = "u3", UserEmail = "c@test.com", UserFullName = "C", OrderId = "o3", Category = "Other", Status = "Open", Subject = "S3", Description = "D3", CreatedAt = today }
+        };
+        var mockQueryable = tickets.BuildMock();
 
-        context.SupportTickets.AddRange(ticket1, ticket2, ticket3);
-        await context.SaveChangesAsync();
-
-        ticket1.CreatedAt = yesterday;
-        ticket2.CreatedAt = today;
-        ticket3.CreatedAt = today;
-        await context.SaveChangesAsync();
-
-        var repoMock = new Mock<ISupportTicketRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.SupportTickets.Include(t => t.User).AsQueryable());
+        var repoMock = new Mock<ISupportTicketReadRepository>();
+        repoMock.Setup(r => r.GetSupportTickets()).Returns(mockQueryable);
 
         var handler = new GetSupportTicketsQueryHandler(repoMock.Object);
         var query = new GetSupportTicketsQuery
         {
-            TicketParams = new() { CreatedOn = today.Date, PageSize = 10, PageNumber = 1 }
+            TicketParams = new SupportTicketParams { CreatedOn = today.Date, PageSize = 10, PageNumber = 1 }
         };
 
         var result = await handler.Handle(query, CancellationToken.None);
@@ -132,20 +135,21 @@ public class GetSupportTicketsQueryHandlerTests
     [Fact]
     public async Task Handle_WithMultipleFilters_ReturnsMatchingTickets()
     {
-        using var context = CreateInMemoryContext();
-        context.SupportTickets.AddRange(
-            SupportTicketFixtures.CreateSupportTicket(status: TicketStatus.Open, category: TicketCategory.OrderIssue),
-            SupportTicketFixtures.CreateSupportTicket(status: TicketStatus.Open, category: TicketCategory.PaymentIssue),
-            SupportTicketFixtures.CreateSupportTicket(status: TicketStatus.Closed, category: TicketCategory.ProductIssue));
-        await context.SaveChangesAsync();
+        var tickets = new List<SupportTicketDto>
+        {
+            new() { Id = "1", UserId = "u1", UserEmail = "a@test.com", UserFullName = "A", OrderId = "o1", Category = "OrderIssue", Status = "Open", Subject = "S1", Description = "D1", CreatedAt = DateTime.UtcNow },
+            new() { Id = "2", UserId = "u2", UserEmail = "b@test.com", UserFullName = "B", OrderId = "o2", Category = "PaymentIssue", Status = "Open", Subject = "S2", Description = "D2", CreatedAt = DateTime.UtcNow },
+            new() { Id = "3", UserId = "u3", UserEmail = "c@test.com", UserFullName = "C", OrderId = "o3", Category = "ProductIssue", Status = "Closed", Subject = "S3", Description = "D3", CreatedAt = DateTime.UtcNow }
+        };
+        var mockQueryable = tickets.BuildMock();
 
-        var repoMock = new Mock<ISupportTicketRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.SupportTickets.Include(t => t.User).AsQueryable());
+        var repoMock = new Mock<ISupportTicketReadRepository>();
+        repoMock.Setup(r => r.GetSupportTickets()).Returns(mockQueryable);
 
         var handler = new GetSupportTicketsQueryHandler(repoMock.Object);
         var query = new GetSupportTicketsQuery
         {
-            TicketParams = new() { Status = "open", Category = "orderIssue", PageSize = 10, PageNumber = 1 }
+            TicketParams = new SupportTicketParams { Status = "open", Category = "orderissue", PageSize = 10, PageNumber = 1 }
         };
 
         var result = await handler.Handle(query, CancellationToken.None);
@@ -157,18 +161,16 @@ public class GetSupportTicketsQueryHandlerTests
     [Fact]
     public async Task Handle_WithPagination_ReturnsCorrectPage()
     {
-        using var context = CreateInMemoryContext();
-        for (var i = 0; i < 15; i++)
-            context.SupportTickets.Add(SupportTicketFixtures.CreateSupportTicket());
-        await context.SaveChangesAsync();
+        var tickets = CreateTicketDtos(15);
+        var mockQueryable = tickets.BuildMock();
 
-        var repoMock = new Mock<ISupportTicketRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(context.SupportTickets.Include(t => t.User).AsQueryable());
+        var repoMock = new Mock<ISupportTicketReadRepository>();
+        repoMock.Setup(r => r.GetSupportTickets()).Returns(mockQueryable);
 
         var handler = new GetSupportTicketsQueryHandler(repoMock.Object);
         var query = new GetSupportTicketsQuery
         {
-            TicketParams = new() { PageSize = 5, PageNumber = 2 }
+            TicketParams = new SupportTicketParams { PageSize = 5, PageNumber = 2 }
         };
 
         var result = await handler.Handle(query, CancellationToken.None);

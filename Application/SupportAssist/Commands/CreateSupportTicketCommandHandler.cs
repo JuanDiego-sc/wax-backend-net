@@ -1,5 +1,7 @@
 using Application.Core;
+using Application.IntegrationEvents.SupportTicketEvents;
 using Application.Interfaces;
+using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.WriteRepositores;
 using Application.Interfaces.Repositories.WriteRepositories;
 using MediatR;
@@ -10,6 +12,7 @@ public class CreateSupportTicketCommandHandler(
     ISupportTicketRepository supportTicketRepository,
     IOrderRepository orderRepository,
     IUserAccessor userAccessor,
+    IEventPublisher eventPublisher,
     IUnitOfWork unitOfWork)
     : IRequestHandler<CreateSupportTicketCommand, Result<string>>
 {
@@ -27,6 +30,19 @@ public class CreateSupportTicketCommandHandler(
         var ticket = request.TicketDto.ToEntity(user.Id);
         
         supportTicketRepository.Add(ticket);
+
+        await eventPublisher.PublishEventAsync(new SupportTicketCreatedIntegrationEvent
+        {
+            TicketId = ticket.Id,
+            UserId = user.Id,
+            UserEmail = user.Email ?? string.Empty,
+            UserFullName = user.UserName ?? string.Empty,
+            OrderId = ticket.OrderId,
+            Category = ticket.Category.ToString(),
+            Status = ticket.Status.ToString(),
+            Subject = ticket.Subject,
+            Description = ticket.Description
+        }, cancellationToken);
 
         var result = await unitOfWork.CompleteAsync(cancellationToken);
         

@@ -87,6 +87,8 @@ builder.Services.AddScoped<ISupportTicketRepository, SupportTicketRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IProductReadRepository, ProductReadRepository>();
+builder.Services.AddScoped<IOrderReadRepository, OrderReadRepository>();
+builder.Services.AddScoped<ISupportTicketReadRepository, SupportTicketReadRepository>();
 
 builder.Services.AddScoped<IEventPublisher, EventPublisher>();
 

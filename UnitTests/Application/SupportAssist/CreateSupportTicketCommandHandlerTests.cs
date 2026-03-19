@@ -1,4 +1,5 @@
 using Application.Interfaces;
+using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.WriteRepositores;
 using Application.Interfaces.Repositories.WriteRepositories;
 using Application.SupportAssist.Commands;
@@ -16,6 +17,7 @@ public class CreateSupportTicketCommandHandlerTests
     private readonly Mock<ISupportTicketRepository> _ticketRepo = new();
     private readonly Mock<IOrderRepository> _orderRepo = new();
     private readonly Mock<IUserAccessor> _userAccessor = new();
+    private readonly Mock<IEventPublisher> _eventPublisher = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
     private readonly CreateSupportTicketCommandHandler _handler;
 
@@ -25,6 +27,7 @@ public class CreateSupportTicketCommandHandlerTests
             _ticketRepo.Object,
             _orderRepo.Object,
             _userAccessor.Object,
+            _eventPublisher.Object,
             _unitOfWork.Object);
     }
 

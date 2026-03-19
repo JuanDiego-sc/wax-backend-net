@@ -25,5 +25,9 @@ public class SupportTicketRepository(WriteDbContext context) : ISupportTicketRep
     {
         context.SupportTickets.Add(ticket);
     }
-    
+
+    public void Remove(SupportTicket ticket)
+    {
+        context.SupportTickets.Remove(ticket);
+    }
 }

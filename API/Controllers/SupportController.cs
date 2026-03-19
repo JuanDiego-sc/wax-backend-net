@@ -1,4 +1,3 @@
-using System.Reflection.Metadata;
 using Application.Core.Pagination;
 using Application.SupportAssist.Commands;
 using Application.SupportAssist.DTOs;
@@ -29,9 +28,30 @@ public class SupportController : BaseApiController
     #region HttpPost methods
 
     [HttpPost]
-    public async Task<ActionResult<CreateSupportTicketDto>> CreateSupportTicket(CreateSupportTicketDto supportTicket)
+    public async Task<ActionResult<string>> CreateSupportTicket(CreateSupportTicketDto supportTicket)
     {
         return await HandleCommand(new CreateSupportTicketCommand { TicketDto = supportTicket });
     }
+    
+    #endregion
+
+    #region HttpPut methods
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateSupportTicket(string id, UpdateSupportTicketDto supportTicket)
+    {
+        return await HandleCommand(new UpdateSupportTicketCommand { TicketId = id, TicketDto = supportTicket });
+    }
+
+    #endregion
+
+    #region HttpDelete methods
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteSupportTicket(string id)
+    {
+        return await HandleCommand(new DeleteSupportTicketCommand { TicketId = id });
+    }
+
     #endregion
 }
