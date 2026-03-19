@@ -16,7 +16,7 @@ public class OrderReadConfigurations : IEntityTypeConfiguration<OrderReadModel>
         
         builder.Property(o => o.BillingName).IsRequired().HasMaxLength(200);
         builder.Property(o => o.BillingLine1).IsRequired().HasMaxLength(200);
-        builder.Property(o => o.BillingLine2).IsRequired().HasMaxLength(200);
+        builder.Property(o => o.BillingLine2).HasMaxLength(200);
         builder.Property(o => o.BillingCity).IsRequired().HasMaxLength(200);
         builder.Property(o => o.BillingCountry).IsRequired().HasMaxLength(200);
         builder.Property(o => o.BillingState).IsRequired().HasMaxLength(200);

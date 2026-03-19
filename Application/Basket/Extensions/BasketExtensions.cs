@@ -32,7 +32,6 @@ public static class BasketExtensions
         if (string.IsNullOrEmpty(basketId)) return null;
         
         return await query
-                .AsNoTracking()  
                 .Include(x => x.Items)
                 .ThenInclude(x => x.Product)    
                 .FirstOrDefaultAsync(x => x.BasketId == basketId);

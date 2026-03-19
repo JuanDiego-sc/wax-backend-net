@@ -30,8 +30,6 @@ public class PaymentService(IConfiguration configuration, ILogger<PaymentService
             };
 
             intent = await service.CreateAsync(options);
-            basket.PaymentIntentId ??= intent.Id;
-            basket.ClientSecret ??= intent.ClientSecret;
         }
         else
         {
@@ -45,8 +43,8 @@ public class PaymentService(IConfiguration configuration, ILogger<PaymentService
 
         return new PaymentIntentResult
         {
-            PaymentIntentId = basket.PaymentIntentId,
-            ClientSecret = basket.ClientSecret
+            PaymentIntentId = intent.Id,
+            ClientSecret = intent.ClientSecret
         };
     }
 

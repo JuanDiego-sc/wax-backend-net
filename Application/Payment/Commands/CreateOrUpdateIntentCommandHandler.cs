@@ -21,7 +21,10 @@ public class CreateOrUpdateIntentCommandHandler(
 
         var intent = await paymentService.CreateOrUpdatePaymentIntent(basket);
         if (intent == null) return Result<BasketDto>.Failure("Problem creating payment intent");
-
+        
+        basket.PaymentIntentId ??= intent.PaymentIntentId;
+        basket.ClientSecret ??= intent.ClientSecret;
+        
         if (unitOfWork.HasChanges())
         {
             var result = await unitOfWork.CompleteAsync(cancellationToken);
