@@ -8,13 +8,29 @@
 
   <ItemGroup>
     <ProjectReference Include="../Domain/Domain.csproj" />
-    <ProjectReference Include="../Persistence/Persistence.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Basket/" />
+    <Folder Include="Basket/Commands/" />
+    <Folder Include="Basket/Extensions/" />
+    <Folder Include="Basket/Validators/" />
+    <Folder Include="Basket/Extensions/" />
+    <Folder Include="Core/Pagination/" />
+    <Folder Include="Orders/Commands/" />
+    <Folder Include="Orders/Extensions/" />
+    <Folder Include="Orders/Queries/" />
+    <Folder Include="Orders/Validators/" />
+    <Folder Include="Payment/Commands/" />
+    <Folder Include="Payment/Events/" />
     <Folder Include="Product/" />
+    <Folder Include="Product/Commands/" />
+    <Folder Include="Product/DTOs/" />
+    <Folder Include="Product/Extensions/" />
+    <Folder Include="Product/Queries/" />
+    <Folder Include="Product/Validators/" />
+    <Folder Include="SupportAssist\Validators\" />
     <Folder Include="User/" />
+    <Folder Include="User/DTOs/" />
   </ItemGroup>
 
   <ItemGroup>
