@@ -1,4 +1,5 @@
 using API.Middleware;
+using API.SignalR;
 using Application.Basket.Commands;
 using Application.Basket.Interfaces;
 using Application.Core.Validations;
@@ -40,6 +41,8 @@ builder.Services.AddDbContext<ReadDbContext>(options =>
 });
 
 builder.Services.AddCors();
+builder.Services.AddSignalR();
+
 builder.Services.AddMediatR(x =>
 {
     x.RegisterServicesFromAssemblyContaining<AddItemCommandHandler>();
@@ -84,6 +87,7 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<ISupportTicketRepository, SupportTicketRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>(); 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IProductReadRepository, ProductReadRepository>();
@@ -117,6 +121,7 @@ app.UseCors(x => x
 
 app.MapControllers();
 app.MapGroup("api").MapIdentityApi<User>();
+app.MapHub<SupportHub>("/comments");
 
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
