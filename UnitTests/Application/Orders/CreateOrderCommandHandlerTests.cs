@@ -100,7 +100,7 @@ public class CreateOrderCommandHandlerTests
             .Setup(r => r.GetBasketWithItemsAsync(basket.BasketId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(basket);
         _userAccessor.Setup(u => u.GetUserAsync())
-            .ReturnsAsync(new User { Email = "buyer@test.com", UserName = "buyer" });
+            .ReturnsAsync(new User { Email = "buyer@test.com", UserName = "buyer", Address = OrderFixtures.CreateBillingAddress(), AddressId = "addr-1" });
         _orderRepo
             .Setup(r => r.GetByPaymentIntentIdAsync("pi_new", It.IsAny<CancellationToken>()))
             .ReturnsAsync((Order?)null);
@@ -151,7 +151,7 @@ public class CreateOrderCommandHandlerTests
             .Setup(r => r.GetBasketWithItemsAsync(basket.BasketId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(basket);
         _userAccessor.Setup(u => u.GetUserAsync())
-            .ReturnsAsync(new User { Email = "buyer@test.com", UserName = "buyer" });
+            .ReturnsAsync(new User { Email = "buyer@test.com", UserName = "buyer", Address = OrderFixtures.CreateBillingAddress(), AddressId = "addr-1" });
         _orderRepo
             .Setup(r => r.GetByPaymentIntentIdAsync("pi_free", It.IsAny<CancellationToken>()))
             .ReturnsAsync((Order?)null);

@@ -1,3 +1,4 @@
+using Domain.Entities;
 using Domain.OrderAggregate;
 
 namespace UnitTests.Helpers.Fixtures;
@@ -14,6 +15,7 @@ public static class OrderFixtures
         List<OrderItem>? items = null)
     {
         var intentId = paymentIntentId ?? Guid.NewGuid().ToString();
+        var addressId = Guid.NewGuid().ToString();
 
         return new Order
         {
@@ -25,6 +27,7 @@ public static class OrderFixtures
             OrderStatus = status,
             OrderItems = items ?? [CreateOrderItem()],
             BillingAddress = CreateBillingAddress(),
+            AddressId = addressId,
             PaymentSummary = CreatePaymentSummary()
         };
     }
@@ -42,9 +45,9 @@ public static class OrderFixtures
         };
     }
 
-    public static BillingAddress CreateBillingAddress()
+    public static Address CreateBillingAddress()
     {
-        return new BillingAddress
+        return new Address
         {
             Name = "Test User",
             Line1 = "123 Test Street",

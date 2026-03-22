@@ -86,36 +86,6 @@ namespace Persistence.Migrations.WriteMigrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Orders",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    BuyerEmail = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    Billing_Address = table.Column<string>(type: "text", nullable: false),
-                    Billing_Line1 = table.Column<string>(type: "text", nullable: false),
-                    Billing_Line2 = table.Column<string>(type: "text", nullable: true),
-                    Billing_City = table.Column<string>(type: "text", nullable: false),
-                    Billing_State = table.Column<string>(type: "text", nullable: false),
-                    Billing_PostalCode = table.Column<string>(type: "text", nullable: false),
-                    Billing_Country = table.Column<string>(type: "text", nullable: false),
-                    Subtotal = table.Column<long>(type: "bigint", nullable: false),
-                    DeliveryFee = table.Column<long>(type: "bigint", nullable: false),
-                    Discount = table.Column<long>(type: "bigint", nullable: false),
-                    PaymentIntentId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    OrderStatus = table.Column<int>(type: "integer", nullable: false),
-                    Payment_Last4 = table.Column<int>(type: "integer", nullable: false),
-                    Payment_Brand = table.Column<string>(type: "text", nullable: false),
-                    Payment_ExpMonth = table.Column<int>(type: "integer", nullable: false),
-                    Payment_ExpYear = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Orders", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "OutboxState",
                 columns: table => new
                 {
@@ -157,7 +127,7 @@ namespace Persistence.Migrations.WriteMigrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    AddressId = table.Column<string>(type: "text", nullable: true),
+                    AddressId = table.Column<string>(type: "text", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -180,7 +150,38 @@ namespace Persistence.Migrations.WriteMigrations
                         name: "FK_AspNetUsers_Address_AddressId",
                         column: x => x.AddressId,
                         principalTable: "Address",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Orders",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    BuyerEmail = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Subtotal = table.Column<long>(type: "bigint", nullable: false),
+                    DeliveryFee = table.Column<long>(type: "bigint", nullable: false),
+                    Discount = table.Column<long>(type: "bigint", nullable: false),
+                    PaymentIntentId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    OrderStatus = table.Column<int>(type: "integer", nullable: false),
+                    Payment_Last4 = table.Column<int>(type: "integer", nullable: false),
+                    Payment_Brand = table.Column<string>(type: "text", nullable: false),
+                    Payment_ExpMonth = table.Column<int>(type: "integer", nullable: false),
+                    Payment_ExpYear = table.Column<int>(type: "integer", nullable: false),
+                    AddressId = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Orders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Orders_Address_AddressId",
+                        column: x => x.AddressId,
+                        principalTable: "Address",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -200,30 +201,6 @@ namespace Persistence.Migrations.WriteMigrations
                         name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
                         column: x => x.RoleId,
                         principalTable: "AspNetRoles",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "OrderItems",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    Item_ProductId = table.Column<string>(type: "text", nullable: false),
-                    Item_ProductName = table.Column<string>(type: "text", nullable: false),
-                    Price = table.Column<long>(type: "bigint", nullable: false),
-                    Quantity = table.Column<int>(type: "integer", nullable: false),
-                    OrderId = table.Column<string>(type: "text", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_OrderItems", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_OrderItems_Orders_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -384,6 +361,30 @@ namespace Persistence.Migrations.WriteMigrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OrderItems",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Item_ProductId = table.Column<string>(type: "text", nullable: false),
+                    Item_ProductName = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<long>(type: "bigint", nullable: false),
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    OrderId = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrderItems", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OrderItems_Orders_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "SupportTickets",
                 columns: table => new
                 {
@@ -410,6 +411,40 @@ namespace Persistence.Migrations.WriteMigrations
                         name: "FK_SupportTickets_Orders_OrderId",
                         column: x => x.OrderId,
                         principalTable: "Orders",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Comments",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Body = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    TicketId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    UserId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    SupportTicketId = table.Column<string>(type: "text", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Comments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Comments_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Comments_SupportTickets_SupportTicketId",
+                        column: x => x.SupportTicketId,
+                        principalTable: "SupportTickets",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Comments_SupportTickets_TicketId",
+                        column: x => x.TicketId,
+                        principalTable: "SupportTickets",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -473,6 +508,21 @@ namespace Persistence.Migrations.WriteMigrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Comments_SupportTicketId",
+                table: "Comments",
+                column: "SupportTicketId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_TicketId",
+                table: "Comments",
+                column: "TicketId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_UserId",
+                table: "Comments",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_InboxState_Delivered",
                 table: "InboxState",
                 column: "Delivered");
@@ -481,6 +531,11 @@ namespace Persistence.Migrations.WriteMigrations
                 name: "IX_OrderItems_OrderId",
                 table: "OrderItems",
                 column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_AddressId",
+                table: "Orders",
+                column: "AddressId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OutboxMessage_EnqueueTime",
@@ -542,13 +597,13 @@ namespace Persistence.Migrations.WriteMigrations
                 name: "BasketItems");
 
             migrationBuilder.DropTable(
+                name: "Comments");
+
+            migrationBuilder.DropTable(
                 name: "OrderItems");
 
             migrationBuilder.DropTable(
                 name: "OutboxMessage");
-
-            migrationBuilder.DropTable(
-                name: "SupportTickets");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
@@ -558,6 +613,9 @@ namespace Persistence.Migrations.WriteMigrations
 
             migrationBuilder.DropTable(
                 name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "SupportTickets");
 
             migrationBuilder.DropTable(
                 name: "InboxState");

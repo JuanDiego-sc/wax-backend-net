@@ -48,7 +48,8 @@ public class CreateOrderCommandHandler(
             order = new Order
             {
                 BuyerEmail = user.Email ?? string.Empty,
-                BillingAddress = request.OrderDto.BillingAddress,
+                BillingAddress = user.Address,
+                AddressId =  user.AddressId,
                 OrderItems = items,
                 Subtotal = subtotal,
                 DeliveryFee = deliveryFee,
