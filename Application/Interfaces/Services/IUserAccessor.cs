@@ -1,8 +1,6 @@
-using System;
-using Domain.Entities;
 using DomainUser = Domain.Entities.User;
 
-namespace Application.Interfaces;
+namespace Application.Interfaces.Services;
 
 public interface IUserAccessor
 {

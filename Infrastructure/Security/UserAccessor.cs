@@ -1,6 +1,5 @@
-using System;
 using System.Security.Claims;
-using Application.Interfaces;
+using Application.Interfaces.Services;
 using Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Persistence;

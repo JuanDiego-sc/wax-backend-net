@@ -1,6 +1,6 @@
 using Application.Comments.Extensions;
 using Application.Core;
-using Application.Interfaces;
+using Application.Interfaces.Services;
 using Application.Interfaces.DTOs;
 using Application.Interfaces.Repositories.WriteRepositories;
 using Domain.Entities;

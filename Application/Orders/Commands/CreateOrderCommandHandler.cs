@@ -2,7 +2,7 @@ using System.Text.Json;
 using Application.Core;
 using Application.IntegrationEvents.OrderEvents;
 using Application.IntegrationEvents.ProductEvents;
-using Application.Interfaces;
+using Application.Interfaces.Services;
 using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Orders.DTOs;
