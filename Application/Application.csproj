@@ -15,11 +15,11 @@
     <Folder Include="Basket/Extensions/" />
     <Folder Include="Basket/Validators/" />
     <Folder Include="Basket/Extensions/" />
+    <Folder Include="Comments\Validators\" />
     <Folder Include="Core/Pagination/" />
     <Folder Include="Orders/Commands/" />
     <Folder Include="Orders/Extensions/" />
     <Folder Include="Orders/Queries/" />
-    <Folder Include="Orders/Validators/" />
     <Folder Include="Payment/Commands/" />
     <Folder Include="Payment/Events/" />
     <Folder Include="Product/" />
@@ -28,7 +28,6 @@
     <Folder Include="Product/Extensions/" />
     <Folder Include="Product/Queries/" />
     <Folder Include="Product/Validators/" />
-    <Folder Include="SupportAssist\Validators\" />
     <Folder Include="User/" />
     <Folder Include="User/DTOs/" />
   </ItemGroup>
