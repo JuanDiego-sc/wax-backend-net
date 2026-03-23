@@ -1,5 +1,5 @@
 using ProductDomain = Domain.Entities.Product;
-namespace Application.Interfaces.Repositories.WriteRepositores;
+namespace Application.Interfaces.Repositories.WriteRepositories;
 
 public interface IProductRepository
 {

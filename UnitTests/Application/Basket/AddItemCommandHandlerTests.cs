@@ -1,11 +1,6 @@
 using Application.Basket.Commands;
-using Application.Basket.DTOs;
-using Application.Interfaces;
-using Application.Interfaces.Repositories;
-using Application.Interfaces.Repositories.WriteRepositores;
-using Moq;
+using Application.Interfaces.Repositories.WriteRepositories;
 using UnitTests.Helpers.Fixtures;
-using FluentAssertions;
 
 namespace UnitTests.Application.Basket;
 

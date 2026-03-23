@@ -3,7 +3,6 @@ using Application.IntegrationEvents.OrderEvents;
 using Application.IntegrationEvents.ProductEvents;
 using Application.Interfaces;
 using Application.Interfaces.Publish;
-using Application.Interfaces.Repositories.WriteRepositores;
 using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Payment.Events;
 using Domain.OrderAggregate;

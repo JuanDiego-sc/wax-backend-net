@@ -1,7 +1,5 @@
 using Application.Interfaces.Repositories.ReadRepositories;
-using Application.Interfaces.Repositories.WriteRepositores;
 using Application.Product.DTOs;
-using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 

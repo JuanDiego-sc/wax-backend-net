@@ -1,6 +1,5 @@
-using Application.Interfaces.Repositories;
 using Application.Basket.Extensions;
-using Application.Interfaces.Repositories.WriteRepositores;
+using Application.Interfaces.Repositories.WriteRepositories;
 using Persistence;
 
 namespace Infrastructure.Repositories.WriteRepositories;

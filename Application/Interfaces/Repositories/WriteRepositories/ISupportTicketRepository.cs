@@ -1,6 +1,6 @@
 using Domain.SupportAssistAggregate;
 
-namespace Application.Interfaces.Repositories.WriteRepositores;
+namespace Application.Interfaces.Repositories.WriteRepositories;
 
 public interface ISupportTicketRepository
 {

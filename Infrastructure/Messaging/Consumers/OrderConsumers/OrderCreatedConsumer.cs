@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Persistence;
 using Persistence.ReadModels;
-using Stripe.Climate;
 
 namespace Infrastructure.Messaging.Consumers.OrderConsumers;
 

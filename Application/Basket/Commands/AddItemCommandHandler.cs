@@ -1,10 +1,7 @@
 using Application.Basket.DTOs;
 using Application.Basket.Extensions;
-using Application.Basket.Interfaces;
 using Application.Core;
-using Application.Interfaces;
-using Application.Interfaces.Repositories;
-using Application.Interfaces.Repositories.WriteRepositores;
+using Application.Interfaces.Repositories.WriteRepositories;
 using MediatR;
 using DomainBasket = Domain.Entities.Basket;
 
