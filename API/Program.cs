@@ -11,6 +11,8 @@ using Application.Interfaces.Services;
 using Domain.Entities;
 using Infrastructure.Cookies;
 using Infrastructure.Email;
+using Infrastructure.Email.EmailTemplates;
+using Infrastructure.Email.Services;
 using Infrastructure.Images;
 using Infrastructure.Messaging;
 using Infrastructure.Payments;
@@ -71,12 +73,15 @@ builder.Services.AddMassTransit(configuration =>
 });
 
 builder.Services.AddHttpClient<ResendClient>();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.Configure<ResendClientOptions>(options =>
 {
     options.ApiToken = builder.Configuration["ResendSettings:ApiToken"]!;
 });
 builder.Services.AddScoped<IResend, ResendClient>();
-builder.Services.AddSingleton<IEmailSender<User>, EmailSender>();
+builder.Services.AddSingleton<EmailTemplateService>();
+builder.Services.AddScoped<IEmailService, ResendEmailService>();
+builder.Services.AddScoped<IEmailSender<User>, IdentityEmailSender>();
 
 builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 builder.Services.AddScoped<IImageService, ImageService>();
