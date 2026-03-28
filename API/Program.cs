@@ -134,11 +134,16 @@ try
 {
     var writeContext = services.GetRequiredService<WriteDbContext>();
     var readContext = services.GetRequiredService<ReadDbContext>();
-    //var userManager = services.GetRequiredService<UserManager<User>>();
     await writeContext.Database.MigrateAsync();
     await readContext.Database.MigrateAsync();
     
-    //await DbInitializer.SeedData(context, userManager);
+    var initializer = new DbInitializer(
+        writeContext,
+        services.GetRequiredService<UserManager<User>>(),
+        services.GetRequiredService<RoleManager<IdentityRole>>(),
+        services.GetRequiredService<IConfiguration>(),
+        services.GetRequiredService<ILogger<DbInitializer>>());
+    await initializer.InitializeAsync();
 }
 catch (Exception ex)
 {
