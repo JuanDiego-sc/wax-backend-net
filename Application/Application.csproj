@@ -13,7 +13,6 @@
   <ItemGroup>
     <Folder Include="Basket/Commands/" />
     <Folder Include="Basket/Extensions/" />
-    <Folder Include="Basket/Validators/" />
     <Folder Include="Basket/Extensions/" />
     <Folder Include="Comments\Validators\" />
     <Folder Include="Core/Pagination/" />
@@ -27,7 +26,6 @@
     <Folder Include="Product/DTOs/" />
     <Folder Include="Product/Extensions/" />
     <Folder Include="Product/Queries/" />
-    <Folder Include="Product/Validators/" />
     <Folder Include="User/" />
   </ItemGroup>
 
