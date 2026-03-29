@@ -1,5 +1,4 @@
-using Application.Interfaces;
-using Application.Interfaces.Repositories.WriteRepositores;
+using Application.Interfaces.Repositories.WriteRepositories;
 using Persistence;
 
 namespace Infrastructure.Repositories.WriteRepositories;

@@ -1,6 +1,6 @@
 using Application.User.DTOs;
 using Domain.Entities;
-using Microsoft.AspNetCore.Authorization;
+using Domain.Enumerators;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +26,7 @@ public class AccountController(SignInManager<User> signInManager) : BaseApiContr
             return ValidationProblem();
         }
 
-        //await signInManager.UserManager.AddToRoleAsync(user, "Member");
+        await signInManager.UserManager.AddToRoleAsync(user, Roles.Member);
 
         return Ok();
 
@@ -42,13 +42,13 @@ public class AccountController(SignInManager<User> signInManager) : BaseApiContr
 
         if(user == null) return Unauthorized();
 
-        //var roles = await signInManager.UserManager.GetRolesAsync(user);
+        var roles = await signInManager.UserManager.GetRolesAsync(user);
 
         return Ok(new
         {
             user.Email,
             user.UserName,
-            //Roles = roles
+            Roles = roles
         });
     }
 
@@ -60,7 +60,7 @@ public class AccountController(SignInManager<User> signInManager) : BaseApiContr
         return NoContent();
     }
 
-    [Authorize]
+    //[Authorize]
     [HttpPost("address")]
     public async Task<ActionResult<Address>> CreateOrUpdateAddress(Address address)
     {

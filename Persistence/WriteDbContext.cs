@@ -17,6 +17,7 @@ public class WriteDbContext(DbContextOptions<WriteDbContext> options) : Identity
     public DbSet<Basket> Baskets { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<SupportTicket> SupportTickets { get; set; }
+    public DbSet<Comment> Comments { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -28,6 +29,7 @@ public class WriteDbContext(DbContextOptions<WriteDbContext> options) : Identity
         builder.ApplyConfiguration(new BasketConfiguration());
         builder.ApplyConfiguration(new BasketItemConfiguration());
         builder.ApplyConfiguration(new SupportTicketConfiguration());
+        builder.ApplyConfiguration(new CommentConfiguration());
         
         //MassTransit outbox tables
         builder.AddInboxStateEntity();

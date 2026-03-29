@@ -12,7 +12,7 @@ using Persistence;
 namespace Persistence.Migrations.WriteMigrations
 {
     [DbContext(typeof(WriteDbContext))]
-    [Migration("20260319031908_InitialMigration")]
+    [Migration("20260322031937_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -129,6 +129,46 @@ namespace Persistence.Migrations.WriteMigrations
                     b.ToTable("BasketItems", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.Comment", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SupportTicketId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("TicketId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SupportTicketId");
+
+                    b.HasIndex("TicketId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Comments");
+                });
+
             modelBuilder.Entity("Domain.Entities.Product", b =>
                 {
                     b.Property<string>("Id")
@@ -188,6 +228,7 @@ namespace Persistence.Migrations.WriteMigrations
                         .HasColumnType("integer");
 
                     b.Property<string>("AddressId")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -253,6 +294,10 @@ namespace Persistence.Migrations.WriteMigrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
+                    b.Property<string>("AddressId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("BuyerEmail")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -282,6 +327,8 @@ namespace Persistence.Migrations.WriteMigrations
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AddressId");
 
                     b.ToTable("Orders");
                 });
@@ -674,64 +721,47 @@ namespace Persistence.Migrations.WriteMigrations
                     b.Navigation("Product");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Comment", b =>
+                {
+                    b.HasOne("Domain.SupportAssistAggregate.SupportTicket", null)
+                        .WithMany("Comments")
+                        .HasForeignKey("SupportTicketId");
+
+                    b.HasOne("Domain.SupportAssistAggregate.SupportTicket", "SupportTicket")
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("SupportTicket");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Entities.User", b =>
                 {
                     b.HasOne("Domain.Entities.Address", "Address")
                         .WithMany()
-                        .HasForeignKey("AddressId");
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Address");
                 });
 
             modelBuilder.Entity("Domain.OrderAggregate.Order", b =>
                 {
-                    b.OwnsOne("Domain.OrderAggregate.BillingAddress", "BillingAddress", b1 =>
-                        {
-                            b1.Property<string>("OrderId")
-                                .HasColumnType("text");
-
-                            b1.Property<string>("City")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("Billing_City");
-
-                            b1.Property<string>("Country")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("Billing_Country");
-
-                            b1.Property<string>("Line1")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("Billing_Line1");
-
-                            b1.Property<string>("Line2")
-                                .HasColumnType("text")
-                                .HasColumnName("Billing_Line2");
-
-                            b1.Property<string>("Name")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("Billing_Address");
-
-                            b1.Property<string>("PostalCode")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("Billing_PostalCode")
-                                .HasJsonPropertyName("postal_code");
-
-                            b1.Property<string>("State")
-                                .IsRequired()
-                                .HasColumnType("text")
-                                .HasColumnName("Billing_State");
-
-                            b1.HasKey("OrderId");
-
-                            b1.ToTable("Orders");
-
-                            b1.WithOwner()
-                                .HasForeignKey("OrderId");
-                        });
+                    b.HasOne("Domain.Entities.Address", "BillingAddress")
+                        .WithMany()
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.OwnsOne("Domain.OrderAggregate.PaymentSummary", "PaymentSummary", b1 =>
                         {
@@ -765,8 +795,7 @@ namespace Persistence.Migrations.WriteMigrations
                                 .HasForeignKey("OrderId");
                         });
 
-                    b.Navigation("BillingAddress")
-                        .IsRequired();
+                    b.Navigation("BillingAddress");
 
                     b.Navigation("PaymentSummary")
                         .IsRequired();
@@ -896,6 +925,11 @@ namespace Persistence.Migrations.WriteMigrations
             modelBuilder.Entity("Domain.OrderAggregate.Order", b =>
                 {
                     b.Navigation("OrderItems");
+                });
+
+            modelBuilder.Entity("Domain.SupportAssistAggregate.SupportTicket", b =>
+                {
+                    b.Navigation("Comments");
                 });
 #pragma warning restore 612, 618
         }

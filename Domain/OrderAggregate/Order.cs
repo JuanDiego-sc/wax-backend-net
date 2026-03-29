@@ -5,7 +5,6 @@ namespace Domain.OrderAggregate;
 public class Order : BaseEntity
 {
     public required string BuyerEmail { get; set; }
-    public required BillingAddress BillingAddress { get; set; }
     public List<OrderItem> OrderItems { get; set; } = [];
     public long Subtotal { get; set; }
     public long DeliveryFee { get; set; }
@@ -13,6 +12,10 @@ public class Order : BaseEntity
     public required string PaymentIntentId { get; set; } 
     public OrderStatus OrderStatus { get; set; } = OrderStatus.Pending;
     public required PaymentSummary PaymentSummary { get; set; }
+    
+    //Navigation props
+    public required string AddressId { get; set; }
+    public required Address BillingAddress { get; set; }
 
     public long GetTotal()
     {

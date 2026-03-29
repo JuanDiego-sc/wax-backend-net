@@ -4,6 +4,6 @@ namespace Domain.Entities;
 
 public class User : IdentityUser
 {
-    public string? AddressId { get; set; }
-    public Address? Address { get; set; } 
+    public string AddressId { get; set; } = "";
+    public Address Address { get; set; } = null!;
 }

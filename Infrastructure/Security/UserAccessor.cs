@@ -1,6 +1,5 @@
-using System;
 using System.Security.Claims;
-using Application.Interfaces;
+using Application.Interfaces.Services;
 using Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Persistence;
@@ -16,12 +15,12 @@ public class UserAccessor(IHttpContextAccessor httpContextAccessor, WriteDbConte
 
     public string GetUserId()
     {
-        return httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier) 
-            ?? throw new Exception("User ID not found.");
+        return httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier) 
+            ?? throw new UnauthorizedAccessException("User ID not found.");
     }
     public string GetUserEmail()
     {
-        return httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Email) 
-            ?? throw new Exception("User email not found.");
+        return httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Email) 
+            ?? throw new UnauthorizedAccessException("User email not found.");
     }
 }

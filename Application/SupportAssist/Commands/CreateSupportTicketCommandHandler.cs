@@ -1,8 +1,7 @@
 using Application.Core;
 using Application.IntegrationEvents.SupportTicketEvents;
-using Application.Interfaces;
+using Application.Interfaces.Services;
 using Application.Interfaces.Publish;
-using Application.Interfaces.Repositories.WriteRepositores;
 using Application.Interfaces.Repositories.WriteRepositories;
 using MediatR;
 

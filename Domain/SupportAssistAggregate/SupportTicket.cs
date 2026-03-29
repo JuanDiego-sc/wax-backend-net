@@ -17,6 +17,8 @@ public class SupportTicket : BaseEntity
     
     public string OrderId { get; set; } = "";
     public Order Order { get; set; } = null!;
-    
+
+    public ICollection<Comment> Comments { get; set; } = [];
+
     #endregion
 }

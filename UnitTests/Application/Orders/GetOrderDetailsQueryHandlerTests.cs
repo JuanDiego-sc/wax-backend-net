@@ -23,15 +23,10 @@ public class GetOrderDetailsQueryHandlerTests
     [Fact]
     public async Task Handle_WhenOrderNotFound_ReturnsFailureWith404()
     {
-        using var context = CreateInMemoryContext();
-
         var repoMock = new Mock<IOrderReadRepository>();
-        repoMock.Setup(r => r.GetOrderByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((string id, CancellationToken ct) => 
-                context.Orders.Include(o => o.OrderItems)
-                    .Where(x => x.Id == id)
-                    .ProjectToDto()
-                    .FirstOrDefault());
+        repoMock
+            .Setup(r => r.GetOrderByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((OrderDto?)null);
 
         var handler = new GetOrderDetailsQueryHandler(repoMock.Object);
         var result = await handler.Handle(new GetOrderDetailsQuery { OrderId = "missing" }, CancellationToken.None);
@@ -49,13 +44,38 @@ public class GetOrderDetailsQueryHandlerTests
         context.Orders.Add(order);
         await context.SaveChangesAsync();
 
+        var expectedDto = new OrderDto
+        {
+            Id = "test-order-id",
+            BuyerEmail = "buyer@example.com",
+            OrderStatus = "Pending",
+            Subtotal = 1000,
+            DeliveryFee = 100,
+            Total = 1100,
+            CreateAt = DateTime.UtcNow,
+            BillingAddress = new BillingAddressDto
+            {
+                Name = "Test User",
+                Line1 = "Calle 1",
+                City = "Quito",
+                Country = "EC",
+                State = "Calle 2",
+                PostalCode = "12345",
+            },
+            PaymentSummary = new PaymentSummaryDto
+            {
+                Last4 = 4242,
+                Brand = "visa",
+                ExpMonth = 12,
+                ExpYear = 2026
+            },
+            OrderItems = []
+        };
+
         var repoMock = new Mock<IOrderReadRepository>();
-        repoMock.Setup(r => r.GetOrderByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((string id, CancellationToken ct) => 
-                context.Orders.Include(o => o.OrderItems)
-                    .Where(x => x.Id == id)
-                    .ProjectToDto()
-                    .FirstOrDefault());
+        repoMock
+            .Setup(r => r.GetOrderByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedDto);
 
         var handler = new GetOrderDetailsQueryHandler(repoMock.Object);
         var result = await handler.Handle(new GetOrderDetailsQuery { OrderId = order.Id }, CancellationToken.None);

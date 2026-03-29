@@ -1,10 +1,10 @@
 using Application.Interfaces;
 using Application.Interfaces.DTOs;
-using Application.Interfaces.Repositories.WriteRepositores;
 using Application.Interfaces.Publish;
 using Application.Product.Commands;
 using Application.Product.DTOs;
 using Application.IntegrationEvents.ProductEvents;
+using Application.Interfaces.Repositories.WriteRepositories;
 
 
 namespace UnitTests.Application.Product;

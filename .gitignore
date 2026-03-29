@@ -483,6 +483,8 @@ $RECYCLE.BIN/
 # Vim temporary swap files
 *.swp
 API/appsettings.json
+API/appsettings.Development.json
+API/Properties/launchSettings.json
 
 #opencode
 .opencode
@@ -490,3 +492,4 @@ API/appsettings.json
 .agents
 .docs
 AGENTS.md
+

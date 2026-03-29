@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Persistence.Migrations.ReadMigrations
 {
     /// <inheritdoc />
-    public partial class InitialReadMigration : Migration
+    public partial class InitialMigracion : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,7 +25,7 @@ namespace Persistence.Migrations.ReadMigrations
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     BillingName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     BillingLine1 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    BillingLine2 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    BillingLine2 = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     BillingCity = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     BillingState = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     BillingPostalCode = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),

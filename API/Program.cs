@@ -1,15 +1,18 @@
 using API.Middleware;
+using API.SignalR;
 using Application.Basket.Commands;
 using Application.Basket.Interfaces;
 using Application.Core.Validations;
 using Application.Interfaces;
 using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.ReadRepositories;
-using Application.Interfaces.Repositories.WriteRepositores;
 using Application.Interfaces.Repositories.WriteRepositories;
+using Application.Interfaces.Services;
 using Domain.Entities;
 using Infrastructure.Cookies;
 using Infrastructure.Email;
+using Infrastructure.Email.EmailTemplates;
+using Infrastructure.Email.Services;
 using Infrastructure.Images;
 using Infrastructure.Messaging;
 using Infrastructure.Payments;
@@ -40,6 +43,8 @@ builder.Services.AddDbContext<ReadDbContext>(options =>
 });
 
 builder.Services.AddCors();
+builder.Services.AddSignalR();
+
 builder.Services.AddMediatR(x =>
 {
     x.RegisterServicesFromAssemblyContaining<AddItemCommandHandler>();
@@ -68,12 +73,15 @@ builder.Services.AddMassTransit(configuration =>
 });
 
 builder.Services.AddHttpClient<ResendClient>();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.Configure<ResendClientOptions>(options =>
 {
     options.ApiToken = builder.Configuration["ResendSettings:ApiToken"]!;
 });
 builder.Services.AddScoped<IResend, ResendClient>();
-builder.Services.AddSingleton<IEmailSender<User>, EmailSender>();
+builder.Services.AddSingleton<EmailTemplateService>();
+builder.Services.AddScoped<IEmailService, ResendEmailService>();
+builder.Services.AddScoped<IEmailSender<User>, IdentityEmailSender>();
 
 builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 builder.Services.AddScoped<IImageService, ImageService>();
@@ -84,6 +92,7 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IBasketRepository, BasketRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<ISupportTicketRepository, SupportTicketRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>(); 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IProductReadRepository, ProductReadRepository>();
@@ -117,6 +126,7 @@ app.UseCors(x => x
 
 app.MapControllers();
 app.MapGroup("api").MapIdentityApi<User>();
+app.MapHub<SupportHub>("/comments");
 
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
@@ -124,11 +134,16 @@ try
 {
     var writeContext = services.GetRequiredService<WriteDbContext>();
     var readContext = services.GetRequiredService<ReadDbContext>();
-    //var userManager = services.GetRequiredService<UserManager<User>>();
     await writeContext.Database.MigrateAsync();
     await readContext.Database.MigrateAsync();
     
-    //await DbInitializer.SeedData(context, userManager);
+    var initializer = new DbInitializer(
+        writeContext,
+        services.GetRequiredService<UserManager<User>>(),
+        services.GetRequiredService<RoleManager<IdentityRole>>(),
+        services.GetRequiredService<IConfiguration>(),
+        services.GetRequiredService<ILogger<DbInitializer>>());
+    await initializer.InitializeAsync();
 }
 catch (Exception ex)
 {

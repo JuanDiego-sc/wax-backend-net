@@ -1,5 +1,4 @@
-
-using Application.Interfaces.Repositories.WriteRepositores;
+using Application.Interfaces.Repositories.WriteRepositories;
 using Domain.SupportAssistAggregate;
 using Microsoft.EntityFrameworkCore;
 using Persistence;

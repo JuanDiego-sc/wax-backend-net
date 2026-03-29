@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations.ReadMigrations
 {
     [DbContext(typeof(ReadDbContext))]
-    [Migration("20260319031926_InitialReadMigration")]
-    partial class InitialReadMigration
+    [Migration("20260322031954_InitialMigracion")]
+    partial class InitialMigracion
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -46,7 +46,6 @@ namespace Persistence.Migrations.ReadMigrations
                         .HasColumnType("character varying(200)");
 
                     b.Property<string>("BillingLine2")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
