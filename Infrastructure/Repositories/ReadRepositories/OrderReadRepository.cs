@@ -10,6 +10,28 @@ namespace Infrastructure.Repositories.ReadRepositories;
 
 public class OrderReadRepository(ReadDbContext context) : IOrderReadRepository
 {
+    public async Task<OrderDto?> GetOrderByIdAsync(string id, CancellationToken cancellationToken = default)
+    {
+        return await context.Orders
+            .Where(o => o.Id == id)
+            .Select(MapToDto)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<OrderDto?> GetByPaymentIntentIdAsync(string paymentIntentId,
+        CancellationToken cancellationToken = default)
+    {
+        return await context.Orders
+            .Where(o => o.PaymentIntentId == paymentIntentId)
+            .Select(MapToDto)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+    
+    public IQueryable<OrderDto> GetQueryable()
+    {
+        return context.Orders.Select(MapToDto);
+    }
+    
     private static readonly Expression<Func<OrderReadModel, OrderDto>> MapToDto = o => new OrderDto
     {
         Id = o.Id,
@@ -40,28 +62,5 @@ public class OrderReadRepository(ReadDbContext context) : IOrderReadRepository
         OrderItems = JsonSerializer.Deserialize<List<OrderItemDto>>(o.OrderItems, JsonSerializerOptions.Default) ??
                      new List<OrderItemDto>()
     };
-
-    public async Task<OrderDto?> GetOrderByIdAsync(string id, CancellationToken cancellationToken = default)
-    {
-        return await context.Orders
-            .Where(o => o.Id == id)
-            .Select(MapToDto)
-            .FirstOrDefaultAsync(cancellationToken);
-    }
-
-    public async Task<OrderDto?> GetByPaymentIntentIdAsync(string paymentIntentId,
-        CancellationToken cancellationToken = default)
-    {
-        return await context.Orders
-            .Where(o => o.PaymentIntentId == paymentIntentId)
-            .Select(MapToDto)
-            .FirstOrDefaultAsync(cancellationToken);
-    }
-    
-    public IQueryable<OrderDto> GetOrders()
-    {
-        return context.Orders.Select(MapToDto);
-    }
-    
     
 }

@@ -5,24 +5,20 @@ namespace Application.SupportAssist.Extensions;
 
 public static class SupportTicketExtensions
 {
-    public static SupportTicketDto ToDto(this SupportTicket ticket)
+    
+    public static SupportTicketDto ToDto(this SupportTicket ticket) => new()
     {
-        return new SupportTicketDto
-        {
-            Id = ticket.Id,
-            UserId = ticket.UserId,
-            OrderId = ticket.OrderId,
-            Category = ticket.Category.ToString(),
-            Status = ticket.Status.ToString(),
-            Description = ticket.Description,
-            Subject = ticket.Subject,
-            CreatedAt = ticket.CreatedAt,
-            UserEmail = ticket.User?.UserName ?? string.Empty,
-            UserFullName = ticket.User?.UserName ?? string.Empty
-        };
-    }
-
-    public static IQueryable<SupportTicket> Sort(this IQueryable<SupportTicket> query, string? orderBy)
+        Id = ticket.Id,
+        Subject = ticket.Subject,
+        Description = ticket.Description,
+        Status = ticket.Status.ToString(),
+        CreatedAt = ticket.CreatedAt,
+        UserId = ticket.UserId,
+        OrderId =  ticket.OrderId,
+        Category = ticket.Category.ToString()
+    };
+    
+    public static IQueryable<SupportTicketDto> Sort(this IQueryable<SupportTicketDto> query, string? orderBy)
     {
         query = orderBy switch
         {
@@ -33,7 +29,7 @@ public static class SupportTicketExtensions
         return query;
     }
 
-    public static IQueryable<SupportTicket> Filter(this IQueryable<SupportTicket> query, string? status, string? category, DateTime? createdOn)
+    public static IQueryable<SupportTicketDto> Filter(this IQueryable<SupportTicketDto> query, string? status, string? category, DateTime? createdOn)
     {
         var statusList = new List<string>();
         var categoryList = new List<string>();
@@ -48,8 +44,8 @@ public static class SupportTicketExtensions
             categoryList.AddRange([.. category.ToLower().Split(",")]);
         }
 
-        query = query.Where(x => statusList.Count == 0 || statusList.Contains(x.Status.ToString().ToLower()));
-        query = query.Where(x => categoryList.Count == 0 || categoryList.Contains(x.Category.ToString().ToLower()));
+        query = query.Where(x => statusList.Count == 0 || statusList.Contains(x.Status.ToLower()));
+        query = query.Where(x => categoryList.Count == 0 || categoryList.Contains(x.Category.ToLower()));
 
         if (createdOn.HasValue)
         {

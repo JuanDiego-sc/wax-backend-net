@@ -5,7 +5,7 @@ using Application.Orders.Extensions;
 using Application.Orders.Queries;
 using Domain.OrderAggregate;
 using Microsoft.EntityFrameworkCore;
-using Moq;
+using MockQueryable;
 using Persistence;
 using UnitTests.Helpers.Fixtures;
 
@@ -25,14 +25,20 @@ public class GetOrdersQueryHandlerTests
     public async Task Handle_ReturnsAllOrdersWithoutFilter()
     {
         using var context = CreateInMemoryContext();
-        context.Orders.AddRange(
+        var orders = new List<Order>
+        {
             OrderFixtures.CreateOrder(),
             OrderFixtures.CreateOrder(),
-            OrderFixtures.CreateOrder());
+            OrderFixtures.CreateOrder()
+        };
+        context.Orders.AddRange(orders);
         await context.SaveChangesAsync();
 
+        var orderDtos = context.Orders.Include(o => o.OrderItems).AsEnumerable().Select(o => o.ToDto()).ToList();
+        var mockQueryable = orderDtos.BuildMock();
+
         var repoMock = new Mock<IOrderReadRepository>();
-        repoMock.Setup(r => r.GetOrders()).Returns(context.Orders.Include(o => o.OrderItems).ProjectToDto().AsQueryable());
+        repoMock.Setup(r => r.GetQueryable()).Returns(mockQueryable);
 
         var handler = new GetOrdersQueryHandler(repoMock.Object);
         var query = new GetOrdersQuery
@@ -56,8 +62,11 @@ public class GetOrdersQueryHandlerTests
             OrderFixtures.CreateOrder(status: OrderStatus.Pending));
         await context.SaveChangesAsync();
 
+        var orderDtos = context.Orders.Include(o => o.OrderItems).AsEnumerable().Select(o => o.ToDto()).ToList();
+        var mockQueryable = orderDtos.BuildMock();
+
         var repoMock = new Mock<IOrderReadRepository>();
-        repoMock.Setup(r => r.GetOrders()).Returns(context.Orders.Include(o => o.OrderItems).ProjectToDto().AsQueryable());
+        repoMock.Setup(r => r.GetQueryable()).Returns(mockQueryable);
 
         var handler = new GetOrdersQueryHandler(repoMock.Object);
         var query = new GetOrdersQuery
@@ -79,8 +88,11 @@ public class GetOrdersQueryHandlerTests
             context.Orders.Add(OrderFixtures.CreateOrder());
         await context.SaveChangesAsync();
 
+        var orderDtos = context.Orders.Include(o => o.OrderItems).AsEnumerable().Select(o => o.ToDto()).ToList();
+        var mockQueryable = orderDtos.BuildMock();
+
         var repoMock = new Mock<IOrderReadRepository>();
-        repoMock.Setup(r => r.GetOrders()).Returns(context.Orders.Include(o => o.OrderItems).ProjectToDto().AsQueryable());
+        repoMock.Setup(r => r.GetQueryable()).Returns(mockQueryable);
 
         var handler = new GetOrdersQueryHandler(repoMock.Object);
         var query = new GetOrdersQuery

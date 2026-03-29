@@ -2,7 +2,6 @@ using Application.Core;
 using Application.Core.Pagination;
 using Application.Interfaces.Repositories.ReadRepositories;
 using Application.Orders.DTOs;
-using Application.Orders.Extensions;
 using Domain.OrderAggregate;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +15,7 @@ public class GetOrdersQueryHandler(IOrderReadRepository orderRepository) :
     public async Task<Result<InfinityPagedList<OrderDto, DateTime?>>> Handle(
         GetOrdersQuery request, CancellationToken cancellationToken)
     {
-        var query = orderRepository.GetOrders()
+        var query = orderRepository.GetQueryable()
             .AsNoTracking()
             .OrderBy(x => x.CreateAt)
             .Where(x => x.CreateAt >= (request.OrderParams.Cursor ?? request.OrderParams.StartDate))
