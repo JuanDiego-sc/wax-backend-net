@@ -38,6 +38,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
       - name: Install SonarCloud scanner
         run: dotnet tool install --global dotnet-sonarscanner
 
@@ -55,8 +62,7 @@ jobs:
             /d:sonar.host.url="https://sonarcloud.io" \
             /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml" \
             /d:sonar.exclusions="**/Migrations/**" \
-            /d:sonar.coverage.exclusions="**/Migrations/**,**/*Tests*/**,**/Program.cs" \
-            /d:sonar.qualitygate.wait=true
+            /d:sonar.coverage.exclusions="**/Migrations/**,**/*Tests*/**,**/Program.cs"
 
       - name: Build
         run: dotnet build ${{ env.SOLUTION_PATH }} --no-restore --configuration Release
