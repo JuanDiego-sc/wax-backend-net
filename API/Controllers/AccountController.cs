@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class AccountController(SignInManager<User> signInManager) : BaseApiController
+public class AccountController(SignInManager<User> signInManager, IEmailSender<User> emailSender) 
+    : BaseApiController
 {
     [HttpPost("register")]
     public async Task<ActionResult> RegisterUser(RegisterDto registerDto)
@@ -91,5 +92,40 @@ public class AccountController(SignInManager<User> signInManager) : BaseApiContr
         if(address == null) return NoContent();
 
         return address;
+    }
+    
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult> ForgotPassword(ForgotPasswordDto forgotPasswordDto)
+    {
+        var user = await signInManager.UserManager.FindByEmailAsync(forgotPasswordDto.Email);
+        
+        if (user == null || !await signInManager.UserManager.IsEmailConfirmedAsync(user))
+            return Ok();
+
+        var code = await signInManager.UserManager.GeneratePasswordResetTokenAsync(user);
+        
+        await emailSender.SendPasswordResetCodeAsync(user, forgotPasswordDto.Email, code);
+
+        return Ok();
+    }
+    
+    [HttpPost("reset-password")]
+    public async Task<ActionResult> ResetPassword(ResetPasswordDto passwordDto)
+    {
+        var user = await signInManager.UserManager.FindByEmailAsync(passwordDto.Email);
+
+        if (user == null)
+            return Ok();
+
+        var result = await signInManager.UserManager.ResetPasswordAsync(
+            user,
+            passwordDto.Code,
+            passwordDto.NewPassword);
+
+        if (result.Succeeded) return Ok();
+        foreach (var error in result.Errors)
+            ModelState.AddModelError(error.Code, error.Description);
+        return ValidationProblem();
+
     }
 }
