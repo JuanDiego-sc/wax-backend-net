@@ -66,6 +66,7 @@ jobs:
             /d:sonar.cs.cobertura.reportsPaths="coverage/**/coverage.cobertura.xml" \
             /d:sonar.exclusions="**/Migrations/**" \
             /d:sonar.coverage.exclusions="**/Migrations/**,**/*Tests*/**,**/Program.cs"
+            /d:sonar.scanner.scanAll=false
 
       - name: Build
         run: dotnet build ${{ env.SOLUTION_PATH }} --no-restore --configuration Release
