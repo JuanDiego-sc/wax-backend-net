@@ -47,7 +47,7 @@ public class CreateOrUpdateIntentCommandHandlerTests
 
         _paymentService
             .Setup(p => p.CreateOrUpdatePaymentIntent(It.IsAny<DomainBasket>()))
-            .ReturnsAsync((PaymentIntentResult?)null);
+            .Returns(Task.FromResult<PaymentIntentResult>(null!));
 
         var command = new CreateOrUpdateIntentCommand { BasketId = basket.BasketId };
 
