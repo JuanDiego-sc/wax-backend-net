@@ -1,0 +1,305 @@
+using Application.IntegrationEvents.OrderEvents;
+using Application.IntegrationEvents.ProductEvents;
+using Application.Interfaces;
+using Application.Interfaces.Publish;
+using Application.Interfaces.Repositories.WriteRepositories;
+using Application.Payment.Commands;
+using Application.Payment.Events;
+using Domain.Entities;
+using Domain.OrderAggregate;
+using Microsoft.Extensions.Logging;
+using UnitTests.Helpers.Fixtures;
+using DomainBasket = Domain.Entities.Basket;
+
+namespace UnitTests.Application.Payment;
+
+public class HandleStripeWebhookCommandHandlerTests
+{
+    private readonly Mock<IPaymentService> _paymentService = new();
+    private readonly Mock<IOrderRepository> _orderRepo = new();
+    private readonly Mock<IBasketRepository> _basketRepo = new();
+    private readonly Mock<IProductRepository> _productRepo = new();
+    private readonly Mock<IUnitOfWork> _unitOfWork = new();
+    private readonly Mock<IEventPublisher> _eventPublisher = new();
+    private readonly Mock<ILogger<HandleStripeWebhookCommandHandler>> _logger = new();
+    private readonly HandleStripeWebhookCommandHandler _handler;
+
+    public HandleStripeWebhookCommandHandlerTests()
+    {
+        _handler = new HandleStripeWebhookCommandHandler(
+            _paymentService.Object,
+            _orderRepo.Object,
+            _basketRepo.Object,
+            _productRepo.Object,
+            _unitOfWork.Object,
+            _eventPublisher.Object,
+            _logger.Object);
+    }
+
+    private HandleStripeWebhookCommand CreateCommand() => new()
+    {
+        Payload = "test_payload",
+        Signature = "test_signature"
+    };
+
+    [Fact]
+    public async Task Handle_WhenPaymentSucceeded_AndAmountMatches_SetsStatusToPaymentReceived()
+    {
+        var order = OrderFixtures.CreateOrder(subtotal: 5000, deliveryFee: 500);
+        var stripeEvent = new StripeEventResult(
+            Type: "payment_intent.succeeded",
+            Status: "succeeded",
+            IntentId: order.PaymentIntentId,
+            Amount: order.GetTotal());
+
+        _paymentService
+            .Setup(p => p.ConstructStripeEvent(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(stripeEvent);
+
+        _orderRepo
+            .Setup(r => r.GetByPaymentIntentIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(order);
+
+        _basketRepo
+            .Setup(r => r.GetBasketWithItemsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DomainBasket?)null);
+
+        var result = await _handler.Handle(CreateCommand(), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        order.OrderStatus.Should().Be(OrderStatus.PaymentRecieved);
+    }
+
+    [Fact]
+    public async Task Handle_WhenPaymentSucceeded_AndAmountMismatch_SetsStatusToPaymentMismatch()
+    {
+        var order = OrderFixtures.CreateOrder(subtotal: 5000, deliveryFee: 500);
+        var stripeEvent = new StripeEventResult(
+            Type: "payment_intent.succeeded",
+            Status: "succeeded",
+            IntentId: order.PaymentIntentId,
+            Amount: 9999);
+
+        _paymentService
+            .Setup(p => p.ConstructStripeEvent(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(stripeEvent);
+
+        _orderRepo
+            .Setup(r => r.GetByPaymentIntentIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(order);
+
+        _basketRepo
+            .Setup(r => r.GetBasketWithItemsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DomainBasket?)null);
+
+        var result = await _handler.Handle(CreateCommand(), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        order.OrderStatus.Should().Be(OrderStatus.PaymentMismatch);
+    }
+
+    [Fact]
+    public async Task Handle_WhenPaymentSucceeded_AndBasketExists_RemovesBasket()
+    {
+        var order = OrderFixtures.CreateOrder();
+        var basket = BasketFixtures.CreateBasketWithItems();
+        var stripeEvent = new StripeEventResult(
+            Type: "payment_intent.succeeded",
+            Status: "succeeded",
+            IntentId: order.PaymentIntentId,
+            Amount: order.GetTotal());
+
+        _paymentService
+            .Setup(p => p.ConstructStripeEvent(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(stripeEvent);
+
+        _orderRepo
+            .Setup(r => r.GetByPaymentIntentIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(order);
+
+        _basketRepo
+            .Setup(r => r.GetBasketWithItemsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(basket);
+
+        await _handler.Handle(CreateCommand(), CancellationToken.None);
+
+        _basketRepo.Verify(r => r.Remove(basket), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_WhenPaymentSucceeded_PublishesOrderStatusChangedEvent()
+    {
+        var order = OrderFixtures.CreateOrder();
+        var stripeEvent = new StripeEventResult(
+            Type: "payment_intent.succeeded",
+            Status: "succeeded",
+            IntentId: order.PaymentIntentId,
+            Amount: order.GetTotal());
+
+        _paymentService
+            .Setup(p => p.ConstructStripeEvent(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(stripeEvent);
+
+        _orderRepo
+            .Setup(r => r.GetByPaymentIntentIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(order);
+
+        _basketRepo
+            .Setup(r => r.GetBasketWithItemsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((DomainBasket?)null);
+
+        await _handler.Handle(CreateCommand(), CancellationToken.None);
+
+        _eventPublisher.Verify(
+            e => e.PublishEventAsync(
+                It.Is<OrderStatusChangedIntegrationEvent>(ev => ev.OrderId == order.Id),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_WhenPaymentFailed_SetsStatusToPaymentFailed()
+    {
+        var product = ProductFixtures.CreateProduct(quantityInStock: 5);
+        var orderItem = new OrderItem
+        {
+            ItemOrdered = new ProductOrderItem { ProductId = product.Id, Name = product.Name },
+            Price = 1500,
+            Quantity = 2
+        };
+        var order = OrderFixtures.CreateOrder(items: [orderItem]);
+
+        var stripeEvent = new StripeEventResult(
+            Type: "payment_intent.payment_failed",
+            Status: "failed",
+            IntentId: order.PaymentIntentId,
+            Amount: 0);
+
+        _paymentService
+            .Setup(p => p.ConstructStripeEvent(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(stripeEvent);
+
+        _orderRepo
+            .Setup(r => r.GetByPaymentIntentIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(order);
+
+        _productRepo
+            .Setup(r => r.GetByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(product);
+
+        var result = await _handler.Handle(CreateCommand(), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        order.OrderStatus.Should().Be(OrderStatus.PaymentFailed);
+    }
+
+    [Fact]
+    public async Task Handle_WhenPaymentFailed_RestoresProductStock()
+    {
+        var product = ProductFixtures.CreateProduct(quantityInStock: 5);
+        var orderItem = new OrderItem
+        {
+            ItemOrdered = new ProductOrderItem { ProductId = product.Id, Name = product.Name },
+            Price = 1500,
+            Quantity = 2
+        };
+        var order = OrderFixtures.CreateOrder(items: [orderItem]);
+
+        var stripeEvent = new StripeEventResult(
+            Type: "payment_intent.payment_failed",
+            Status: "failed",
+            IntentId: order.PaymentIntentId,
+            Amount: 0);
+
+        _paymentService
+            .Setup(p => p.ConstructStripeEvent(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(stripeEvent);
+
+        _orderRepo
+            .Setup(r => r.GetByPaymentIntentIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(order);
+
+        _productRepo
+            .Setup(r => r.GetByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(product);
+
+        await _handler.Handle(CreateCommand(), CancellationToken.None);
+
+        product.QuantityInStock.Should().Be(7);
+    }
+
+    [Fact]
+    public async Task Handle_WhenPaymentFailed_PublishesStockChangedEvent()
+    {
+        var product = ProductFixtures.CreateProduct(quantityInStock: 5);
+        var orderItem = new OrderItem
+        {
+            ItemOrdered = new ProductOrderItem { ProductId = product.Id, Name = product.Name },
+            Price = 1500,
+            Quantity = 2
+        };
+        var order = OrderFixtures.CreateOrder(items: [orderItem]);
+
+        var stripeEvent = new StripeEventResult(
+            Type: "payment_intent.payment_failed",
+            Status: "failed",
+            IntentId: order.PaymentIntentId,
+            Amount: 0);
+
+        _paymentService
+            .Setup(p => p.ConstructStripeEvent(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(stripeEvent);
+
+        _orderRepo
+            .Setup(r => r.GetByPaymentIntentIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(order);
+
+        _productRepo
+            .Setup(r => r.GetByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(product);
+
+        await _handler.Handle(CreateCommand(), CancellationToken.None);
+
+        _eventPublisher.Verify(
+            e => e.PublishEventAsync(
+                It.Is<ProductStockChangedIntegrationEvent>(ev =>
+                    ev.ProductId == product.Id && ev.NewQuantity == 7),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_WhenExceptionOccurs_ReturnsFailure()
+    {
+        _paymentService
+            .Setup(p => p.ConstructStripeEvent(It.IsAny<string>(), It.IsAny<string>()))
+            .Throws(new Exception("Stripe error"));
+
+        var result = await _handler.Handle(CreateCommand(), CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be("Error handling Stripe webhook");
+    }
+
+    [Fact]
+    public async Task Handle_WhenPaymentFailed_AndOrderNotFound_ThrowsException()
+    {
+        var stripeEvent = new StripeEventResult(
+            Type: "payment_intent.payment_failed",
+            Status: "failed",
+            IntentId: "unknown_intent",
+            Amount: 0);
+
+        _paymentService
+            .Setup(p => p.ConstructStripeEvent(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(stripeEvent);
+
+        _orderRepo
+            .Setup(r => r.GetByPaymentIntentIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Order?)null);
+
+        var result = await _handler.Handle(CreateCommand(), CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+    }
+}
