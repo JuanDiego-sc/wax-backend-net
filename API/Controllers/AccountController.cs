@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-public class AccountController(SignInManager<User> signInManager) : BaseApiController
+public class AccountController(SignInManager<User> signInManager, IEmailSender<User> emailSender) 
+    : BaseApiController
 {
     [HttpPost("register")]
     public async Task<ActionResult> RegisterUser(RegisterDto registerDto)
@@ -91,5 +92,40 @@ public class AccountController(SignInManager<User> signInManager) : BaseApiContr
         if(address == null) return NoContent();
 
         return address;
+    }
+    
+    [HttpPost("forgot-password")]
+    public async Task<ActionResult> ForgotPassword(ForgotPasswordRequest forgotPasswordRequest)
+    {
+        var user = await signInManager.UserManager.FindByEmailAsync(forgotPasswordRequest.Email);
+        
+        if (user == null )
+            return Ok();
+
+        var code = await signInManager.UserManager.GeneratePasswordResetTokenAsync(user);
+        
+        await emailSender.SendPasswordResetCodeAsync(user, forgotPasswordRequest.Email, code);
+
+        return Ok();
+    }
+    
+    [HttpPost("reset-password")]
+    public async Task<ActionResult> ResetPassword(ResetPasswordRequest passwordRequest)
+    {
+        var user = await signInManager.UserManager.FindByEmailAsync(passwordRequest.Email);
+
+        if (user == null)
+            return Ok();
+
+        var result = await signInManager.UserManager.ResetPasswordAsync(
+            user,
+            passwordRequest.Code,
+            passwordRequest.NewPassword);
+
+        if (result.Succeeded) return Ok();
+        foreach (var error in result.Errors)
+            ModelState.AddModelError(error.Code, error.Description);
+        return ValidationProblem();
+
     }
 }
