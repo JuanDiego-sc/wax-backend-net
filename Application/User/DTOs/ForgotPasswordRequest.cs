@@ -1,6 +1,6 @@
 namespace Application.User.DTOs;
 
-public record ForgotPasswordDto
+public record ForgotPasswordRequest
 {
     public required string Email { get; set; }
 }
