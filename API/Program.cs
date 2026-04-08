@@ -11,6 +11,7 @@ using Application.Interfaces.Services;
 using Domain.Entities;
 using Infrastructure.Cookies;
 using Infrastructure.Email;
+using Infrastructure.Email.Adapters;
 using Infrastructure.Email.EmailTemplates;
 using Infrastructure.Email.Services;
 using Infrastructure.Images;
@@ -22,6 +23,7 @@ using Infrastructure.Security;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Persistence;
 using Resend;
 
@@ -72,16 +74,22 @@ builder.Services.AddMassTransit(configuration =>
     });
 });
 
-builder.Services.AddHttpClient<ResendClient>();
+builder.Services.AddHttpClient("ResendClient");
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.Configure<ResendClientOptions>(options =>
 {
-    options.ApiToken = builder.Configuration["ResendSettings:ApiToken"]!;
+    options.ApiToken = builder.Configuration["EmailSettings:ApiToken"]!;
 });
-builder.Services.AddScoped<IResend, ResendClient>();
+builder.Services.AddSingleton<IResend>(sp =>
+{
+    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+    var options = sp.GetRequiredService<IOptions<ResendClientOptions>>();
+    var httpClient = httpClientFactory.CreateClient("ResendClient");
+    return new ResendClient(new OptionsSnapshotAdapter<ResendClientOptions>(options),  httpClient);
+});
 builder.Services.AddSingleton<EmailTemplateService>();
-builder.Services.AddScoped<IEmailService, ResendEmailService>();
-builder.Services.AddScoped<IEmailSender<User>, IdentityEmailSender>();
+builder.Services.AddTransient<IEmailService, ResendEmailService>();
+builder.Services.AddTransient<IEmailSender<User>, IdentityEmailSender>();
 
 builder.Services.AddScoped<IUserAccessor, UserAccessor>();
 builder.Services.AddScoped<IImageService, ImageService>();
