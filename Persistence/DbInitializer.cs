@@ -7,7 +7,6 @@ using Microsoft.Extensions.Logging;
 namespace Persistence;
 
 public class DbInitializer(
-    WriteDbContext context,
     UserManager<User> userManager,
     RoleManager<IdentityRole> roleManager,
     IConfiguration configuration,

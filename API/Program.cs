@@ -146,7 +146,6 @@ try
     await readContext.Database.MigrateAsync();
     
     var initializer = new DbInitializer(
-        writeContext,
         services.GetRequiredService<UserManager<User>>(),
         services.GetRequiredService<RoleManager<IdentityRole>>(),
         services.GetRequiredService<IConfiguration>(),
