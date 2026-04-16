@@ -47,8 +47,8 @@ public class CreateOrderCommandHandler(
             order = new Order
             {
                 BuyerEmail = user.Email ?? string.Empty,
-                BillingAddress = user.Address,
-                AddressId =  user.AddressId,
+                BillingAddress = user.Address!,
+                AddressId =  user.AddressId!,
                 OrderItems = items,
                 Subtotal = subtotal,
                 DeliveryFee = deliveryFee,
@@ -71,7 +71,7 @@ public class CreateOrderCommandHandler(
             Subtotal = order.Subtotal,
             DeliveryFee = order.DeliveryFee,
             Total = order.GetTotal(),
-            BillingName = order.BillingAddress.Name,
+            BillingName = order.BillingAddress!.Name,
             BillingLine1 = order.BillingAddress.Line1,
             BillingLine2 = order.BillingAddress.Line2,
             BillingCity = order.BillingAddress.City,
