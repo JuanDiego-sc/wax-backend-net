@@ -5,7 +5,6 @@ using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Payment.Commands;
 using Application.Payment.Events;
-using Domain.Entities;
 using Domain.OrderAggregate;
 using Microsoft.Extensions.Logging;
 using UnitTests.Helpers.Fixtures;

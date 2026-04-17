@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Domain.Entities;
 
-public class Address : BaseEntity
+public class BillingAddress : BaseEntity
 {
     public required string Name { get; set; }
     public required string Line1 { get; set; }

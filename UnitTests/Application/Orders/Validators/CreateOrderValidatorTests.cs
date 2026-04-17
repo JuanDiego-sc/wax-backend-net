@@ -1,7 +1,6 @@
 using Application.Orders.Commands;
 using Application.Orders.DTOs;
 using Application.Orders.Validators;
-using Domain.Entities;
 using Domain.OrderAggregate;
 using FluentValidation.TestHelper;
 
@@ -16,15 +15,6 @@ public class CreateOrderValidatorTests
         BasketId = "basket-1",
         OrderDto = new CreateOrderDto
         {
-            BillingAddress = new Address
-            {
-                Name = "Test User",
-                Line1 = "123 Main St",
-                City = "Test City",
-                State = "TS",
-                PostalCode = "12345",
-                Country = "US"
-            },
             PaymentSummary = new PaymentSummary
             {
                 Brand = "Visa",
@@ -43,86 +33,6 @@ public class CreateOrderValidatorTests
 
         var result = _validator.TestValidate(command);
         result.ShouldHaveValidationErrorFor(x => x.BasketId);
-    }
-
-    [Fact]
-    public void Validate_WhenBillingAddressNull_HasError()
-    {
-        var command = CreateValidCommand();
-        command.OrderDto.BillingAddress = null!;
-
-        var result = _validator.TestValidate(command);
-        result.ShouldHaveValidationErrorFor(x => x.OrderDto.BillingAddress);
-    }
-
-    [Fact]
-    public void Validate_WhenBillingNameEmpty_HasError()
-    {
-        var command = CreateValidCommand();
-        command.OrderDto.BillingAddress.Name = "";
-
-        var result = _validator.TestValidate(command);
-        result.ShouldHaveValidationErrorFor(x => x.OrderDto.BillingAddress.Name);
-    }
-
-    [Fact]
-    public void Validate_WhenBillingNameExceeds100_HasError()
-    {
-        var command = CreateValidCommand();
-        command.OrderDto.BillingAddress.Name = new string('a', 101);
-
-        var result = _validator.TestValidate(command);
-        result.ShouldHaveValidationErrorFor(x => x.OrderDto.BillingAddress.Name);
-    }
-
-    [Fact]
-    public void Validate_WhenBillingLine1Empty_HasError()
-    {
-        var command = CreateValidCommand();
-        command.OrderDto.BillingAddress.Line1 = "";
-
-        var result = _validator.TestValidate(command);
-        result.ShouldHaveValidationErrorFor(x => x.OrderDto.BillingAddress.Line1);
-    }
-
-    [Fact]
-    public void Validate_WhenBillingCityEmpty_HasError()
-    {
-        var command = CreateValidCommand();
-        command.OrderDto.BillingAddress.City = "";
-
-        var result = _validator.TestValidate(command);
-        result.ShouldHaveValidationErrorFor(x => x.OrderDto.BillingAddress.City);
-    }
-
-    [Fact]
-    public void Validate_WhenBillingStateEmpty_HasError()
-    {
-        var command = CreateValidCommand();
-        command.OrderDto.BillingAddress.State = "";
-
-        var result = _validator.TestValidate(command);
-        result.ShouldHaveValidationErrorFor(x => x.OrderDto.BillingAddress.State);
-    }
-
-    [Fact]
-    public void Validate_WhenBillingPostalCodeEmpty_HasError()
-    {
-        var command = CreateValidCommand();
-        command.OrderDto.BillingAddress.PostalCode = "";
-
-        var result = _validator.TestValidate(command);
-        result.ShouldHaveValidationErrorFor(x => x.OrderDto.BillingAddress.PostalCode);
-    }
-
-    [Fact]
-    public void Validate_WhenBillingCountryEmpty_HasError()
-    {
-        var command = CreateValidCommand();
-        command.OrderDto.BillingAddress.Country = "";
-
-        var result = _validator.TestValidate(command);
-        result.ShouldHaveValidationErrorFor(x => x.OrderDto.BillingAddress.Country);
     }
 
     [Fact]

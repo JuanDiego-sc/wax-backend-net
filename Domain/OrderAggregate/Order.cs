@@ -14,8 +14,8 @@ public class Order : BaseEntity
     public required PaymentSummary PaymentSummary { get; set; }
     
     //Navigation props
-    public required string AddressId { get; set; }
-    public required Address BillingAddress { get; set; }
+    public required string BillingAddressId { get; set; }
+    public required BillingAddress BillingAddress { get; set; }
 
     public long GetTotal()
     {
