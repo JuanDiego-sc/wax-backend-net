@@ -1,4 +1,5 @@
 using Application.Core;
+using Application.Core.Validations;
 using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Interfaces.Services;
 using Application.Orders.DTOs;

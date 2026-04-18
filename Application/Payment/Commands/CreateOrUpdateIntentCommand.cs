@@ -1,6 +1,7 @@
 using System;
 using Application.Basket.DTOs;
 using Application.Core;
+using Application.Core.Validations;
 using MediatR;
 
 namespace Application.Payment.Commands;

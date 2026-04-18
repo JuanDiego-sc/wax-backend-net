@@ -1,6 +1,7 @@
 using Application.Basket.DTOs;
 using Application.Basket.Extensions;
 using Application.Core;
+using Application.Core.Validations;
 using Application.Interfaces.Repositories.WriteRepositories;
 using MediatR;
 

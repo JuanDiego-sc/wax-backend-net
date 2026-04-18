@@ -1,5 +1,6 @@
 using Application.Core;
 using Application.Core.Pagination;
+using Application.Core.Validations;
 using Application.Interfaces.Repositories.ReadRepositories;
 using Application.Product.DTOs;
 using Application.Product.Extensions;

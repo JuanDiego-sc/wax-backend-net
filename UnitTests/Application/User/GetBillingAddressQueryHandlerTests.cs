@@ -25,7 +25,7 @@ public class GetBillingAddressQueryHandlerTests
         var result = await _handler.Handle(new GetBillingAddressQuery(), CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be("User not  found");
+        result.Error.Should().Be("User not found");
     }
 
     [Fact]

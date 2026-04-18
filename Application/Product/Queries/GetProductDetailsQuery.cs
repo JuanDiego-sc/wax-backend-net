@@ -1,5 +1,6 @@
 using System;
 using Application.Core;
+using Application.Core.Validations;
 using Application.Product.DTOs;
 using MediatR;
 

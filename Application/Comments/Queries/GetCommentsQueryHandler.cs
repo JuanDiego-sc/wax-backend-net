@@ -1,5 +1,6 @@
 using Application.Comments.Extensions;
 using Application.Core;
+using Application.Core.Validations;
 using Application.Interfaces.DTOs;
 using Application.Interfaces.Repositories.WriteRepositories;
 using MediatR;

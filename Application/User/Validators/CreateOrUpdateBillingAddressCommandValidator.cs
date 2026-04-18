@@ -33,12 +33,12 @@ public class CreateOrUpdateBillingAddressCommandValidator
             .MaximumLength(100);
 
         RuleFor(x => x.BillingInfo.IdentificationNumber)
-            .NotEmpty().WithMessage("IdentityDocument is required.")
-            .MaximumLength(20).WithMessage("IdentityDocument must not exceed 20 characters.");
+            .NotEmpty().WithMessage("IdentificationNumber is required.")
+            .MaximumLength(20).WithMessage("IdentificationNumber must not exceed 20 characters.");
         
         RuleFor(x => x.BillingInfo.IdentificationType)
             .NotEmpty().WithMessage("IdentificationType is required.")
-            .MaximumLength(20).WithMessage("IdentityType must not exceed 20 characters.");
+            .MaximumLength(20).WithMessage("IdentificationType must not exceed 20 characters.");
         
         RuleFor(x => x.BillingInfo.FirstName)
             .NotEmpty().WithMessage("FirstName is required.")

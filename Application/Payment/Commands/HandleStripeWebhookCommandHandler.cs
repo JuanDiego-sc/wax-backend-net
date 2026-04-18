@@ -1,4 +1,5 @@
 using Application.Core;
+using Application.Core.Validations;
 using Application.IntegrationEvents.OrderEvents;
 using Application.IntegrationEvents.ProductEvents;
 using Application.Interfaces;
