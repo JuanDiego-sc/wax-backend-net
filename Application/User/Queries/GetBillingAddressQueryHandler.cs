@@ -1,4 +1,5 @@
 using Application.Core;
+using Application.Core.Validations;
 using Application.Interfaces.Services;
 using Application.Orders.DTOs;
 using Application.User.Extensions;
@@ -12,7 +13,7 @@ public class GetBillingAddressQueryHandler(IUserAccessor userAccessor)
     public async Task<Result<BillingAddressDto>> Handle(GetBillingAddressQuery request, CancellationToken cancellationToken)
     {
         var user = await userAccessor.GetUserWithBillingAddressAsync();
-        if(user == null) return Result<BillingAddressDto>.Failure("User not  found");
+        if(user == null) return Result<BillingAddressDto>.Failure("User not found");
         
         return user.BillingAddress == null 
             ? Result<BillingAddressDto>.Failure("No billing address found for this user") 

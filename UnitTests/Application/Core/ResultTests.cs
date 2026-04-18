@@ -1,4 +1,5 @@
 using Application.Core;
+using Application.Core.Validations;
 
 namespace UnitTests.Application.Core;
 

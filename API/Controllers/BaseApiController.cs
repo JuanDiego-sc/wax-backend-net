@@ -1,6 +1,7 @@
 
 using API.Logging;
 using Application.Core;
+using Application.Core.Validations;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 

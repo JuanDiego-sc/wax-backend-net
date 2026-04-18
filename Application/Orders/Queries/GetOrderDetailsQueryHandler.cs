@@ -1,4 +1,5 @@
 using Application.Core;
+using Application.Core.Validations;
 using Application.Interfaces.Repositories.ReadRepositories;
 using Application.Orders.DTOs;
 using Application.Orders.Extensions;

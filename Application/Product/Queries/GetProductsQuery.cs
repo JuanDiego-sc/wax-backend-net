@@ -1,6 +1,7 @@
 using System;
 using Application.Core;
 using Application.Core.Pagination;
+using Application.Core.Validations;
 using Application.Product.DTOs;
 using Application.Product.Extensions;
 using MediatR;
