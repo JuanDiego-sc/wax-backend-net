@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations.WriteMigrations
 {
     [DbContext(typeof(WriteDbContext))]
-    [Migration("20260322031937_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20260418180940_InitialWriteMigration")]
+    partial class InitialWriteMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,50 +24,6 @@ namespace Persistence.Migrations.WriteMigrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Domain.Entities.Address", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Country")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Line1")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Line2")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("PostalCode")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasJsonPropertyName("postal_code");
-
-                    b.Property<string>("State")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Address");
-                });
 
             modelBuilder.Entity("Domain.Entities.Basket", b =>
                 {
@@ -127,6 +83,50 @@ namespace Persistence.Migrations.WriteMigrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("BasketItems", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.BillingAddress", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Line1")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Line2")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PostalCode")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasJsonPropertyName("postal_code");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BillingAddress");
                 });
 
             modelBuilder.Entity("Domain.Entities.Comment", b =>
@@ -227,8 +227,7 @@ namespace Persistence.Migrations.WriteMigrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
-                    b.Property<string>("AddressId")
-                        .IsRequired()
+                    b.Property<string>("BillingAddressId")
                         .HasColumnType("text");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -241,6 +240,18 @@ namespace Persistence.Migrations.WriteMigrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("FirstName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("IdentificationNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("IdentificationType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("text");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean");
@@ -257,6 +268,9 @@ namespace Persistence.Migrations.WriteMigrations
                         .HasColumnType("character varying(256)");
 
                     b.Property<string>("PasswordHash")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Phone")
                         .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
@@ -277,7 +291,7 @@ namespace Persistence.Migrations.WriteMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AddressId");
+                    b.HasIndex("BillingAddressId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -294,9 +308,10 @@ namespace Persistence.Migrations.WriteMigrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<string>("AddressId")
+                    b.Property<string>("BillingAddressId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("BuyerEmail")
                         .IsRequired()
@@ -328,7 +343,7 @@ namespace Persistence.Migrations.WriteMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AddressId");
+                    b.HasIndex("BillingAddressId");
 
                     b.ToTable("Orders");
                 });
@@ -746,20 +761,18 @@ namespace Persistence.Migrations.WriteMigrations
 
             modelBuilder.Entity("Domain.Entities.User", b =>
                 {
-                    b.HasOne("Domain.Entities.Address", "Address")
+                    b.HasOne("Domain.Entities.BillingAddress", "BillingAddress")
                         .WithMany()
-                        .HasForeignKey("AddressId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("BillingAddressId");
 
-                    b.Navigation("Address");
+                    b.Navigation("BillingAddress");
                 });
 
             modelBuilder.Entity("Domain.OrderAggregate.Order", b =>
                 {
-                    b.HasOne("Domain.Entities.Address", "BillingAddress")
+                    b.HasOne("Domain.Entities.BillingAddress", "BillingAddress")
                         .WithMany()
-                        .HasForeignKey("AddressId")
+                        .HasForeignKey("BillingAddressId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

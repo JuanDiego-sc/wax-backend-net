@@ -1,6 +1,9 @@
+using Application.User.Commands;
 using Application.User.DTOs;
+using Application.User.Queries;
 using Domain.Entities;
 using Domain.Enumerators;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +30,7 @@ public class AccountController(SignInManager<User> signInManager, IEmailSender<U
             return ValidationProblem();
         }
 
-        await signInManager.UserManager.AddToRoleAsync(user, Roles.Member);
+        await signInManager.UserManager.AddToRoleAsync(user, Roles.Enrolled);
 
         return Ok();
 
@@ -61,37 +64,18 @@ public class AccountController(SignInManager<User> signInManager, IEmailSender<U
         return NoContent();
     }
 
-    //[Authorize]
-    [HttpPost("address")]
-    public async Task<ActionResult<Address>> CreateOrUpdateAddress(Address address)
+    [Authorize]
+    [HttpPost("billing-address")]
+    public async Task<ActionResult> CreateOrUpdateBillingAddress( CreateOrUpdateBillingInfoRequest billingInfo)
     {
-        var user = await signInManager.UserManager.Users
-            .Include(x => x.Address)
-            .FirstOrDefaultAsync(x => x.UserName == User.Identity!.Name);
-
-        if( user == null) return Unauthorized();
-
-        user.Address = address;
-
-        var result = await signInManager.UserManager.UpdateAsync(user);
-
-        if(!result.Succeeded) return BadRequest("Problem updating user address");
-        return Ok(user.Address);
-
+        return await HandleCommand(new CreateOrUpdateBillingAddressCommand { BillingInfo = billingInfo });
     }
 
-    //[Authorize]
-    [HttpGet("address")]
-    public async Task<ActionResult<Address>> GetSavedAddress()
+    [Authorize]
+    [HttpGet("billing-address")]
+    public async Task<ActionResult<BillingAddress>> GetSavedAddress()
     {
-        var address = await signInManager.UserManager.Users
-            .Where(x => x.UserName == User.Identity!.Name)
-            .Select(x => x.Address)
-            .FirstOrDefaultAsync();
-
-        if(address == null) return NoContent();
-
-        return address;
+        return await HandleQuery(new GetBillingAddressQuery());
     }
     
     [HttpPost("forgot-password")]

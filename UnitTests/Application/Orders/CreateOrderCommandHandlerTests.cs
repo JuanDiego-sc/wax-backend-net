@@ -1,10 +1,14 @@
+using Application.IntegrationEvents.OrderEvents;
+using Application.IntegrationEvents.ProductEvents;
 using Application.Interfaces.Services;
 using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Orders.Commands;
 using Application.Orders.DTOs;
 using Domain.Entities;
+using Domain.Enumerators;
 using Domain.OrderAggregate;
+using DomainUser = Domain.Entities.User;
 using UnitTests.Helpers.Fixtures;
 
 namespace UnitTests.Application.Orders;
@@ -26,13 +30,75 @@ public class CreateOrderCommandHandlerTests
             _unitOfWork.Object,
             _userAccessor.Object,
             _eventPublisher.Object);
+
+        _eventPublisher.SetReturnsDefault(Task.CompletedTask);
     }
 
     private static CreateOrderDto BuildOrderDto() => new()
     {
-        BillingAddress = OrderFixtures.CreateBillingAddress(),
         PaymentSummary = OrderFixtures.CreatePaymentSummary()
     };
+
+    private static DomainUser BuildRegisteredUser() => new()
+    {
+        Email = "buyer@test.com",
+        UserName = "buyer",
+        BillingAddress = OrderFixtures.CreateBillingAddress(),
+        BillingAddressId = "addr-1"
+    };
+
+    private void SetupRegisteredUser(DomainUser? user = null)
+    {
+        _userAccessor
+            .Setup(u => u.GetUserWithBillingAddressAsync())
+            .ReturnsAsync(user ?? BuildRegisteredUser());
+
+        _userAccessor
+            .Setup(u => u.GetUserRolesAsync())
+            .ReturnsAsync([Roles.Registered]);
+    }
+
+    [Fact]
+    public async Task Handle_WhenUserNotFound_ReturnsFailure()
+    {
+        var basket = BasketFixtures.CreateBasketWithItems(paymentIntentId: "pi_user_missing");
+        _basketRepo
+            .Setup(r => r.GetBasketWithItemsAsync(basket.BasketId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(basket);
+
+        _userAccessor
+            .Setup(u => u.GetUserWithBillingAddressAsync())
+            .ReturnsAsync((DomainUser?)null);
+
+        var command = new CreateOrderCommand { BasketId = basket.BasketId, OrderDto = BuildOrderDto() };
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be("User not found");
+        _userAccessor.Verify(u => u.GetUserRolesAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_WhenUserIsNotRegistered_ReturnsFailure()
+    {
+        var basket = BasketFixtures.CreateBasketWithItems(paymentIntentId: "pi_not_registered");
+        _basketRepo
+            .Setup(r => r.GetBasketWithItemsAsync(basket.BasketId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(basket);
+
+        _userAccessor
+            .Setup(u => u.GetUserWithBillingAddressAsync())
+            .ReturnsAsync(BuildRegisteredUser());
+        _userAccessor
+            .Setup(u => u.GetUserRolesAsync())
+            .ReturnsAsync([Roles.Enrolled]);
+
+        var command = new CreateOrderCommand { BasketId = basket.BasketId, OrderDto = BuildOrderDto() };
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be("Only registered users can place orders");
+    }
 
     [Fact]
     public async Task Handle_WhenBasketNotFound_ReturnsFailure()
@@ -40,9 +106,7 @@ public class CreateOrderCommandHandlerTests
         _basketRepo
             .Setup(r => r.GetBasketWithItemsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((global::Domain.Entities.Basket?)null);
-
-        _userAccessor.Setup(u => u.GetUserAsync())
-            .ReturnsAsync(new User { Email = "user@test.com", UserName = "user" });
+        SetupRegisteredUser();
 
         var command = new CreateOrderCommand { BasketId = "b1", OrderDto = BuildOrderDto() };
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -58,8 +122,7 @@ public class CreateOrderCommandHandlerTests
         _basketRepo
             .Setup(r => r.GetBasketWithItemsAsync(basket.BasketId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(basket);
-        _userAccessor.Setup(u => u.GetUserAsync())
-            .ReturnsAsync(new User { Email = "user@test.com", UserName = "user" });
+        SetupRegisteredUser();
 
         var command = new CreateOrderCommand { BasketId = basket.BasketId, OrderDto = BuildOrderDto() };
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -81,8 +144,7 @@ public class CreateOrderCommandHandlerTests
         _basketRepo
             .Setup(r => r.GetBasketWithItemsAsync(basket.BasketId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(basket);
-        _userAccessor.Setup(u => u.GetUserAsync())
-            .ReturnsAsync(new User { Email = "user@test.com", UserName = "user" });
+        SetupRegisteredUser();
 
         var command = new CreateOrderCommand { BasketId = basket.BasketId, OrderDto = BuildOrderDto() };
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -92,14 +154,13 @@ public class CreateOrderCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenOrderNotExisting_CreatesNewOrder()
+    public async Task Handle_WhenOrderNotExisting_CreatesNewOrderAndPublishesEvents()
     {
         var basket = BasketFixtures.CreateBasketWithItems(paymentIntentId: "pi_new");
         _basketRepo
             .Setup(r => r.GetBasketWithItemsAsync(basket.BasketId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(basket);
-        _userAccessor.Setup(u => u.GetUserAsync())
-            .ReturnsAsync(new User { Email = "buyer@test.com", UserName = "buyer", Address = OrderFixtures.CreateBillingAddress(), AddressId = "addr-1" });
+        SetupRegisteredUser();
         _orderRepo
             .Setup(r => r.GetByPaymentIntentIdAsync("pi_new", It.IsAny<CancellationToken>()))
             .ReturnsAsync((Order?)null);
@@ -107,11 +168,24 @@ public class CreateOrderCommandHandlerTests
             .Setup(u => u.CompleteAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
+        Order? capturedOrder = null;
+        _orderRepo
+            .Setup(r => r.Add(It.IsAny<Order>()))
+            .Callback<Order>(order => capturedOrder = order);
+
         var command = new CreateOrderCommand { BasketId = basket.BasketId, OrderDto = BuildOrderDto() };
         var result = await _handler.Handle(command, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         _orderRepo.Verify(r => r.Add(It.IsAny<Order>()), Times.Once);
+        capturedOrder.Should().NotBeNull();
+        capturedOrder!.BillingAddressId.Should().Be("addr-1");
+        _eventPublisher.Verify(e => e.PublishEventAsync(
+            It.IsAny<OrderCreatedIntegrationEvent>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+        _eventPublisher.Verify(e => e.PublishEventAsync(
+            It.IsAny<ProductStockChangedIntegrationEvent>(),
+            It.IsAny<CancellationToken>()), Times.Exactly(basket.Items.Count));
     }
 
     [Fact]
@@ -123,8 +197,7 @@ public class CreateOrderCommandHandlerTests
         _basketRepo
             .Setup(r => r.GetBasketWithItemsAsync(basket.BasketId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(basket);
-        _userAccessor.Setup(u => u.GetUserAsync())
-            .ReturnsAsync(new User { Email = "buyer@test.com", UserName = "buyer" });
+        SetupRegisteredUser();
         _orderRepo
             .Setup(r => r.GetByPaymentIntentIdAsync("pi_existing", It.IsAny<CancellationToken>()))
             .ReturnsAsync(existingOrder);
@@ -137,6 +210,7 @@ public class CreateOrderCommandHandlerTests
 
         result.IsSuccess.Should().BeTrue();
         _orderRepo.Verify(r => r.Add(It.IsAny<Order>()), Times.Never);
+        existingOrder.OrderItems.Should().HaveCount(basket.Items.Count);
     }
 
     [Fact]
@@ -149,8 +223,7 @@ public class CreateOrderCommandHandlerTests
         _basketRepo
             .Setup(r => r.GetBasketWithItemsAsync(basket.BasketId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(basket);
-        _userAccessor.Setup(u => u.GetUserAsync())
-            .ReturnsAsync(new User { Email = "buyer@test.com", UserName = "buyer", Address = OrderFixtures.CreateBillingAddress(), AddressId = "addr-1" });
+        SetupRegisteredUser();
         _orderRepo
             .Setup(r => r.GetByPaymentIntentIdAsync("pi_free", It.IsAny<CancellationToken>()))
             .ReturnsAsync((Order?)null);
@@ -166,5 +239,27 @@ public class CreateOrderCommandHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         capturedOrder!.DeliveryFee.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Handle_WhenSaveFails_ReturnsFailure()
+    {
+        var basket = BasketFixtures.CreateBasketWithItems(paymentIntentId: "pi_save_fail");
+        _basketRepo
+            .Setup(r => r.GetBasketWithItemsAsync(basket.BasketId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(basket);
+        SetupRegisteredUser();
+        _orderRepo
+            .Setup(r => r.GetByPaymentIntentIdAsync("pi_save_fail", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Order?)null);
+        _unitOfWork
+            .Setup(u => u.CompleteAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var command = new CreateOrderCommand { BasketId = basket.BasketId, OrderDto = BuildOrderDto() };
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be("Failed to create order");
     }
 }

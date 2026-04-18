@@ -8,6 +8,7 @@ using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Orders.DTOs;
 using Application.Orders.Extensions;
 using Domain.Entities;
+using Domain.Enumerators;
 using Domain.OrderAggregate;
 using MediatR;
 
@@ -24,9 +25,13 @@ public class CreateOrderCommandHandler(
     public async Task<Result<OrderDto>> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
     {
         var basket = await basketRepository.GetBasketWithItemsAsync(request.BasketId, cancellationToken);
-        var user = await userAccessor.GetUserAsync();
+        var user = await userAccessor.GetUserWithBillingAddressAsync();
 
         if (user == null) return Result<OrderDto>.Failure("User not found");
+        var role = await userAccessor.GetUserRolesAsync();
+        
+        if (!role.Contains(Roles.Registered))
+            return Result<OrderDto>.Failure("Only registered users can place orders");
 
         if (basket == null ||
             basket.Items.Count == 0 ||
@@ -47,8 +52,8 @@ public class CreateOrderCommandHandler(
             order = new Order
             {
                 BuyerEmail = user.Email ?? string.Empty,
-                BillingAddress = user.Address!,
-                AddressId =  user.AddressId!,
+                BillingAddress = user.BillingAddress!,
+                BillingAddressId =  user.BillingAddressId!,
                 OrderItems = items,
                 Subtotal = subtotal,
                 DeliveryFee = deliveryFee,

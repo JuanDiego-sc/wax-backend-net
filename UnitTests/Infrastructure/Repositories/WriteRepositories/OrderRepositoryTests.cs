@@ -3,6 +3,7 @@ using Domain.OrderAggregate;
 using Infrastructure.Repositories.WriteRepositories;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
+using BillingAddress = Domain.Entities.BillingAddress;
 
 namespace UnitTests.Infrastructure.Repositories.WriteRepositories;
 
@@ -23,8 +24,8 @@ public class OrderRepositoryTests
         {
             Id = id ?? Guid.NewGuid().ToString(),
             BuyerEmail = "test@example.com",
-            AddressId = addressId,
-            BillingAddress = new Address
+            BillingAddressId = addressId,
+            BillingAddress = new BillingAddress
             {
                 Id = addressId,
                 Name = "John Doe",

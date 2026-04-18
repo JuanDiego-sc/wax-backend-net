@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Persistence.Migrations.ReadMigrations
 {
     /// <inheritdoc />
-    public partial class InitialMigracion : Migration
+    public partial class InitialReadMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

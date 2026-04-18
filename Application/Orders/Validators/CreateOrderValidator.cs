@@ -10,36 +10,6 @@ public class CreateOrderValidator : AbstractValidator<CreateOrderCommand>
         RuleFor(x => x.BasketId)
             .NotEmpty().WithMessage("BasketId is required.");
 
-        RuleFor(x => x.OrderDto.BillingAddress)
-            .NotNull().WithMessage("BillingAddress is required.");
-
-        When(x => x.OrderDto.BillingAddress != null, () =>
-        {
-            RuleFor(x => x.OrderDto.BillingAddress.Name)
-                .NotEmpty().WithMessage("BillingAddress.Name is required.")
-                .MaximumLength(100).WithMessage("BillingAddress.Name must not exceed 100 characters.");
-
-            RuleFor(x => x.OrderDto.BillingAddress.Line1)
-                .NotEmpty().WithMessage("BillingAddress.Line1 is required.")
-                .MaximumLength(200).WithMessage("BillingAddress.Line1 must not exceed 200 characters.");
-
-            RuleFor(x => x.OrderDto.BillingAddress.City)
-                .NotEmpty().WithMessage("BillingAddress.City is required.")
-                .MaximumLength(100).WithMessage("BillingAddress.City must not exceed 100 characters.");
-
-            RuleFor(x => x.OrderDto.BillingAddress.State)
-                .NotEmpty().WithMessage("BillingAddress.State is required.")
-                .MaximumLength(100).WithMessage("BillingAddress.State must not exceed 100 characters.");
-
-            RuleFor(x => x.OrderDto.BillingAddress.PostalCode)
-                .NotEmpty().WithMessage("BillingAddress.PostalCode is required.")
-                .MaximumLength(20).WithMessage("BillingAddress.PostalCode must not exceed 20 characters.");
-
-            RuleFor(x => x.OrderDto.BillingAddress.Country)
-                .NotEmpty().WithMessage("BillingAddress.Country is required.")
-                .MaximumLength(100).WithMessage("BillingAddress.Country must not exceed 100 characters.");
-        });
-
         RuleFor(x => x.OrderDto.PaymentSummary)
             .NotNull().WithMessage("PaymentSummary is required.");
 

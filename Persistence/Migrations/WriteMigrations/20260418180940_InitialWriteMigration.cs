@@ -7,31 +7,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Persistence.Migrations.WriteMigrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitialWriteMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Address",
-                columns: table => new
-                {
-                    Id = table.Column<string>(type: "text", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Line1 = table.Column<string>(type: "text", nullable: false),
-                    Line2 = table.Column<string>(type: "text", nullable: true),
-                    City = table.Column<string>(type: "text", nullable: false),
-                    State = table.Column<string>(type: "text", nullable: false),
-                    PostalCode = table.Column<string>(type: "text", nullable: false),
-                    Country = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Address", x => x.Id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -60,6 +40,26 @@ namespace Persistence.Migrations.WriteMigrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Baskets", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "BillingAddress",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Line1 = table.Column<string>(type: "text", nullable: false),
+                    Line2 = table.Column<string>(type: "text", nullable: true),
+                    City = table.Column<string>(type: "text", nullable: false),
+                    State = table.Column<string>(type: "text", nullable: false),
+                    PostalCode = table.Column<string>(type: "text", nullable: false),
+                    Country = table.Column<string>(type: "text", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BillingAddress", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -123,11 +123,37 @@ namespace Persistence.Migrations.WriteMigrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AspNetRoleClaims",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<string>(type: "text", nullable: false),
+                    ClaimType = table.Column<string>(type: "text", nullable: true),
+                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetUsers",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
-                    AddressId = table.Column<string>(type: "text", nullable: false),
+                    IdentificationNumber = table.Column<string>(type: "text", nullable: true),
+                    IdentificationType = table.Column<string>(type: "text", nullable: true),
+                    FirstName = table.Column<string>(type: "text", nullable: true),
+                    LastName = table.Column<string>(type: "text", nullable: true),
+                    Phone = table.Column<string>(type: "text", nullable: true),
+                    BillingAddressId = table.Column<string>(type: "text", nullable: true),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
@@ -147,11 +173,10 @@ namespace Persistence.Migrations.WriteMigrations
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AspNetUsers_Address_AddressId",
-                        column: x => x.AddressId,
-                        principalTable: "Address",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "FK_AspNetUsers_BillingAddress_BillingAddressId",
+                        column: x => x.BillingAddressId,
+                        principalTable: "BillingAddress",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -169,7 +194,7 @@ namespace Persistence.Migrations.WriteMigrations
                     Payment_Brand = table.Column<string>(type: "text", nullable: false),
                     Payment_ExpMonth = table.Column<int>(type: "integer", nullable: false),
                     Payment_ExpYear = table.Column<int>(type: "integer", nullable: false),
-                    AddressId = table.Column<string>(type: "text", nullable: false),
+                    BillingAddressId = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
@@ -177,30 +202,9 @@ namespace Persistence.Migrations.WriteMigrations
                 {
                     table.PrimaryKey("PK_Orders", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Orders_Address_AddressId",
-                        column: x => x.AddressId,
-                        principalTable: "Address",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "AspNetRoleClaims",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    RoleId = table.Column<string>(type: "text", nullable: false),
-                    ClaimType = table.Column<string>(type: "text", nullable: true),
-                    ClaimValue = table.Column<string>(type: "text", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AspNetRoleClaims", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_AspNetRoleClaims_AspNetRoles_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "AspNetRoles",
+                        name: "FK_Orders_BillingAddress_BillingAddressId",
+                        column: x => x.BillingAddressId,
+                        principalTable: "BillingAddress",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -481,9 +485,9 @@ namespace Persistence.Migrations.WriteMigrations
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AspNetUsers_AddressId",
+                name: "IX_AspNetUsers_BillingAddressId",
                 table: "AspNetUsers",
-                column: "AddressId");
+                column: "BillingAddressId");
 
             migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
@@ -533,9 +537,9 @@ namespace Persistence.Migrations.WriteMigrations
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Orders_AddressId",
+                name: "IX_Orders_BillingAddressId",
                 table: "Orders",
-                column: "AddressId");
+                column: "BillingAddressId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OutboxMessage_EnqueueTime",
@@ -630,7 +634,7 @@ namespace Persistence.Migrations.WriteMigrations
                 name: "Orders");
 
             migrationBuilder.DropTable(
-                name: "Address");
+                name: "BillingAddress");
         }
     }
 }

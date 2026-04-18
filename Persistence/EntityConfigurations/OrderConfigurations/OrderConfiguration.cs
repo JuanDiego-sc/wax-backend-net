@@ -11,6 +11,8 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.HasKey(o => o.Id);
         builder.Property(o => o.BuyerEmail).IsRequired().HasMaxLength(200);
         builder.Property(o => o.PaymentIntentId).IsRequired().HasMaxLength(200);
+        builder.Property(o => o.BillingAddressId).IsRequired().HasMaxLength(200);
+        
         
         builder.OwnsOne(o => o.PaymentSummary, ps =>
         {
@@ -27,6 +29,6 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         
         builder.HasOne(o => o.BillingAddress)
             .WithMany()
-            .HasForeignKey(o => o.AddressId);
+            .HasForeignKey(o => o.BillingAddressId);
     }
 }

@@ -65,7 +65,7 @@ public class CreateSupportTicketCommandHandlerTests
             .ReturnsAsync(order);
 
         _userAccessor.Setup(u => u.GetUserAsync())
-            .ReturnsAsync((User?)null);
+            .ReturnsAsync((global::Domain.Entities.User?)null);
 
         var command = new CreateSupportTicketCommand { TicketDto = BuildTicketDto() };
         var result = await _handler.Handle(command, CancellationToken.None);
