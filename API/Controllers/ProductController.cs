@@ -12,7 +12,7 @@ public class ProductController : BaseApiController
     [HttpGet]
     public async Task<ActionResult<List<ProductDto>>> GetProducts([FromQuery] ProductParams productParams)
     {
-        return await HandleQuery(new GetProductsQuery { ProductParams = productParams });
+        return await HandlePagedQuery(new GetProductsQuery { ProductParams = productParams });
     }
 
     [HttpGet("{id}")]

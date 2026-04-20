@@ -124,6 +124,7 @@ app.UseCors(x => x
     .AllowAnyMethod()
     .AllowAnyHeader()
     .AllowCredentials()
+    .WithExposedHeaders("Pagination", "NextCursor")
     .WithOrigins(
     "http://localhost:5005",
     "http://localhost:5006",
