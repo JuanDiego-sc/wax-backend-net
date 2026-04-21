@@ -1,4 +1,5 @@
 using Application.Core;
+using Application.Core.Validations;
 using MediatR;
 
 namespace Application.SupportAssist.Commands;

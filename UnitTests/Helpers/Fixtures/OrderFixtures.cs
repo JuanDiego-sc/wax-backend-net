@@ -1,5 +1,6 @@
 using Domain.Entities;
 using Domain.OrderAggregate;
+using BillingAddress = Domain.Entities.BillingAddress;
 
 namespace UnitTests.Helpers.Fixtures;
 
@@ -27,7 +28,7 @@ public static class OrderFixtures
             OrderStatus = status,
             OrderItems = items ?? [CreateOrderItem()],
             BillingAddress = CreateBillingAddress(),
-            AddressId = addressId,
+            BillingAddressId = addressId,
             PaymentSummary = CreatePaymentSummary()
         };
     }
@@ -45,9 +46,9 @@ public static class OrderFixtures
         };
     }
 
-    public static Address CreateBillingAddress()
+    public static BillingAddress CreateBillingAddress()
     {
-        return new Address
+        return new BillingAddress
         {
             Name = "Test User",
             Line1 = "123 Test Street",

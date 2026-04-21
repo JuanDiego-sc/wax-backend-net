@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations.ReadMigrations
 {
     [DbContext(typeof(ReadDbContext))]
-    [Migration("20260322031954_InitialMigracion")]
-    partial class InitialMigracion
+    [Migration("20260418181005_InitialReadMigration")]
+    partial class InitialReadMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

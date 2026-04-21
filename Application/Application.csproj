@@ -26,7 +26,6 @@
     <Folder Include="Product/DTOs/" />
     <Folder Include="Product/Extensions/" />
     <Folder Include="Product/Queries/" />
-    <Folder Include="User/" />
   </ItemGroup>
 
   <ItemGroup>

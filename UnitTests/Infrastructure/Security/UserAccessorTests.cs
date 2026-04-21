@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Domain.Entities;
 using Infrastructure.Security;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
 
@@ -45,13 +46,30 @@ public class UserAccessorTests
         return accessor.Object;
     }
 
+    private static Mock<UserManager<User>> CreateUserManagerMock()
+    {
+        var store = new Mock<IUserStore<User>>();
+
+        return new Mock<UserManager<User>>(
+            store.Object,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!,
+            null!);
+    }
+
     [Fact]
     public void GetUserId_WhenUserIdExists_ReturnsUserId()
     {
         using var context = CreateInMemoryContext();
         var userId = "user-123";
         var accessor = CreateHttpContextAccessor(userId: userId);
-        var userAccessor = new UserAccessor(accessor, context);
+        var userManager = CreateUserManagerMock();
+        var userAccessor = new UserAccessor(accessor, context, userManager.Object);
 
         var result = userAccessor.GetUserId();
 
@@ -63,7 +81,8 @@ public class UserAccessorTests
     {
         using var context = CreateInMemoryContext();
         var accessor = CreateNullHttpContextAccessor();
-        var userAccessor = new UserAccessor(accessor, context);
+        var userManager = CreateUserManagerMock();
+        var userAccessor = new UserAccessor(accessor, context, userManager.Object);
 
         var act = () => userAccessor.GetUserId();
 
@@ -77,7 +96,8 @@ public class UserAccessorTests
         using var context = CreateInMemoryContext();
         var email = "user@example.com";
         var accessor = CreateHttpContextAccessor(email: email);
-        var userAccessor = new UserAccessor(accessor, context);
+        var userManager = CreateUserManagerMock();
+        var userAccessor = new UserAccessor(accessor, context, userManager.Object);
 
         var result = userAccessor.GetUserEmail();
 
@@ -89,7 +109,8 @@ public class UserAccessorTests
     {
         using var context = CreateInMemoryContext();
         var accessor = CreateNullHttpContextAccessor();
-        var userAccessor = new UserAccessor(accessor, context);
+        var userManager = CreateUserManagerMock();
+        var userAccessor = new UserAccessor(accessor, context, userManager.Object);
 
         var act = () => userAccessor.GetUserEmail();
 
@@ -112,7 +133,8 @@ public class UserAccessorTests
         await context.SaveChangesAsync();
 
         var accessor = CreateHttpContextAccessor(userId: userId);
-        var userAccessor = new UserAccessor(accessor, context);
+        var userManager = CreateUserManagerMock();
+        var userAccessor = new UserAccessor(accessor, context, userManager.Object);
 
         var result = await userAccessor.GetUserAsync();
 
@@ -126,7 +148,8 @@ public class UserAccessorTests
     {
         using var context = CreateInMemoryContext();
         var accessor = CreateHttpContextAccessor(userId: "non-existent-user");
-        var userAccessor = new UserAccessor(accessor, context);
+        var userManager = CreateUserManagerMock();
+        var userAccessor = new UserAccessor(accessor, context, userManager.Object);
 
         var result = await userAccessor.GetUserAsync();
 
@@ -138,10 +161,103 @@ public class UserAccessorTests
     {
         using var context = CreateInMemoryContext();
         var accessor = CreateHttpContextAccessor(email: "test@example.com");
-        var userAccessor = new UserAccessor(accessor, context);
+        var userManager = CreateUserManagerMock();
+        var userAccessor = new UserAccessor(accessor, context, userManager.Object);
 
         var act = () => userAccessor.GetUserId();
 
         act.Should().Throw<UnauthorizedAccessException>();
+    }
+
+    [Fact]
+    public async Task GetUserWithBillingAddressAsync_WhenUserExists_ReturnsUserWithBillingAddress()
+    {
+        using var context = CreateInMemoryContext();
+        var userId = Guid.NewGuid().ToString();
+        var billingAddress = new BillingAddress
+        {
+            Name = "John Doe",
+            Line1 = "Street 1",
+            Line2 = "Apt 2",
+            City = "Quito",
+            State = "Pichincha",
+            PostalCode = "170101",
+            Country = "EC"
+        };
+
+        context.Users.Add(new User
+        {
+            Id = userId,
+            UserName = "billing-user",
+            Email = "billing@example.com",
+            BillingAddressId = billingAddress.Id,
+            BillingAddress = billingAddress
+        });
+        await context.SaveChangesAsync();
+
+        var accessor = CreateHttpContextAccessor(userId: userId);
+        var userManager = CreateUserManagerMock();
+        var userAccessor = new UserAccessor(accessor, context, userManager.Object);
+
+        var result = await userAccessor.GetUserWithBillingAddressAsync();
+
+        result.Should().NotBeNull();
+        result!.BillingAddress.Should().NotBeNull();
+        result.BillingAddress!.City.Should().Be("Quito");
+    }
+
+    [Fact]
+    public async Task GetUserWithBillingAddressAsync_WhenUserDoesNotExist_ReturnsNull()
+    {
+        using var context = CreateInMemoryContext();
+        var accessor = CreateHttpContextAccessor(userId: "missing-user");
+        var userManager = CreateUserManagerMock();
+        var userAccessor = new UserAccessor(accessor, context, userManager.Object);
+
+        var result = await userAccessor.GetUserWithBillingAddressAsync();
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetUserRolesAsync_WhenUserExists_ReturnsRolesFromUserManager()
+    {
+        using var context = CreateInMemoryContext();
+        var userId = Guid.NewGuid().ToString();
+        var user = new User
+        {
+            Id = userId,
+            UserName = "role-user",
+            Email = "role-user@example.com"
+        };
+
+        context.Users.Add(user);
+        await context.SaveChangesAsync();
+
+        var accessor = CreateHttpContextAccessor(userId: userId);
+        var userManager = CreateUserManagerMock();
+        userManager
+            .Setup(m => m.GetRolesAsync(It.IsAny<User>()))
+            .ReturnsAsync(["Registered"]);
+        var userAccessor = new UserAccessor(accessor, context, userManager.Object);
+
+        var roles = await userAccessor.GetUserRolesAsync();
+
+        roles.Should().ContainSingle().Which.Should().Be("Registered");
+        userManager.Verify(m => m.GetRolesAsync(It.Is<User>(u => u.Id == userId)), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetUserRolesAsync_WhenUserDoesNotExist_ReturnsEmptyList()
+    {
+        using var context = CreateInMemoryContext();
+        var accessor = CreateHttpContextAccessor(userId: "missing-user");
+        var userManager = CreateUserManagerMock();
+        var userAccessor = new UserAccessor(accessor, context, userManager.Object);
+
+        var roles = await userAccessor.GetUserRolesAsync();
+
+        roles.Should().BeEmpty();
+        userManager.Verify(m => m.GetRolesAsync(It.IsAny<User>()), Times.Never);
     }
 }

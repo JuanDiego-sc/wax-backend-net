@@ -1,6 +1,4 @@
-using System;
-
-namespace Application.Core;
+namespace Application.Core.Validations;
 
 public class Result<T>
 {

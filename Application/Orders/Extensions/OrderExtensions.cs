@@ -1,5 +1,6 @@
 using System;
 using Application.Orders.DTOs;
+using Application.User.Extensions;
 using Domain.OrderAggregate;
 
 namespace Application.Orders.Extensions;
@@ -14,16 +15,7 @@ public static class OrderExtensions
             BuyerEmail = order.BuyerEmail,
             CreateAt = order.CreatedAt,
             UpdatedAt = order.UpdatedAt,
-            BillingAddress = new BillingAddressDto
-            {
-                Name = order.BillingAddress.Name,
-                Line1 = order.BillingAddress.Line1,
-                Line2 = order.BillingAddress.Line2,
-                City = order.BillingAddress.City,
-                State = order.BillingAddress.State,
-                PostalCode = order.BillingAddress.PostalCode,
-                Country = order.BillingAddress.Country
-            },
+            BillingAddress = order.BillingAddress.ToDto(),
             PaymentSummary = new PaymentSummaryDto
             {
                 Last4 = order.PaymentSummary.Last4,

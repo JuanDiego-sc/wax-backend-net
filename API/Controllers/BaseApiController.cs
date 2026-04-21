@@ -2,6 +2,7 @@
 using System.Text.Json;
 using API.Logging;
 using Application.Core;
+using Application.Core.Validations;
 using Application.Core.Pagination;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;

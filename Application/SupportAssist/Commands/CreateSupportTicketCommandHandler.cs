@@ -1,4 +1,5 @@
 using Application.Core;
+using Application.Core.Validations;
 using Application.IntegrationEvents.SupportTicketEvents;
 using Application.Interfaces.Services;
 using Application.Interfaces.Publish;

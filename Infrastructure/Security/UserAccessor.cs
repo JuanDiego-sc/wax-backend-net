@@ -2,15 +2,39 @@ using System.Security.Claims;
 using Application.Interfaces.Services;
 using Domain.Entities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 namespace Infrastructure.Security;
 
-public class UserAccessor(IHttpContextAccessor httpContextAccessor, WriteDbContext dbContext) : IUserAccessor
+public class UserAccessor(
+    IHttpContextAccessor httpContextAccessor, 
+    WriteDbContext dbContext,
+    UserManager<User> userManager) : IUserAccessor
 {
     public async Task<User?> GetUserAsync()
     {
-        return await dbContext.Users.FindAsync(GetUserId());
+        return await dbContext.Users
+            .FindAsync(GetUserId()) ;
+    }
+
+    public async Task<User?> GetUserWithBillingAddressAsync()
+    {
+        var userId =GetUserId();
+
+        return await dbContext.Users
+            .Include(x => x.BillingAddress)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+    }
+
+    public async Task<IList<string>> GetUserRolesAsync()
+    {
+        var user= await GetUserAsync();
+        if (user == null) return Array.Empty<string>();
+        
+        return await userManager.GetRolesAsync(user);
+
     }
 
     public string GetUserId()
