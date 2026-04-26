@@ -13,7 +13,7 @@ public class OrderController(IBasketProvider basketProvider) : BaseApiController
     [HttpGet]
     public async Task<ActionResult<InfinityPagedList<OrderDto, DateTime?>>> GetOrders([FromQuery] OrderParams orderParams)
     {
-        return await HandleInfinityPagedQuery<OrderDto, DateTime?>(new GetOrdersQuery { OrderParams = orderParams });
+        return await HandleInfinityPagedQuery(new GetOrdersQuery { OrderParams = orderParams });
     }
 
     [HttpGet("{id}")]

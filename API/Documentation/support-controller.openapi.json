@@ -1,0 +1,596 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "WAX API - Support",
+    "description": "Endpoints for support ticket management: listing tickets with pagination, retrieving ticket details, creating, updating, and deleting tickets. Also includes the SupportHub WebSocket (SignalR) for real-time chat on a ticket.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "WAX Backend Team"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://localhost:5007",
+      "description": "Local development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Support",
+      "description": "Support ticket operations: listing, detail retrieval, creation, update, and deletion"
+    },
+    {
+      "name": "SupportHub (SignalR)",
+      "description": "Real-time WebSocket hub for support ticket chat. Connect via SignalR to `/hubs/support?ticketId={id}`. On connection, the server sends existing comments via `LoadComments`. Clients can send new comments via `SendComment` and receive them via `CommentAdded`."
+    }
+  ],
+  "paths": {
+    "/api/Support": {
+      "get": {
+        "tags": ["Support"],
+        "summary": "List support tickets",
+        "description": "Returns a paginated list of support tickets. Supports filtering by status, category, and creation date, as well as ordering.",
+        "operationId": "Support_GetSupportTickets",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "Page number to retrieve (1-based)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "example": 1
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Number of tickets per page (max 30)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 8,
+              "maximum": 30
+            },
+            "example": 8
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "description": "Field to order results by (e.g. 'createdAt')",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "createdAt"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter tickets by status (e.g. 'Open', 'InProgress', 'Closed')",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Open"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Filter tickets by category (e.g. 'OrderIssue', 'PaymentIssue', 'ProductIssue', 'Other')",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "OrderIssue"
+          },
+          {
+            "name": "createdOn",
+            "in": "query",
+            "description": "Filter tickets created on or after this date",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2026-04-01T00:00:00Z"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of support tickets retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedListSupportTicketDto"
+                },
+                "example": {
+                  "items": [
+                    {
+                      "id": "ticket-001",
+                      "subject": "Missing item in order",
+                      "description": "I received my order but one of the items was missing.",
+                      "category": "OrderIssue",
+                      "status": "Open",
+                      "orderId": "order-001",
+                      "createdAt": "2026-04-15T10:00:00Z",
+                      "userId": "user-abc-123",
+                      "userFullName": "Juan De La Torre",
+                      "userEmail": "user@example.com"
+                    }
+                  ],
+                  "pageNumber": 1,
+                  "totalPages": 1,
+                  "totalCount": 1,
+                  "hasPreviousPage": false,
+                  "hasNextPage": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
+      "post": {
+        "tags": ["Support"],
+        "summary": "Create a support ticket",
+        "description": "Creates a new support ticket associated with the authenticated user and a specific order.",
+        "operationId": "Support_CreateSupportTicket",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSupportTicketDto"
+              },
+              "example": {
+                "orderId": "order-001",
+                "category": "OrderIssue",
+                "status": "Open",
+                "subject": "Missing item in order",
+                "description": "I received my order but one of the items was missing."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Support ticket created successfully. Returns the new ticket ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "ticket-001"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data"
+          },
+          "401": {
+            "description": "User is not authenticated"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/Support/{id}": {
+      "get": {
+        "tags": ["Support"],
+        "summary": "Get support ticket details",
+        "description": "Returns the full details of a specific support ticket by its identifier.",
+        "operationId": "Support_GetSupportTicket",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique identifier of the support ticket",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "ticket-001"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Support ticket details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportTicketDto"
+                },
+                "example": {
+                  "id": "ticket-001",
+                  "subject": "Missing item in order",
+                  "description": "I received my order but one of the items was missing.",
+                  "category": "OrderIssue",
+                  "status": "Open",
+                  "orderId": "order-001",
+                  "createdAt": "2026-04-15T10:00:00Z",
+                  "userId": "user-abc-123",
+                  "userFullName": "Juan De La Torre",
+                  "userEmail": "user@example.com"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated"
+          },
+          "404": {
+            "description": "Support ticket not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
+      "put": {
+        "tags": ["Support"],
+        "summary": "Update a support ticket",
+        "description": "Updates the subject, description, category, and status of an existing support ticket.",
+        "operationId": "Support_UpdateSupportTicket",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique identifier of the support ticket to update",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "ticket-001"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSupportTicketDto"
+              },
+              "example": {
+                "category": "PaymentIssue",
+                "status": "InProgress",
+                "subject": "Payment not processed",
+                "description": "My payment was deducted but the order status is still pending."
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Support ticket updated successfully"
+          },
+          "400": {
+            "description": "Invalid request data"
+          },
+          "401": {
+            "description": "User is not authenticated"
+          },
+          "404": {
+            "description": "Support ticket not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Support"],
+        "summary": "Delete a support ticket",
+        "description": "Permanently deletes a support ticket by its identifier.",
+        "operationId": "Support_DeleteSupportTicket",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique identifier of the support ticket to delete",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "ticket-001"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Support ticket deleted successfully"
+          },
+          "401": {
+            "description": "User is not authenticated"
+          },
+          "404": {
+            "description": "Support ticket not found"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/hubs/support": {
+      "get": {
+        "tags": ["SupportHub (SignalR)"],
+        "summary": "Connect to SupportHub (WebSocket / SignalR)",
+        "description": "Establishes a SignalR WebSocket connection to the SupportHub for real-time chat on a specific support ticket.\n\n**Connection URL:** `wss://localhost:5007/hubs/support?ticketId={id}`\n\n---\n\n### Connection flow\n\n1. Client connects providing `ticketId` as a query parameter.\n2. Server adds the client to the SignalR group identified by `ticketId`.\n3. Server immediately sends all existing comments for the ticket via the `LoadComments` event.\n\n---\n\n### Client → Server messages\n\n| Method | Payload | Description |\n|---|---|---|\n| `SendComment` | `AddCommentCommand` | Sends a new comment on the ticket. Requires authentication. |\n\n### Server → Client events\n\n| Event | Payload | Description |\n|---|---|---|\n| `LoadComments` | `CommentDto[]` | Sent on connection with all existing comments for the ticket. |\n| `CommentAdded` | `CommentDto` | Broadcast to all clients in the ticket group when a new comment is added. |\n\n---\n\n### Error conditions\n\n- If `ticketId` is missing on connection → `HubException: TicketId is required`\n- If the user is not authenticated when calling `SendComment` → `HubException: Unauthorized`",
+        "operationId": "SupportHub_Connect",
+        "parameters": [
+          {
+            "name": "ticketId",
+            "in": "query",
+            "description": "Unique identifier of the support ticket to join for real-time chat",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "ticket-001"
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "WebSocket connection established. The protocol is upgraded to SignalR (WebSocket)."
+          },
+          "400": {
+            "description": "ticketId query parameter is missing"
+          },
+          "401": {
+            "description": "User is not authenticated"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SupportTicketDto": {
+        "type": "object",
+        "description": "Full representation of a support ticket",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique ticket identifier",
+            "example": "ticket-001"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Short summary of the issue",
+            "example": "Missing item in order"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of the issue",
+            "example": "I received my order but one of the items was missing."
+          },
+          "category": {
+            "type": "string",
+            "description": "Category of the issue",
+            "enum": ["OrderIssue", "PaymentIssue", "ProductIssue", "Other"],
+            "example": "OrderIssue"
+          },
+          "status": {
+            "type": "string",
+            "description": "Current status of the ticket",
+            "enum": ["Open", "InProgress", "Closed"],
+            "example": "Open"
+          },
+          "orderId": {
+            "type": "string",
+            "description": "Identifier of the order associated with this ticket",
+            "example": "order-001"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time when the ticket was created (UTC)",
+            "example": "2026-04-15T10:00:00Z"
+          },
+          "userId": {
+            "type": "string",
+            "description": "Identifier of the user who created the ticket",
+            "example": "user-abc-123"
+          },
+          "userFullName": {
+            "type": "string",
+            "description": "Full name of the user who created the ticket",
+            "example": "Juan De La Torre"
+          },
+          "userEmail": {
+            "type": "string",
+            "format": "email",
+            "description": "Email of the user who created the ticket",
+            "example": "user@example.com"
+          }
+        }
+      },
+      "CreateSupportTicketDto": {
+        "type": "object",
+        "description": "Payload required to create a new support ticket",
+        "required": ["orderId", "subject", "description"],
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "description": "Identifier of the order related to the issue",
+            "example": "order-001"
+          },
+          "category": {
+            "type": "string",
+            "description": "Category of the issue",
+            "enum": ["OrderIssue", "PaymentIssue", "ProductIssue", "Other"],
+            "example": "OrderIssue"
+          },
+          "status": {
+            "type": "string",
+            "description": "Initial status of the ticket (defaults to Open)",
+            "enum": ["Open", "InProgress", "Closed"],
+            "example": "Open"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Short summary of the issue",
+            "example": "Missing item in order"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of the issue",
+            "example": "I received my order but one of the items was missing."
+          }
+        }
+      },
+      "UpdateSupportTicketDto": {
+        "type": "object",
+        "description": "Payload required to update an existing support ticket",
+        "required": ["subject", "description"],
+        "properties": {
+          "category": {
+            "type": "string",
+            "description": "Updated category of the issue",
+            "enum": ["OrderIssue", "PaymentIssue", "ProductIssue", "Other"],
+            "example": "PaymentIssue"
+          },
+          "status": {
+            "type": "string",
+            "description": "Updated status of the ticket",
+            "enum": ["Open", "InProgress", "Closed"],
+            "example": "InProgress"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Updated short summary of the issue",
+            "example": "Payment not processed"
+          },
+          "description": {
+            "type": "string",
+            "description": "Updated detailed description of the issue",
+            "example": "My payment was deducted but the order status is still pending."
+          }
+        }
+      },
+      "AddCommentCommand": {
+        "type": "object",
+        "description": "Payload sent by the client via SignalR to add a comment to a support ticket",
+        "required": ["body", "ticketId"],
+        "properties": {
+          "body": {
+            "type": "string",
+            "description": "Text content of the comment",
+            "example": "We are looking into your issue, please wait."
+          },
+          "ticketId": {
+            "type": "string",
+            "description": "Identifier of the ticket to comment on",
+            "example": "ticket-001"
+          }
+        }
+      },
+      "CommentDto": {
+        "type": "object",
+        "description": "Representation of a comment on a support ticket",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique comment identifier",
+            "example": "comment-xyz-001"
+          },
+          "body": {
+            "type": "string",
+            "description": "Text content of the comment",
+            "example": "We are looking into your issue, please wait."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date and time when the comment was created (UTC)",
+            "example": "2026-04-15T11:00:00Z"
+          },
+          "ticketId": {
+            "type": "string",
+            "description": "Identifier of the ticket this comment belongs to",
+            "example": "ticket-001"
+          },
+          "userId": {
+            "type": "string",
+            "description": "Identifier of the user who wrote the comment",
+            "example": "user-abc-123"
+          },
+          "userName": {
+            "type": "string",
+            "description": "Username of the user who wrote the comment",
+            "example": "juandelatorre"
+          }
+        }
+      },
+      "PagedListSupportTicketDto": {
+        "type": "object",
+        "description": "Paginated list of support tickets",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "List of support tickets in the current page",
+            "items": {
+              "$ref": "#/components/schemas/SupportTicketDto"
+            }
+          },
+          "pageNumber": {
+            "type": "integer",
+            "description": "Current page number (1-based)",
+            "example": 1
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "Total number of pages",
+            "example": 1
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "Total number of tickets matching the query",
+            "example": 1
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "description": "Indicates whether there is a previous page",
+            "example": false
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "Indicates whether there is a next page",
+            "example": false
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": ".AspNetCore.Identity.Application",
+        "description": "ASP.NET Identity authentication cookie. Obtained via POST /api/login?useCookies=true."
+      }
+    }
+  }
+}

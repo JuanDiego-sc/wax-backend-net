@@ -12,9 +12,9 @@ public class SupportController : BaseApiController
     #region HttpGet Methods
 
     [HttpGet]
-    public async Task<ActionResult<PagedList<SupportTicketDto>>> GetSupportTickets(SupportTicketParams supportTicketParams)
+    public async Task<ActionResult<PagedList<SupportTicketDto>>> GetSupportTickets([FromQuery] SupportTicketParams supportTicketParams)
     {
-        return await HandleQuery(new GetSupportTicketsQuery { TicketParams = supportTicketParams });
+        return await HandlePagedQuery(new GetSupportTicketsQuery { TicketParams = supportTicketParams });
     }
 
     [HttpGet("{id}")]
@@ -38,7 +38,7 @@ public class SupportController : BaseApiController
     #region HttpPut methods
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateSupportTicket(string id, UpdateSupportTicketDto supportTicket)
+    public async Task<IActionResult> UpdateSupportTicket(string id, [FromBody] UpdateSupportTicketDto supportTicket)
     {
         return await HandleCommand(new UpdateSupportTicketCommand { TicketId = id, TicketDto = supportTicket });
     }
