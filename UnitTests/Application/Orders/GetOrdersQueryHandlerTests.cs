@@ -1,4 +1,3 @@
-
 using Application.Interfaces.Repositories.ReadRepositories;
 using Application.Orders.DTOs;
 using Application.Orders.Extensions;
@@ -21,35 +20,36 @@ public class GetOrdersQueryHandlerTests
         return new WriteDbContext(options);
     }
 
+    private static Mock<IOrderReadRepository> SetupRepoMock(List<OrderDto> dtos, string? statusFilter = null)
+    {
+        var mock = new Mock<IOrderReadRepository>();
+        var filtered = statusFilter != null
+            ? dtos.Where(d => d.OrderStatus == statusFilter).ToList()
+            : dtos;
+        mock.Setup(r => r.GetQueryable(It.IsAny<string?>())).Returns(filtered.BuildMock());
+        return mock;
+    }
+
     [Fact]
     public async Task Handle_ReturnsAllOrdersWithoutFilter()
     {
         using var context = CreateInMemoryContext();
-        var orders = new List<Order>
-        {
+        context.Orders.AddRange(
             OrderFixtures.CreateOrder(),
             OrderFixtures.CreateOrder(),
-            OrderFixtures.CreateOrder()
-        };
-        context.Orders.AddRange(orders);
+            OrderFixtures.CreateOrder());
         await context.SaveChangesAsync();
 
-        var orderDtos = context.Orders.Include(o => o.OrderItems).AsEnumerable().Select(o => o.ToDto()).ToList();
-        var mockQueryable = orderDtos.BuildMock();
-
-        var repoMock = new Mock<IOrderReadRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(mockQueryable);
+        var dtos = context.Orders.Include(o => o.OrderItems).AsEnumerable().Select(o => o.ToDto()).ToList();
+        var repoMock = SetupRepoMock(dtos);
 
         var handler = new GetOrdersQueryHandler(repoMock.Object);
-        var query = new GetOrdersQuery
-        {
-            OrderParams = new() { PageSize = 10, StartDate = DateTime.UtcNow.AddDays(-1) }
-        };
+        var query = new GetOrdersQuery { OrderParams = new() { PageSize = 10 } };
 
         var result = await handler.Handle(query, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value!.Items.Should().HaveCount(3);
+        result.Value.Should().HaveCount(3);
     }
 
     [Fact]
@@ -62,48 +62,37 @@ public class GetOrdersQueryHandlerTests
             OrderFixtures.CreateOrder(status: OrderStatus.Pending));
         await context.SaveChangesAsync();
 
-        var orderDtos = context.Orders.Include(o => o.OrderItems).AsEnumerable().Select(o => o.ToDto()).ToList();
-        var mockQueryable = orderDtos.BuildMock();
-
-        var repoMock = new Mock<IOrderReadRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(mockQueryable);
+        var dtos = context.Orders.Include(o => o.OrderItems).AsEnumerable().Select(o => o.ToDto()).ToList();
+        var repoMock = SetupRepoMock(dtos, nameof(OrderStatus.Pending));
 
         var handler = new GetOrdersQueryHandler(repoMock.Object);
-        var query = new GetOrdersQuery
-        {
-            OrderParams = new() { Filter = "pending", PageSize = 10, StartDate = DateTime.UtcNow.AddDays(-1) }
-        };
+        var query = new GetOrdersQuery { OrderParams = new() { Filter = "pending", PageSize = 10 } };
 
         var result = await handler.Handle(query, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value!.Items.Should().HaveCount(2);
+        result.Value.Should().HaveCount(2);
     }
 
     [Fact]
-    public async Task Handle_WhenExceedsPageSize_SetsNextCursor()
+    public async Task Handle_ReturnsCorrectPaginationMetadata()
     {
         using var context = CreateInMemoryContext();
-        for (var i = 0; i < 4; i++)
+        for (var i = 0; i < 5; i++)
             context.Orders.Add(OrderFixtures.CreateOrder());
         await context.SaveChangesAsync();
 
-        var orderDtos = context.Orders.Include(o => o.OrderItems).AsEnumerable().Select(o => o.ToDto()).ToList();
-        var mockQueryable = orderDtos.BuildMock();
-
-        var repoMock = new Mock<IOrderReadRepository>();
-        repoMock.Setup(r => r.GetQueryable()).Returns(mockQueryable);
+        var dtos = context.Orders.Include(o => o.OrderItems).AsEnumerable().Select(o => o.ToDto()).ToList();
+        var repoMock = SetupRepoMock(dtos);
 
         var handler = new GetOrdersQueryHandler(repoMock.Object);
-        var query = new GetOrdersQuery
-        {
-            OrderParams = new() { PageSize = 3, StartDate = DateTime.UtcNow.AddDays(-1) }
-        };
+        var query = new GetOrdersQuery { OrderParams = new() { PageSize = 3, PageNumber = 1 } };
 
         var result = await handler.Handle(query, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value!.Items.Should().HaveCount(3);
-        result.Value.NextCursor.Should().NotBeNull();
+        result.Value.Should().HaveCount(3);
+        result.Value!.Metadata.TotalCount.Should().Be(5);
+        result.Value.Metadata.TotalPages.Should().Be(2);
     }
 }

@@ -88,7 +88,13 @@ public class CreateOrderCommandHandler(
             PaymentBrand = order.PaymentSummary.Brand,
             PaymentExpMonth = order.PaymentSummary.ExpMonth,
             PaymentExpYear = order.PaymentSummary.ExpYear,
-            OrderItems = JsonSerializer.Serialize(order.OrderItems),
+            OrderItems = JsonSerializer.Serialize(order.OrderItems.Select(item => new
+            {
+                ProductId = item.ItemOrdered.ProductId,
+                Name = item.ItemOrdered.Name,
+                item.Price,
+                item.Quantity
+            })),
             PaymentIntentId = order.PaymentIntentId,
             OccurredAt = DateTime.UtcNow
         }, cancellationToken);

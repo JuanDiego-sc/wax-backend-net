@@ -27,9 +27,14 @@ public class OrderReadRepository(ReadDbContext context) : IOrderReadRepository
             .FirstOrDefaultAsync(cancellationToken);
     }
     
-    public IQueryable<OrderDto> GetQueryable()
+    public IQueryable<OrderDto> GetQueryable(string? statusFilter = null)
     {
-        return context.Orders.Select(MapToDto);
+        var query = context.Orders.AsQueryable();
+
+        if (!string.IsNullOrEmpty(statusFilter))
+            query = query.Where(o => o.OrderStatus == statusFilter);
+
+        return query.Select(MapToDto);
     }
     
     private static readonly Expression<Func<OrderReadModel, OrderDto>> MapToDto = o => new OrderDto

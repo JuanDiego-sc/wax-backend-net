@@ -11,9 +11,9 @@ namespace API.Controllers;
 public class OrderController(IBasketProvider basketProvider) : BaseApiController
 {
     [HttpGet]
-    public async Task<ActionResult<InfinityPagedList<OrderDto, DateTime?>>> GetOrders([FromQuery] OrderParams orderParams)
+    public async Task<ActionResult<PagedList<OrderDto>>> GetOrders([FromQuery] OrderParams orderParams)
     {
-        return await HandleInfinityPagedQuery(new GetOrdersQuery { OrderParams = orderParams });
+        return await HandlePagedQuery(new GetOrdersQuery { OrderParams = orderParams });
     }
 
     [HttpGet("{id}")]
