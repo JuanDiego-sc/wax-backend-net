@@ -1,8 +1,6 @@
-using Application.Core;
 using Application.Core.Validations;
 using Application.IntegrationEvents.OrderEvents;
 using Application.IntegrationEvents.ProductEvents;
-using Application.Interfaces;
 using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Interfaces.Services;
@@ -50,13 +48,21 @@ public class HandleStripeWebhookCommandHandler(
     #region Private Methods
     private async Task HandlePaymentFailed(StripeEventResult stripeEvent, CancellationToken cancellationToken)
     {
-        var order = await orderRepository.GetByPaymentIntentIdAsync(stripeEvent.IntentId, cancellationToken)
-            ?? throw new InvalidOperationException("Order not found");
+        var order = await orderRepository.GetByPaymentIntentIdAsync(stripeEvent.IntentId, cancellationToken);
+        if (order is null)
+        {
+            Result<Unit>.Failure("Order not found", 404);
+            return;
+        }
 
         foreach (var item in order.OrderItems)
         {
-            var productItem = await productRepository.GetByIdAsync(item.ItemOrdered.ProductId, cancellationToken)
-                ?? throw new InvalidOperationException("Problem updating order stock");
+            var productItem = await productRepository.GetByIdAsync(item.ItemOrdered.ProductId, cancellationToken);
+            if (productItem is null)
+            {
+                Result<Unit>.Failure("Product not found", 404);
+                return;
+            }
 
             productItem.QuantityInStock += item.Quantity;
 
@@ -80,17 +86,14 @@ public class HandleStripeWebhookCommandHandler(
 
     private async Task HandlePaymentSucceeded(StripeEventResult stripeEvent, CancellationToken cancellationToken)
     {
-        var order = await orderRepository.GetByPaymentIntentIdAsync(stripeEvent.IntentId, cancellationToken)
-            ?? throw new InvalidOperationException("Order not found");
+        var order = await orderRepository.GetByPaymentIntentIdAsync(stripeEvent.IntentId, cancellationToken);
+        if (order is null)
+        {
+            Result<Unit>.Failure("Order not found", 404);
+            return;
+        }
 
-        if (order.GetTotal() != stripeEvent.Amount)
-        {
-            order.OrderStatus = OrderStatus.PaymentMismatch;
-        }
-        else
-        {
-            order.OrderStatus = OrderStatus.PaymentRecieved;
-        }
+        order.OrderStatus = order.GetTotal() != stripeEvent.Amount ? OrderStatus.PaymentMismatch : OrderStatus.PaymentRecieved;
 
         var basket = await basketRepository.GetBasketWithItemsAsync(
             order.PaymentIntentId, cancellationToken);

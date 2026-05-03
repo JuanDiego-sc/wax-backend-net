@@ -16,9 +16,14 @@ public class SupportHub(IMediator mediator) : Hub
         if (string.IsNullOrEmpty(userId))
             throw new HubException("Unauthorized");
         
-        var comment = await mediator.Send(command);
-        
-        await Clients.Group(command.TicketId).SendAsync("CommentAdded", comment.Value);
+        var result = await mediator.Send(command);
+
+        if (!result.IsSuccess)
+        {
+            await Clients.Caller.SendAsync("Error", result.Error);
+            return;
+        }
+        await Clients.Group(command.TicketId).SendAsync("CommentAdded", result.Value);
         
     }
     

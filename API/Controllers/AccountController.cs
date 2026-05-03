@@ -38,8 +38,7 @@ public class AccountController(SignInManager<User> signInManager, IEmailSender<U
 
     }   
 
-    [Authorize(Roles = Roles.Enrolled)]
-    [Authorize(Roles = Roles.Admin)]
+
     [HttpGet("user-info")]
     [ProducesResponseType(200)]
     [ProducesResponseType(204)]
@@ -71,7 +70,6 @@ public class AccountController(SignInManager<User> signInManager, IEmailSender<U
         return NoContent();
     }
 
-    [Authorize(Roles = Roles.Enrolled)]
     [Authorize(Roles = Roles.Admin)]
     [HttpPost("billing-address")]
     [ProducesResponseType(200)]
@@ -82,7 +80,6 @@ public class AccountController(SignInManager<User> signInManager, IEmailSender<U
         return await HandleCommand(new CreateOrUpdateBillingAddressCommand { BillingInfo = billingInfo });
     }
 
-    [Authorize(Roles = Roles.Enrolled)]
     [HttpGet("billing-address")]
     [ProducesResponseType(typeof(BillingAddress), 200)]
     [ProducesResponseType(400)]
