@@ -9,8 +9,6 @@ namespace API.Controllers;
 
 public class PaymentController(IBasketProvider basketProvider) : BaseApiController
 {
-    [Authorize(Roles = Roles.Enrolled)]
-    [Authorize(Roles = Roles.Admin)]
     [HttpPost]
     [ProducesResponseType(typeof(BasketDto), 200)]
     [ProducesResponseType(400)]

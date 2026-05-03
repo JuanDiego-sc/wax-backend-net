@@ -69,8 +69,7 @@ public class AccountController(SignInManager<User> signInManager, IEmailSender<U
 
         return NoContent();
     }
-
-    [Authorize(Roles = Roles.Admin)]
+    
     [HttpPost("billing-address")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]
