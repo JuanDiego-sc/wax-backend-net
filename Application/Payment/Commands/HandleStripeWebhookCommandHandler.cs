@@ -5,6 +5,7 @@ using Application.IntegrationEvents.ProductEvents;
 using Application.Interfaces;
 using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.WriteRepositories;
+using Application.Interfaces.Services;
 using Application.Payment.Events;
 using Domain.OrderAggregate;
 using MediatR;

@@ -10,6 +10,7 @@ namespace API.Controllers;
 public class BasketController(IBasketProvider basketProvider) : BaseApiController
 {
     [HttpGet]
+    [ProducesResponseType(typeof(BasketDto), 200)]
     public async Task<ActionResult<BasketDto>> GetBasket()
     {
         var basketId = basketProvider.GetBasketId() ?? string.Empty;
@@ -17,6 +18,8 @@ public class BasketController(IBasketProvider basketProvider) : BaseApiControlle
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(BasketDto), 200)]
+    [ProducesResponseType(400)]
     public async Task<ActionResult<BasketDto>> AddItemToBasket(string productId, int quantity)
     {
         var basketId = basketProvider.GetBasketId();
@@ -36,6 +39,8 @@ public class BasketController(IBasketProvider basketProvider) : BaseApiControlle
     }
 
     [HttpDelete]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
     public async Task<ActionResult<Unit>> RemoveItemFromBasket(string productId, int quantity)
     {
         var basketId = basketProvider.GetBasketId() ?? string.Empty;

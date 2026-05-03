@@ -120,6 +120,10 @@ builder.Services.AddIdentityApiEndpoints<User>(options =>
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseCors(x => x
     .AllowAnyMethod()
     .AllowAnyHeader()

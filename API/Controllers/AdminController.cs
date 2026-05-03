@@ -1,15 +1,21 @@
 using Application.User.DTOs;
 using Domain.Entities;
 using Domain.Enumerators;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
+
+[Authorize(Roles = Roles.Admin)]
 public class AdminController(UserManager<User> userManager) : BaseApiController
 {
     [HttpGet]
+    [ProducesResponseType(typeof(List<UserDto>), 200)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
     public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
     {
         var users = await userManager.Users.ToListAsync();
@@ -32,21 +38,30 @@ public class AdminController(UserManager<User> userManager) : BaseApiController
         return Ok(result);
     }
 
-    [HttpPost("{userId}/roles{roleName}")]
+    [HttpPost("{userId}/roles/{roleName}")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(404)]
     public async Task<ActionResult> AddRoleToUser(string userId, string roleName)
     {
         var user = await userManager.FindByIdAsync(userId);
-        if (user == null) NotFound("User not found");
+        if (user == null) return NotFound("User not found");
 
         if (!Roles.All.Contains(roleName)) return BadRequest("Role does not exists");
         
-        var result = await userManager.AddToRoleAsync(user!, roleName);
+        var result = await userManager.AddToRoleAsync(user, roleName);
         if (result.Succeeded) return Ok();
         
         return BadRequest(result.Errors.Select(e => e.Description));
     }
     
     [HttpDelete("{userId}/roles/{roleName}")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(401)]
     public async Task<ActionResult> RemoveUserFromRole(string userId, string roleName)
     {
         var user = await userManager.FindByIdAsync(userId);
@@ -60,6 +75,10 @@ public class AdminController(UserManager<User> userManager) : BaseApiController
     }
 
     [HttpPost("{userId}/disable")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(401)]
     public async Task<ActionResult> DisableUser(string userId)
     {
         var user = await userManager.FindByIdAsync(userId);
@@ -72,6 +91,10 @@ public class AdminController(UserManager<User> userManager) : BaseApiController
     }
 
     [HttpPost("{userId}/enable")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(404)]
+    [ProducesResponseType(403)]
+    [ProducesResponseType(401)]
     public async Task<ActionResult> EnableUser(string userId)
     {
         var user = await userManager.FindByIdAsync(userId);
