@@ -1,4 +1,3 @@
-using Application.Core;
 using Application.Core.Validations;
 using Application.IntegrationEvents.ProductEvents;
 using Application.Interfaces;
@@ -23,7 +22,7 @@ public class DeleteProductCommandHandler(
 
         if (!string.IsNullOrEmpty(product.PublicId))
         {
-            await imageService.DeleteImage(product.PublicId);
+            await imageService.DeleteImage(product.PublicId, cancellationToken);
         }
         
         await eventPublisher.PublishEventAsync(new ProductDeletedIntegrationEvent

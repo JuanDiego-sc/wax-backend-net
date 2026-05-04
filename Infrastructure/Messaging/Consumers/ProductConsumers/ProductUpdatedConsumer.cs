@@ -18,7 +18,7 @@ public class ProductUpdatedConsumer(ReadDbContext readContext, ILogger<ProductUp
 
         if (readModel == null)
         {
-            logger.LogInformation($"Product with id {message.ProductId} not found, creating a new one");
+            logger.LogInformation("Product with id ${ProductId} not found, creating a new one", message.ProductId);
             readContext.Products.Add(new ProductReadModel
             {
                 Id = message.ProductId,
@@ -36,7 +36,7 @@ public class ProductUpdatedConsumer(ReadDbContext readContext, ILogger<ProductUp
         }
         else
         {
-            logger.LogInformation($"Product with id {message.ProductId} found, updating new one");
+            logger.LogInformation("Product with id ${ProductId} found, updating new one", message.ProductId);
             readModel.Name = message.Name;
             readModel.Description = message.Description;
             readModel.Price = message.Price;
@@ -52,6 +52,6 @@ public class ProductUpdatedConsumer(ReadDbContext readContext, ILogger<ProductUp
         }
 
         await readContext.SaveChangesAsync(context.CancellationToken);
-        logger.LogInformation($"Product with id {message.ProductId} updated successfully");
+        logger.LogInformation("Product with id ${ProductId} updated successfully", message.ProductId);
     }
 }

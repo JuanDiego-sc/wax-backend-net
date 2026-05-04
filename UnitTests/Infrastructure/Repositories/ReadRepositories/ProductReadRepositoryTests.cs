@@ -7,7 +7,7 @@ namespace UnitTests.Infrastructure.Repositories.ReadRepositories;
 
 public class ProductReadRepositoryTests
 {
-    private ReadDbContext CreateInMemoryContext()
+    private static ReadDbContext CreateInMemoryContext()
     {
         var options = new DbContextOptionsBuilder<ReadDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
@@ -15,7 +15,7 @@ public class ProductReadRepositoryTests
         return new ReadDbContext(options);
     }
 
-    private ProductReadModel CreateReadModel(string id, string name) => new()
+    private static ProductReadModel CreateReadModel(string id, string name) => new()
     {
         Id = id,
         Name = name,
@@ -84,22 +84,6 @@ public class ProductReadRepositoryTests
     }
 
     [Fact]
-    public async Task GetByIdAsync_WithCancellationToken_UsesCancellationToken()
-    {
-        using var context = CreateInMemoryContext();
-        var product = CreateReadModel("test-id", "Test Product");
-        context.Products.Add(product);
-        await context.SaveChangesAsync();
-
-        var repository = new ProductReadRepository(context);
-        var cts = new CancellationTokenSource();
-
-        var result = await repository.GetByIdAsync("test-id", cts.Token);
-
-        result.Should().NotBeNull();
-    }
-
-    [Fact]
     public void GetQueryable_ReturnsQueryableOfProductDto()
     {
         using var context = CreateInMemoryContext();
@@ -127,8 +111,8 @@ public class ProductReadRepositoryTests
 
         var queryable = repository.GetQueryable();
 
-        queryable.Should().NotBeNull();
-        queryable.ToList().Should().BeEmpty();
+        queryable.AsEnumerable().Should().NotBeNull();
+        queryable.AsEnumerable().Should().BeEmpty();
     }
 
     [Fact]

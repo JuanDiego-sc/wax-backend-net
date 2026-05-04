@@ -26,7 +26,6 @@ public class DbInitializer(
             var result = await roleManager.CreateAsync(new IdentityRole(role));
                 
             if (!result.Succeeded) logger.LogError("Role {Role} not found", role);
-            logger.LogInformation("Role {Role} created", role);
         }
     }
 

@@ -1,6 +1,5 @@
 using Application.IntegrationEvents.OrderEvents;
 using Application.IntegrationEvents.ProductEvents;
-using Application.Interfaces;
 using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Interfaces.Services;
@@ -36,7 +35,7 @@ public class HandleStripeWebhookCommandHandlerTests
             _logger.Object);
     }
 
-    private HandleStripeWebhookCommand CreateCommand() => new()
+    private static HandleStripeWebhookCommand CreateCommand() => new()
     {
         Payload = "test_payload",
         Signature = "test_signature"
@@ -301,5 +300,61 @@ public class HandleStripeWebhookCommandHandlerTests
         var result = await _handler.Handle(CreateCommand(), CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Handle_WhenPaymentSucceeded_AndOrderNotFound_ReturnsSuccess()
+    {
+        var stripeEvent = new StripeEventResult(
+            Type: "payment_intent.succeeded",
+            Status: "succeeded",
+            IntentId: "unknown_intent",
+            Amount: 0);
+
+        _paymentService
+            .Setup(p => p.ConstructStripeEvent(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(stripeEvent);
+
+        _orderRepo
+            .Setup(r => r.GetByPaymentIntentIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Order?)null);
+
+        var result = await _handler.Handle(CreateCommand(), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Handle_WhenPaymentFailed_AndProductNotFound_ReturnsSuccess()
+    {
+        var orderItem = new OrderItem
+        {
+            ItemOrdered = new ProductOrderItem { ProductId = "missing-product", Name = "Missing" },
+            Price = 1000,
+            Quantity = 1
+        };
+        var order = OrderFixtures.CreateOrder(items: [orderItem]);
+
+        var stripeEvent = new StripeEventResult(
+            Type: "payment_intent.payment_failed",
+            Status: "failed",
+            IntentId: order.PaymentIntentId,
+            Amount: 0);
+
+        _paymentService
+            .Setup(p => p.ConstructStripeEvent(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(stripeEvent);
+
+        _orderRepo
+            .Setup(r => r.GetByPaymentIntentIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(order);
+
+        _productRepo
+            .Setup(r => r.GetByIdAsync("missing-product", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((global::Domain.Entities.Product?)null);
+
+        var result = await _handler.Handle(CreateCommand(), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
     }
 }

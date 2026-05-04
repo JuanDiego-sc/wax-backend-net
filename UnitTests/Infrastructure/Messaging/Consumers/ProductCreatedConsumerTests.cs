@@ -24,7 +24,7 @@ public class ProductCreatedConsumerTests
         return logger.Object;
     }
 
-    private ProductCreatedIntegrationEvent CreateEvent(string productId = "pid1", string name = "Product") => new()
+    private static ProductCreatedIntegrationEvent CreateEvent(string productId = "pid1", string name = "Product") => new()
     {
         ProductId = productId,
         Name = name,

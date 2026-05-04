@@ -26,7 +26,7 @@ public class ProductUpdatedConsumerTests
         return logger.Object;
     }
 
-    private ProductUpdatedIntegrationEvent CreateEvent(string productId = "pid1", string name = "Updated Product") => new()
+    private static ProductUpdatedIntegrationEvent CreateEvent(string productId = "pid1", string name = "Updated Product") => new()
     {
         ProductId = productId,
         Name = name,

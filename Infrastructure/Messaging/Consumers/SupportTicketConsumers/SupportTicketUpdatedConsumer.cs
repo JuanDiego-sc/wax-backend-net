@@ -31,6 +31,5 @@ public class SupportTicketUpdatedConsumer(ReadDbContext readContext, ILogger<Sup
 
         readContext.Entry(readModel).State = EntityState.Modified;
         await readContext.SaveChangesAsync(context.CancellationToken);
-        logger.LogInformation("SupportTicket with id {TicketId} has been updated", message.TicketId);
     }
 }

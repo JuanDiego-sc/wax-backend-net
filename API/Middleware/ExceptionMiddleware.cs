@@ -1,6 +1,5 @@
-using System;
 using System.Text.Json;
-using Application.Core;
+using Application.Core.Validations;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,7 +31,7 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
 
         var response = env.IsDevelopment()
         ? new AppException(context.Response.StatusCode, ex.Message, ex.StackTrace)
-        : new AppException(context.Response.StatusCode, ex.Message, null);
+        : new AppException(context.Response.StatusCode, ex.Message);
 
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 

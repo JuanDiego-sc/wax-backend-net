@@ -1,11 +1,9 @@
-using System;
+namespace Application.Core.Validations;
 
-namespace Application.Core;
-
-public class AppException(int statusCode, string message, string? details = null)
+public class AppException(int statusCode, string message, string? details = null) : Exception
 {
     public int StatusCode { get; } = statusCode;
-    public string Message { get; } = message;
+    public new string Message { get; } = message;
     public string? Details { get; } = details;
 }
 

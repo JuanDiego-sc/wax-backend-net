@@ -9,7 +9,7 @@ namespace UnitTests.Application.Product;
 
 public class GetProductsQueryHandlerTests
 {
-    private ProductDto CreateDto(string name = "N", string brand = "B", string type = "T") => new()
+    private static ProductDto CreateDto(string name = "N", string brand = "B", string type = "T") => new()
     {
         Id = Guid.NewGuid().ToString(),
         Name = name,
