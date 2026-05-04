@@ -11,6 +11,7 @@ public class Basket : BaseEntity
 
     public void AddItem(Product product, int quantity)
     {
+        ArgumentNullException.ThrowIfNull(product);
         if(quantity <= 0) throw new ArgumentException("Quantity should be greater than zero", nameof(quantity));
 
         var existingItem = FindItem(product.Id);
