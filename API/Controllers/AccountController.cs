@@ -6,7 +6,6 @@ using Domain.Enumerators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
@@ -38,7 +37,7 @@ public class AccountController(SignInManager<User> signInManager, IEmailSender<U
 
     }   
 
-
+    
     [HttpGet("user-info")]
     [ProducesResponseType(200)]
     [ProducesResponseType(204)]

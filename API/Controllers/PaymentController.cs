@@ -9,6 +9,7 @@ namespace API.Controllers;
 
 public class PaymentController(IBasketProvider basketProvider) : BaseApiController
 {
+    [Authorize(Roles = Roles.Registered)]
     [HttpPost]
     [ProducesResponseType(typeof(BasketDto), 200)]
     [ProducesResponseType(400)]

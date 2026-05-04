@@ -14,6 +14,7 @@ public class SupportController : BaseApiController
     #region HttpGet Methods
 
 
+    [Authorize(Policy = "RegisterOrAdmin")]
     [HttpGet]
     [ProducesResponseType(typeof(List<SupportTicketDto>), 200)]
     [ProducesResponseType(401)]
@@ -22,7 +23,7 @@ public class SupportController : BaseApiController
         return await HandlePagedQuery(new GetSupportTicketsQuery { TicketParams = supportTicketParams });
     }
 
-
+    [Authorize(Policy = "RegisterOrAdmin")]
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(SupportTicketDto), 200)]
     [ProducesResponseType(400)]

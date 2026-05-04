@@ -12,8 +12,7 @@ namespace API.Controllers;
 
 public class OrderController(IBasketProvider basketProvider) : BaseApiController
 {
-    [Authorize(Roles = Roles.Registered)]
-    [Authorize(Roles = Roles.Admin)]
+    [Authorize(Policy = "RegisterOrAdmin")]
     [HttpGet]
     [ProducesResponseType(typeof(List<OrderDto>), 200)]
     [ProducesResponseType(401)]
@@ -22,8 +21,7 @@ public class OrderController(IBasketProvider basketProvider) : BaseApiController
         return await HandlePagedQuery(new GetOrdersQuery { OrderParams = orderParams });
     }
 
-    [Authorize(Roles = Roles.Registered)]
-    [Authorize(Roles = Roles.Admin)]
+    [Authorize(Policy = "RegisterOrAdmin")]
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(OrderDto), 200)]
     [ProducesResponseType(400)]
@@ -33,6 +31,7 @@ public class OrderController(IBasketProvider basketProvider) : BaseApiController
         return await HandleQuery(new GetOrderDetailsQuery { OrderId = id });
     }
 
+    [Authorize(Roles = Roles.Registered)]
     [HttpPost]
     [ProducesResponseType(typeof(OrderDto), 200)]
     [ProducesResponseType(400)]

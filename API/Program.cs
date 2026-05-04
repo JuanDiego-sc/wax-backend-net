@@ -9,6 +9,7 @@ using Application.Interfaces.Repositories.ReadRepositories;
 using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Interfaces.Services;
 using Domain.Entities;
+using Domain.Enumerators;
 using Infrastructure.Cookies;
 using Infrastructure.Email;
 using Infrastructure.Email.Adapters;
@@ -116,6 +117,12 @@ builder.Services.AddIdentityApiEndpoints<User>(options =>
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<WriteDbContext>();
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RegisterOrAdmin", policy =>
+        policy.RequireRole(Roles.Admin, Roles.Registered));
+});
 
 var app = builder.Build();
 

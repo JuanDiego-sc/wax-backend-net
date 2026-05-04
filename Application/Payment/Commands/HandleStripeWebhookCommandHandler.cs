@@ -50,10 +50,7 @@ public class HandleStripeWebhookCommandHandler(
     {
         var order = await orderRepository.GetByPaymentIntentIdAsync(stripeEvent.IntentId, cancellationToken);
         if (order is null)
-        {
-            Result<Unit>.Failure("Order not found", 404);
-            return;
-        }
+            throw new InvalidOperationException("Order not found for payment intent: " + stripeEvent.IntentId);
 
         foreach (var item in order.OrderItems)
         {

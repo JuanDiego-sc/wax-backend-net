@@ -37,12 +37,15 @@ public class UserAccessor(
 
     }
 
-    public string? GetUserId()
+    public string GetUserId()
     {
-        return httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return userId ?? throw new UnauthorizedAccessException("User ID not found.");
     }
-    public string? GetUserEmail()
+
+    public string GetUserEmail()
     {
-        return httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Email);
+        var email = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Email);
+        return email ?? throw new UnauthorizedAccessException("User email not found.");
     }
 }

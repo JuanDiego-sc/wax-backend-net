@@ -23,6 +23,7 @@
     <ProjectReference Include="../Application/Application.csproj" />
     <ProjectReference Include="../Persistence/Persistence.csproj" />
     <ProjectReference Include="../Infrastructure/Infrastructure.csproj" />
+    <ProjectReference Include="../API/API.csproj" />
   </ItemGroup>
 
   <ItemGroup>
