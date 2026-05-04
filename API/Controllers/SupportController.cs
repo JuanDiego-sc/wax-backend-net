@@ -13,8 +13,7 @@ public class SupportController : BaseApiController
 {
     #region HttpGet Methods
 
-    [Authorize(Roles = Roles.Enrolled)]
-    [Authorize(Roles = Roles.Admin)]
+
     [HttpGet]
     [ProducesResponseType(typeof(List<SupportTicketDto>), 200)]
     [ProducesResponseType(401)]
@@ -23,8 +22,7 @@ public class SupportController : BaseApiController
         return await HandlePagedQuery(new GetSupportTicketsQuery { TicketParams = supportTicketParams });
     }
 
-    [Authorize(Roles = Roles.Enrolled)]
-    [Authorize(Roles = Roles.Admin)]
+
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(SupportTicketDto), 200)]
     [ProducesResponseType(400)]
@@ -38,7 +36,7 @@ public class SupportController : BaseApiController
    
     #region HttpPost methods
 
-    [Authorize(Roles = Roles.Enrolled)]
+    [Authorize(Roles = Roles.Registered)]
     [HttpPost]
     [ProducesResponseType(typeof(string), 200)]
     [ProducesResponseType(400)]
@@ -52,7 +50,7 @@ public class SupportController : BaseApiController
 
     #region HttpPut methods
 
-    [Authorize(Roles = Roles.Enrolled)]
+    [Authorize(Roles = Roles.Registered)]
     [Authorize(Roles = Roles.Admin)]
     [HttpPut("{id}")]
     [ProducesResponseType(200)]
@@ -67,7 +65,7 @@ public class SupportController : BaseApiController
 
     #region HttpDelete methods
 
-    [Authorize(Roles = Roles.Enrolled)]
+    [Authorize(Roles = Roles.Registered)]
     [Authorize(Roles = Roles.Admin)]
     [HttpDelete("{id}")]
     [ProducesResponseType(200)]

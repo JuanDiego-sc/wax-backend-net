@@ -88,7 +88,7 @@ public class AccountController(SignInManager<User> signInManager, IEmailSender<U
         return await HandleQuery(new GetBillingAddressQuery());
     }
     
-    [Authorize(Roles = Roles.Enrolled)]
+    [Authorize(Roles = Roles.Registered)]
     [HttpPost("forgot-password")]
     [ProducesResponseType(200)]
     public async Task<ActionResult> ForgotPassword(ForgotPasswordRequest forgotPasswordRequest)
@@ -105,7 +105,7 @@ public class AccountController(SignInManager<User> signInManager, IEmailSender<U
         return Ok();
     }
     
-    [Authorize(Roles = Roles.Enrolled)]
+    [Authorize(Roles = Roles.Registered)]
     [HttpPost("reset-password")]
     [ProducesResponseType(200)]
     [ProducesResponseType(400)]

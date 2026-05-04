@@ -13,7 +13,7 @@ public static class OrderExtensions
         {
             Id = order.Id,
             BuyerEmail = order.BuyerEmail,
-            CreateAt = order.CreatedAt,
+            CreatedAt = order.CreatedAt,
             UpdatedAt = order.UpdatedAt,
             BillingAddress = order.BillingAddress.ToDto(),
             PaymentSummary = new PaymentSummaryDto

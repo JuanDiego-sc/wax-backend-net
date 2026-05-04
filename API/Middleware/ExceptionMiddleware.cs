@@ -42,26 +42,26 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
 
     private static async Task HandleValidationException(HttpContext context, ValidationException ex)
     {
-        var validationErros = new Dictionary<string, string[]>();
+        var validationErrors = new Dictionary<string, string[]>();
 
         if ( ex.Errors is not null)
         {
             foreach(var error in ex.Errors)
             {
-                if(validationErros.TryGetValue(error.PropertyName, out var existingErrors))
+                if(validationErrors.TryGetValue(error.PropertyName, out var existingErrors))
                 {
-                    validationErros[error.PropertyName] = [.. existingErrors, error.ErrorMessage];
+                    validationErrors[error.PropertyName] = [.. existingErrors, error.ErrorMessage];
                 }
                 else
                 {
-                    validationErros[error.PropertyName] = [error.ErrorMessage];
+                    validationErrors[error.PropertyName] = [error.ErrorMessage];
                 }
             }
         }
 
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-        var validationProblemDetails = new ValidationProblemDetails(validationErros)
+        var validationProblemDetails = new ValidationProblemDetails(validationErrors)
         {
             Status = StatusCodes.Status400BadRequest,
             Type = "ValidationFailure",

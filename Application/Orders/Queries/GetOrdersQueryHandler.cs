@@ -28,7 +28,7 @@ public class GetOrdersQueryHandler(IOrderReadRepository orderRepository) :
         };
 
         var query = orderRepository.GetQueryable(statusFilter)
-            .OrderByDescending(x => x.CreateAt);
+            .OrderByDescending(x => x.CreatedAt);
 
         var orders = await PagedList<OrderDto>.ToPagedList(
             query, request.OrderParams.PageNumber, request.OrderParams.PageSize);

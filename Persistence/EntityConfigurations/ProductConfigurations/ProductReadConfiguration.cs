@@ -21,5 +21,8 @@ public class ProductReadConfiguration: IEntityTypeConfiguration<ProductReadModel
         builder.HasIndex(p => p.Type);
         builder.HasIndex(p => p.Brand);
         builder.HasIndex(p => p.Name);
+        builder.HasIndex(p => p.PictureUrl);
+        builder.HasIndex(p => new { p.Brand, p.PublicId });
+        
     }
 }

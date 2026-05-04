@@ -45,7 +45,7 @@ public class OrderReadRepository(ReadDbContext context) : IOrderReadRepository
         Subtotal = o.Subtotal,
         DeliveryFee = o.DeliveryFee,
         Total = o.Total,
-        CreateAt = o.CreatedAt,
+        CreatedAt = o.CreatedAt,
         UpdatedAt = o.UpdatedAt,
         BillingAddress = new BillingAddressDto
         {

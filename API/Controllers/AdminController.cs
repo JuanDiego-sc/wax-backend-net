@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 namespace API.Controllers;
 
 
-[Authorize(Roles = Roles.Admin)]
 public class AdminController(UserManager<User> userManager) : BaseApiController
 {
     [HttpGet]
