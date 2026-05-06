@@ -182,6 +182,124 @@
         ]
       }
     },
+    "/api/Order/my": {
+      "get": {
+        "tags": ["Order"],
+        "summary": "List my orders",
+        "description": "Returns a paginated list of orders belonging exclusively to the authenticated user. Only accessible to users with the `Registered` role. Admins must use `GET /api/Order` to list all orders.",
+        "operationId": "Order_GetMyOrders",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "Page number to retrieve (1-based)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "example": 1
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Number of orders per page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "example": 10
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "Filter orders by status. Accepted values: `pending`, `completed`, `cancelled`, `paymentfailed`, `paymentrecieved`, `paymentmismatch`, `customorder`",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "paymentrecieved"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of the authenticated user's orders",
+            "headers": {
+              "Pagination": {
+                "description": "JSON object with pagination metadata: `currentPage`, `itemsPerPage`, `totalItems`, `totalPages`",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedListOrderDto"
+                },
+                "example": {
+                  "items": [
+                    {
+                      "id": "order-001",
+                      "userId": "user-abc-123",
+                      "buyerEmail": "user@example.com",
+                      "billingAddress": {
+                        "name": "Juan De La Torre",
+                        "line1": "Av. Siempre Viva 742",
+                        "line2": null,
+                        "city": "Bogotá",
+                        "state": "Cundinamarca",
+                        "postalCode": "110111",
+                        "country": "CO"
+                      },
+                      "orderItems": [
+                        {
+                          "productId": "prod-abc-123",
+                          "name": "Technics SL-1200",
+                          "price": 120000,
+                          "quantity": 1
+                        }
+                      ],
+                      "subtotal": 120000,
+                      "deliveryFee": 5000,
+                      "discount": 0,
+                      "total": 125000,
+                      "orderStatus": "PaymentReceived",
+                      "paymentSummary": {
+                        "last4": 4242,
+                        "brand": "visa",
+                        "expMonth": 12,
+                        "expYear": 2027
+                      },
+                      "createAt": "2026-04-10T14:30:00Z",
+                      "updatedAt": null
+                    }
+                  ],
+                  "currentPage": 1,
+                  "totalPages": 1,
+                  "pageSize": 10,
+                  "totalCount": 1,
+                  "hasPreviousPage": false,
+                  "hasNextPage": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated"
+          },
+          "403": {
+            "description": "User does not have the `Registered` role"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
     "/api/Order/{id}": {
       "get": {
         "tags": ["Order"],
@@ -262,6 +380,49 @@
   },
   "components": {
     "schemas": {
+      "PagedListOrderDto": {
+        "type": "object",
+        "description": "Paginated list of orders",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "List of orders in the current page",
+            "items": {
+              "$ref": "#/components/schemas/OrderDto"
+            }
+          },
+          "currentPage": {
+            "type": "integer",
+            "description": "Current page number (1-based)",
+            "example": 1
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "Total number of pages",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "Number of items per page",
+            "example": 10
+          },
+          "totalCount": {
+            "type": "integer",
+            "description": "Total number of orders matching the query",
+            "example": 1
+          },
+          "hasPreviousPage": {
+            "type": "boolean",
+            "description": "Indicates whether there is a previous page",
+            "example": false
+          },
+          "hasNextPage": {
+            "type": "boolean",
+            "description": "Indicates whether there is a next page",
+            "example": false
+          }
+        }
+      },
       "OrderDto": {
         "type": "object",
         "description": "Full order representation",
@@ -270,6 +431,12 @@
             "type": "string",
             "description": "Unique order identifier",
             "example": "order-001"
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Identifier of the user who placed the order. Null for orders created before this field was introduced.",
+            "example": "user-abc-123"
           },
           "buyerEmail": {
             "type": "string",

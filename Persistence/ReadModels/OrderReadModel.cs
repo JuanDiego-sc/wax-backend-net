@@ -4,6 +4,7 @@ public class OrderReadModel
 {
     public required string Id { get; set; }
     public required string BuyerEmail { get; set; }
+    public string? UserId { get; set; }
     public required string OrderStatus { get; set; }
     public long Subtotal { get; set; }
     public long DeliveryFee { get; set; }

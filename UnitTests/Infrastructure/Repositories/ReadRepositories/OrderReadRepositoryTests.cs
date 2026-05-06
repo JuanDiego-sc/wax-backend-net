@@ -17,7 +17,7 @@ public class OrderReadRepositoryTests
         return new ReadDbContext(options);
     }
 
-    private static OrderReadModel CreateOrderReadModel(string? id = null, string? paymentIntentId = null)
+    private static OrderReadModel CreateOrderReadModel(string? id = null, string? paymentIntentId = null, string? userId = null)
     {
         var orderItems = new List<OrderItemDto>
         {
@@ -50,6 +50,7 @@ public class OrderReadRepositoryTests
             PaymentExpMonth = 12,
             PaymentExpYear = 2025,
             PaymentIntentId = paymentIntentId ?? "pi_test_123",
+            UserId = userId,
             OrderItems = JsonSerializer.Serialize(orderItems),
             CreatedAt = DateTime.UtcNow
         };
@@ -190,5 +191,66 @@ public class OrderReadRepositoryTests
 
         result.Should().HaveCount(1);
         result[0].OrderStatus.Should().Be("Pending");
+    }
+
+    [Fact]
+    public async Task GetQueryable_WithUserIdFilter_ReturnsOnlyMatchingOrders()
+    {
+        const string userId = "user-abc";
+        using var context = CreateInMemoryContext();
+        context.Orders.Add(CreateOrderReadModel(userId: userId));
+        context.Orders.Add(CreateOrderReadModel(userId: userId));
+        context.Orders.Add(CreateOrderReadModel(userId: "other-user"));
+        context.Orders.Add(CreateOrderReadModel(userId: null));
+        await context.SaveChangesAsync();
+
+        var repository = new OrderReadRepository(context);
+
+        var result = await repository.GetQueryable(userId: userId).ToListAsync();
+
+        result.Should().HaveCount(2);
+        result.Should().OnlyContain(o => o.UserId == userId);
+    }
+
+    [Fact]
+    public async Task GetQueryable_WithNullUserIdFilter_ReturnsAllOrders()
+    {
+        using var context = CreateInMemoryContext();
+        context.Orders.Add(CreateOrderReadModel(userId: "user-1"));
+        context.Orders.Add(CreateOrderReadModel(userId: "user-2"));
+        context.Orders.Add(CreateOrderReadModel(userId: null));
+        await context.SaveChangesAsync();
+
+        var repository = new OrderReadRepository(context);
+
+        var result = await repository.GetQueryable().ToListAsync();
+
+        result.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task GetQueryable_WithStatusAndUserIdFilter_AppliesBothFilters()
+    {
+        const string userId = "user-xyz";
+        using var context = CreateInMemoryContext();
+        context.Orders.Add(CreateOrderReadModel(userId: userId));
+        context.Orders.Add(CreateOrderReadModel(userId: userId));
+        context.Orders.Add(CreateOrderReadModel(userId: "other-user"));
+        await context.SaveChangesAsync();
+
+        // Manually update status to allow combined filter test
+        var orders = await context.Orders.ToListAsync();
+        orders[0].OrderStatus = "Pending";
+        orders[1].OrderStatus = "Completed";
+        orders[2].OrderStatus = "Pending";
+        await context.SaveChangesAsync();
+
+        var repository = new OrderReadRepository(context);
+
+        var result = await repository.GetQueryable(statusFilter: "Pending", userId: userId).ToListAsync();
+
+        result.Should().HaveCount(1);
+        result[0].OrderStatus.Should().Be("Pending");
+        result[0].UserId.Should().Be(userId);
     }
 }

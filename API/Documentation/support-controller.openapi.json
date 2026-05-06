@@ -187,6 +187,132 @@
         ]
       }
     },
+    "/api/Support/my": {
+      "get": {
+        "tags": ["Support"],
+        "summary": "List my support tickets",
+        "description": "Returns a paginated list of support tickets belonging exclusively to the authenticated user. Only accessible to users with the `Registered` role. Supports the same filters as `GET /api/Support`.",
+        "operationId": "Support_GetMyTickets",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "Page number to retrieve (1-based)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "example": 1
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Number of tickets per page (max 30)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 8,
+              "maximum": 30
+            },
+            "example": 8
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "description": "Field to order results by (e.g. 'createdAt')",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "createdAt"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter tickets by status (e.g. 'Open', 'InProgress', 'Closed')",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Open"
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Filter tickets by category (e.g. 'OrderIssue', 'PaymentIssue', 'ProductIssue', 'Other')",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "OrderIssue"
+          },
+          {
+            "name": "createdOn",
+            "in": "query",
+            "description": "Filter tickets created on or after this date",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2026-04-01T00:00:00Z"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of the authenticated user's support tickets",
+            "headers": {
+              "Pagination": {
+                "description": "JSON object with pagination metadata: `currentPage`, `itemsPerPage`, `totalItems`, `totalPages`",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedListSupportTicketDto"
+                },
+                "example": {
+                  "items": [
+                    {
+                      "id": "ticket-001",
+                      "subject": "Missing item in order",
+                      "description": "I received my order but one of the items was missing.",
+                      "category": "OrderIssue",
+                      "status": "Open",
+                      "orderId": "order-001",
+                      "createdAt": "2026-04-15T10:00:00Z",
+                      "userId": "user-abc-123",
+                      "userFullName": "Juan De La Torre",
+                      "userEmail": "user@example.com"
+                    }
+                  ],
+                  "pageNumber": 1,
+                  "totalPages": 1,
+                  "totalCount": 1,
+                  "hasPreviousPage": false,
+                  "hasNextPage": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated"
+          },
+          "403": {
+            "description": "User does not have the `Registered` role"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
     "/api/Support/{id}": {
       "get": {
         "tags": ["Support"],

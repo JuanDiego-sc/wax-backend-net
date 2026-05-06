@@ -26,7 +26,7 @@ public class GetOrdersQueryHandlerTests
         var filtered = statusFilter != null
             ? dtos.Where(d => d.OrderStatus == statusFilter).ToList()
             : dtos;
-        mock.Setup(r => r.GetQueryable(It.IsAny<string?>())).Returns(filtered.BuildMock());
+        mock.Setup(r => r.GetQueryable(It.IsAny<string?>(), It.IsAny<string?>())).Returns(filtered.BuildMock());
         return mock;
     }
 

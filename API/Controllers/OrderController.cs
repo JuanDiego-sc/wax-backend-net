@@ -21,6 +21,16 @@ public class OrderController(IBasketProvider basketProvider) : BaseApiController
         return await HandlePagedQuery(new GetOrdersQuery { OrderParams = orderParams });
     }
 
+    [Authorize(Roles = Roles.Registered)]
+    [HttpGet("my")]
+    [ProducesResponseType(typeof(List<OrderDto>), 200)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
+    public async Task<ActionResult<PagedList<OrderDto>>> GetMyOrders([FromQuery] OrderParams parameters)
+    {
+        return await HandlePagedQuery(new GetMyOrdersQuery(parameters));
+    }
+
     [Authorize(Policy = "RegisterOrAdmin")]
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(OrderDto), 200)]

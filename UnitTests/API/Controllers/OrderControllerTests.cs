@@ -165,6 +165,57 @@ public class OrderControllerTests
             Times.Once);
     }
 
+    // ── GetMyOrders ───────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetMyOrders_DelegatesToMediatorWithCorrectParams()
+    {
+        var orderParams = new OrderParams { PageNumber = 1, PageSize = 10 };
+        var pagedList = new PagedList<OrderDto>(new List<OrderDto>(), 0, 1, 10);
+
+        GetMyOrdersQuery? capturedQuery = null;
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetMyOrdersQuery>(), It.IsAny<CancellationToken>()))
+            .Callback<IRequest<Result<PagedList<OrderDto>>>, CancellationToken>(
+                (q, _) => capturedQuery = (GetMyOrdersQuery)q)
+            .ReturnsAsync(Result<PagedList<OrderDto>>.Success(pagedList));
+
+        await _controller.GetMyOrders(orderParams);
+
+        capturedQuery.Should().NotBeNull();
+        capturedQuery!.Params.Should().BeSameAs(orderParams);
+    }
+
+    [Fact]
+    public async Task GetMyOrders_ReturnsPaginationHeader_WhenSuccess()
+    {
+        var orderParams = new OrderParams { PageNumber = 1, PageSize = 10 };
+        var pagedList = new PagedList<OrderDto>(new List<OrderDto>(), 0, 1, 10);
+
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetMyOrdersQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<PagedList<OrderDto>>.Success(pagedList));
+
+        var result = await _controller.GetMyOrders(orderParams);
+
+        result.Result.Should().BeOfType<OkObjectResult>();
+        _controller.Response.Headers.ContainsKey("Pagination").Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetMyOrders_ReturnsNotFound_WhenResultIs404()
+    {
+        var orderParams = new OrderParams();
+
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetMyOrdersQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<PagedList<OrderDto>>.Failure("Not found", 404));
+
+        var result = await _controller.GetMyOrders(orderParams);
+
+        result.Result.Should().BeOfType<NotFoundResult>();
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static OrderDto BuildOrderDto(string id) => new()

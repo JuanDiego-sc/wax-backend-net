@@ -8,26 +8,14 @@ namespace UnitTests.Application.Orders;
 
 public class GetOrdersFilterTests
 {
-    private static Mock<IOrderReadRepository> BuildRepoMock(out string? capturedFilter)
-    {
-        string? captured = null;
-        var repoMock = new Mock<IOrderReadRepository>();
-        repoMock
-            .Setup(r => r.GetQueryable(It.IsAny<string?>()))
-            .Callback<string?>(f => captured = f)
-            .Returns(new List<OrderDto>().BuildMock());
-
-        capturedFilter = captured;
-        return repoMock;
-    }
 
     private static async Task<string?> ExecuteAndCaptureFilter(string? filterInput)
     {
         string? captured = null;
         var repoMock = new Mock<IOrderReadRepository>();
         repoMock
-            .Setup(r => r.GetQueryable(It.IsAny<string?>()))
-            .Callback<string?>(f => captured = f)
+            .Setup(r => r.GetQueryable(It.IsAny<string?>(), It.IsAny<string?>()))
+            .Callback<string?, string?>((f, _) => captured = f)
             .Returns(new List<OrderDto>().BuildMock());
 
         var handler = new GetOrdersQueryHandler(repoMock.Object);

@@ -24,7 +24,7 @@ public class OrderCreatedConsumerTests
         return logger.Object;
     }
 
-    private static OrderCreatedIntegrationEvent CreateEvent(string? orderId = null) => new()
+    private static OrderCreatedIntegrationEvent CreateEvent(string? orderId = null, string? userId = null) => new()
     {
         OrderId = orderId ?? Guid.NewGuid().ToString(),
         BuyerEmail = "buyer@test.com",
@@ -45,6 +45,7 @@ public class OrderCreatedConsumerTests
         PaymentExpYear = 2026,
         OrderItems = "[]",
         PaymentIntentId = "pi_test",
+        UserId = userId,
         OccurredAt = DateTime.UtcNow
     };
 
@@ -159,5 +160,43 @@ public class OrderCreatedConsumerTests
 
         var order = await context.Orders.FirstOrDefaultAsync(o => o.Id == @event.OrderId);
         order!.LastSyncedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(2));
+    }
+
+    [Fact]
+    public async Task Consume_MapsUserIdFromEvent()
+    {
+        using var context = CreateInMemoryContext();
+        var logger = CreateLogger();
+        var consumer = new OrderCreatedConsumer(context, logger);
+        var @event = CreateEvent(userId: "user-123");
+
+        var contextMock = new Mock<ConsumeContext<OrderCreatedIntegrationEvent>>();
+        contextMock.Setup(c => c.Message).Returns(@event);
+        contextMock.Setup(c => c.CancellationToken).Returns(CancellationToken.None);
+
+        await consumer.Consume(contextMock.Object);
+
+        var order = await context.Orders.FirstOrDefaultAsync(o => o.Id == @event.OrderId);
+        order.Should().NotBeNull();
+        order!.UserId.Should().Be("user-123");
+    }
+
+    [Fact]
+    public async Task Consume_WithNullUserId_SetsNullOnReadModel()
+    {
+        using var context = CreateInMemoryContext();
+        var logger = CreateLogger();
+        var consumer = new OrderCreatedConsumer(context, logger);
+        var @event = CreateEvent(userId: null);
+
+        var contextMock = new Mock<ConsumeContext<OrderCreatedIntegrationEvent>>();
+        contextMock.Setup(c => c.Message).Returns(@event);
+        contextMock.Setup(c => c.CancellationToken).Returns(CancellationToken.None);
+
+        await consumer.Consume(contextMock.Object);
+
+        var order = await context.Orders.FirstOrDefaultAsync(o => o.Id == @event.OrderId);
+        order.Should().NotBeNull();
+        order!.UserId.Should().BeNull();
     }
 }
