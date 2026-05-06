@@ -23,6 +23,16 @@ public class SupportController : BaseApiController
         return await HandlePagedQuery(new GetSupportTicketsQuery { TicketParams = supportTicketParams });
     }
 
+    [Authorize(Roles = Roles.Registered)]
+    [HttpGet("my")]
+    [ProducesResponseType(typeof(List<SupportTicketDto>), 200)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
+    public async Task<ActionResult<PagedList<SupportTicketDto>>> GetMyTickets([FromQuery] SupportTicketParams parameters)
+    {
+        return await HandlePagedQuery(new GetMyTicketsQuery(parameters));
+    }
+
     [Authorize(Policy = "RegisterOrAdmin")]
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(SupportTicketDto), 200)]

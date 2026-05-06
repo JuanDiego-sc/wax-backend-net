@@ -19,7 +19,7 @@ public class OrderCreatedConsumer(ReadDbContext readContext, ILogger<OrderCreate
 
         if (alreadyExists)
         {
-            logger.LogWarning($"Order with id {message.OrderId} has already been added");
+            logger.LogWarning("Order with id {OrderId} has already been added", message.OrderId);
             return;
         }
 
@@ -45,11 +45,12 @@ public class OrderCreatedConsumer(ReadDbContext readContext, ILogger<OrderCreate
             PaymentExpYear = message.PaymentExpYear,
             OrderItems = message.OrderItems,
             PaymentIntentId = message.PaymentIntentId,
+            UserId = message.UserId,
             LastSyncedAt = DateTime.UtcNow
         };
 
         readContext.Orders.Add(readModel);
         await readContext.SaveChangesAsync(context.CancellationToken);
-        logger.LogInformation($"Order with id {message.OrderId} has been added");
+        logger.LogInformation("Order with id {OrderId} has been added",  message.OrderId);
     }
 }

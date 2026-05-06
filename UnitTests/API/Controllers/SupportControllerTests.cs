@@ -1,4 +1,5 @@
 using API.Controllers;
+using Application.Core;
 using Application.Core.Pagination;
 using Application.Core.Validations;
 using Application.SupportAssist.Commands;
@@ -186,5 +187,75 @@ public class SupportControllerTests
         var result = await _controller.DeleteSupportTicket("non-existent-id");
 
         result.Should().BeOfType<NotFoundResult>();
+    }
+
+    // ── GetMyTickets ──────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task GetMyTickets_DelegatesToMediatorWithCorrectParams()
+    {
+        var ticketParams = new SupportTicketParams { PageNumber = 1, PageSize = 10 };
+        var pagedList = new PagedList<SupportTicketDto>(new List<SupportTicketDto>(), 0, 1, 10);
+
+        GetMyTicketsQuery? capturedQuery = null;
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetMyTicketsQuery>(), It.IsAny<CancellationToken>()))
+            .Callback<IRequest<Result<PagedList<SupportTicketDto>>>, CancellationToken>(
+                (q, _) => capturedQuery = (GetMyTicketsQuery)q)
+            .ReturnsAsync(Result<PagedList<SupportTicketDto>>.Success(pagedList));
+
+        await _controller.GetMyTickets(ticketParams);
+
+        capturedQuery.Should().NotBeNull();
+        capturedQuery!.Params.Should().BeSameAs(ticketParams);
+    }
+
+    [Fact]
+    public async Task GetMyTickets_ReturnsPaginationHeader_WhenSuccess()
+    {
+        var ticketParams = new SupportTicketParams { PageNumber = 1, PageSize = 5 };
+        var pagedList = new PagedList<SupportTicketDto>(new List<SupportTicketDto>(), 0, 1, 5);
+
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetMyTicketsQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<PagedList<SupportTicketDto>>.Success(pagedList));
+
+        var result = await _controller.GetMyTickets(ticketParams);
+
+        var okResult = result.Result as OkObjectResult;
+        okResult.Should().NotBeNull();
+        okResult!.Value.Should().Be(pagedList);
+        _controller.Response.Headers.ContainsKey("Pagination").Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetMyTickets_WithNoTickets_ReturnsOkWithEmptyList()
+    {
+        var ticketParams = new SupportTicketParams { PageNumber = 1, PageSize = 10 };
+        var emptyList = new PagedList<SupportTicketDto>(new List<SupportTicketDto>(), 0, 1, 10);
+
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetMyTicketsQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<PagedList<SupportTicketDto>>.Success(emptyList));
+
+        var result = await _controller.GetMyTickets(ticketParams);
+
+        var okResult = result.Result as OkObjectResult;
+        okResult.Should().NotBeNull();
+        okResult!.Value.As<PagedList<SupportTicketDto>>().Count.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task GetMyTickets_ReturnsNotFound_WhenResultIs404()
+    {
+        var ticketParams = new SupportTicketParams { PageNumber = 1, PageSize = 10 };
+
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetMyTicketsQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<PagedList<SupportTicketDto>>.Failure("Not found", 404));
+
+        var result = await _controller.GetMyTickets(ticketParams);
+
+        result.Result.Should().BeOfType<NotFoundResult>();
     }
 }

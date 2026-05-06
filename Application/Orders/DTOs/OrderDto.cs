@@ -4,6 +4,7 @@ public record OrderDto
 {
     public required string Id { get; set; }
     public required string BuyerEmail { get; set; }
+    public string? UserId { get; set; }
     public required BillingAddressDto BillingAddress { get; set; }
     public List<OrderItemDto> OrderItems { get; set; } = [];
     public long Subtotal { get; set; }
