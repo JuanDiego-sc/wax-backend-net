@@ -27,20 +27,29 @@ public class OrderReadRepository(ReadDbContext context) : IOrderReadRepository
             .FirstOrDefaultAsync(cancellationToken);
     }
     
-    public IQueryable<OrderDto> GetQueryable()
+    public IQueryable<OrderDto> GetQueryable(string? statusFilter = null, string? userId = null)
     {
-        return context.Orders.Select(MapToDto);
+        var query = context.Orders.AsQueryable();
+
+        if (!string.IsNullOrEmpty(statusFilter))
+            query = query.Where(o => o.OrderStatus == statusFilter);
+
+        if (!string.IsNullOrEmpty(userId))
+            query = query.Where(o => o.UserId == userId);
+
+        return query.Select(MapToDto);
     }
     
     private static readonly Expression<Func<OrderReadModel, OrderDto>> MapToDto = o => new OrderDto
     {
         Id = o.Id,
         BuyerEmail = o.BuyerEmail,
+        UserId = o.UserId,
         OrderStatus = o.OrderStatus,
         Subtotal = o.Subtotal,
         DeliveryFee = o.DeliveryFee,
         Total = o.Total,
-        CreateAt = o.CreatedAt,
+        CreatedAt = o.CreatedAt,
         UpdatedAt = o.UpdatedAt,
         BillingAddress = new BillingAddressDto
         {

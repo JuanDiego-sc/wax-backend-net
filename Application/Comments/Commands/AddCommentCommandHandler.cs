@@ -34,7 +34,7 @@ public class AddCommentCommandHandler(
         var result = await unitOfWork.CompleteAsync(cancellationToken);
         
         return !result 
-            ?  Result<CommentDto>.Failure("Could not delete the comment")
+            ?  Result<CommentDto>.Failure("Could not add the comment")
             : Result<CommentDto>.Success(comment.ToDto());
 
     }

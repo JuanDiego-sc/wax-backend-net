@@ -1,4 +1,5 @@
 using System.Configuration;
+using System.Runtime.InteropServices;
 using Application.Interfaces;
 using Application.Interfaces.DTOs;
 using CloudinaryDotNet;
@@ -29,7 +30,7 @@ public class ImageService : IImageService
 
         var result = await _cloudinary.DestroyAsync(deleteParams);
 
-        if (result.Error != null) throw new ConfigurationErrorsException(result.Error.Message);
+        if (result.Error != null) throw new ExternalException(result.Error.Message);
 
         return result.Result;
     }
@@ -49,7 +50,7 @@ public class ImageService : IImageService
 
         var uploadResult = await _cloudinary.UploadAsync(uploadParams);
 
-        if (uploadResult.Error != null) throw new ConfigurationErrorsException(uploadResult.Error.Message);
+        if (uploadResult.Error != null) throw new ExternalException(uploadResult.Error.Message);
 
         return new ImageUploadResultDto
         {

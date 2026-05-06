@@ -21,7 +21,7 @@ public class UserAccessor(
 
     public async Task<User?> GetUserWithBillingAddressAsync()
     {
-        var userId =GetUserId();
+        var userId= GetUserId();
 
         return await dbContext.Users
             .Include(x => x.BillingAddress)
@@ -39,12 +39,13 @@ public class UserAccessor(
 
     public string GetUserId()
     {
-        return httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier) 
-            ?? throw new UnauthorizedAccessException("User ID not found.");
+        var userId = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return userId ?? throw new UnauthorizedAccessException("User ID not found.");
     }
+
     public string GetUserEmail()
     {
-        return httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Email) 
-            ?? throw new UnauthorizedAccessException("User email not found.");
+        var email = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.Email);
+        return email ?? throw new UnauthorizedAccessException("User email not found.");
     }
 }

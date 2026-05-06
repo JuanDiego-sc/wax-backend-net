@@ -28,7 +28,9 @@ public class OrderReadConfigurations : IEntityTypeConfiguration<OrderReadModel>
         builder.Property(o => o.PaymentIntentId).IsRequired().HasMaxLength(200);
         
         builder.HasIndex(o => o.BuyerEmail);
+        builder.HasIndex(o => o.OrderStatus);
         builder.HasIndex(o => o.PaymentIntentId);
+        builder.HasIndex(o => o.UserId);
         
     }
 }

@@ -112,11 +112,18 @@ namespace Persistence.Migrations.ReadMigrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BuyerEmail");
 
+                    b.HasIndex("OrderStatus");
+
                     b.HasIndex("PaymentIntentId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Orders", (string)null);
                 });
@@ -176,7 +183,11 @@ namespace Persistence.Migrations.ReadMigrations
 
                     b.HasIndex("Name");
 
+                    b.HasIndex("PictureUrl");
+
                     b.HasIndex("Type");
+
+                    b.HasIndex("Brand", "PublicId");
 
                     b.ToTable("Products", (string)null);
                 });

@@ -1,4 +1,3 @@
-using System;
 using Application.Core;
 using Application.Core.Pagination;
 using Application.Core.Validations;
@@ -8,7 +7,7 @@ using MediatR;
 
 namespace Application.Orders.Queries;
 
-public class GetOrdersQuery : IRequest<Result<InfinityPagedList<OrderDto, DateTime?>>>
+public class GetOrdersQuery : IRequest<Result<PagedList<OrderDto>>>
 {
     public required OrderParams OrderParams { get; set; }
 }

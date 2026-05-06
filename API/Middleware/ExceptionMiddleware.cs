@@ -1,6 +1,5 @@
-using System;
 using System.Text.Json;
-using Application.Core;
+using Application.Core.Validations;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,7 +31,7 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
 
         var response = env.IsDevelopment()
         ? new AppException(context.Response.StatusCode, ex.Message, ex.StackTrace)
-        : new AppException(context.Response.StatusCode, ex.Message, null);
+        : new AppException(context.Response.StatusCode, ex.Message);
 
         var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
@@ -42,26 +41,26 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
 
     private static async Task HandleValidationException(HttpContext context, ValidationException ex)
     {
-        var validationErros = new Dictionary<string, string[]>();
+        var validationErrors = new Dictionary<string, string[]>();
 
         if ( ex.Errors is not null)
         {
             foreach(var error in ex.Errors)
             {
-                if(validationErros.TryGetValue(error.PropertyName, out var existingErrors))
+                if(validationErrors.TryGetValue(error.PropertyName, out var existingErrors))
                 {
-                    validationErros[error.PropertyName] = [.. existingErrors, error.ErrorMessage];
+                    validationErrors[error.PropertyName] = [.. existingErrors, error.ErrorMessage];
                 }
                 else
                 {
-                    validationErros[error.PropertyName] = [error.ErrorMessage];
+                    validationErrors[error.PropertyName] = [error.ErrorMessage];
                 }
             }
         }
 
         context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
-        var validationProblemDetails = new ValidationProblemDetails(validationErros)
+        var validationProblemDetails = new ValidationProblemDetails(validationErrors)
         {
             Status = StatusCodes.Status400BadRequest,
             Type = "ValidationFailure",

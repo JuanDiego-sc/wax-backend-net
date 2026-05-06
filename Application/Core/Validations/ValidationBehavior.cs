@@ -10,10 +10,10 @@ public class ValidationBehavior<TRequest, TResponse>(IValidator<TRequest>? valid
     {
         if (validator == null) return await next(cancellationToken);
 
-        var valdiationResult = await validator.ValidateAsync(request, cancellationToken);
-        if (!valdiationResult.IsValid)
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
         {
-            throw new ValidationException(valdiationResult.Errors);
+            throw new ValidationException(validationResult.Errors);
         }
 
         return await next(cancellationToken);

@@ -1,0 +1,482 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "WAX API - Account",
+    "description": "Endpoints for user registration, authentication, billing address management, and password recovery.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "WAX Backend Team"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://localhost:5007",
+      "description": "Local development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Account",
+      "description": "User account operations: registration, session info, logout, billing address, and password management"
+    }
+  ],
+  "paths": {
+    "/api/Account/register": {
+      "post": {
+        "tags": ["Account"],
+        "summary": "Register a new user",
+        "description": "Creates a new user account with the provided email and password. The user is automatically assigned the 'Enrolled' role upon successful registration.",
+        "operationId": "Account_Register",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              },
+              "example": {
+                "email": "newuser@example.com",
+                "password": "P@ssw0rd123!"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User registered successfully"
+          },
+          "400": {
+            "description": "Validation failed (e.g. duplicate email, weak password)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "DuplicateUserName": ["Username 'newuser@example.com' is already taken."]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Account/user-info": {
+      "get": {
+        "tags": ["Account"],
+        "summary": "Get current user info",
+        "description": "Returns the email, username, and roles of the currently authenticated user. Returns 204 No Content if the user is not authenticated.",
+        "operationId": "Account_GetUserInfo",
+        "responses": {
+          "200": {
+            "description": "User info retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInfoResponse"
+                },
+                "example": {
+                  "email": "user@example.com",
+                  "userName": "user@example.com",
+                  "roles": ["Enrolled"]
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "User is not authenticated"
+          },
+          "401": {
+            "description": "User identity could not be resolved"
+          }
+        }
+      }
+    },
+    "/api/Account/logout": {
+      "post": {
+        "tags": ["Account"],
+        "summary": "Logout current user",
+        "description": "Signs out the currently authenticated user and clears the authentication cookie.",
+        "operationId": "Account_Logout",
+        "responses": {
+          "204": {
+            "description": "User logged out successfully"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/Account/billing-address": {
+      "post": {
+        "tags": ["Account"],
+        "summary": "Create or update billing address",
+        "description": "Creates or updates the billing address associated with the authenticated user's account.",
+        "operationId": "Account_CreateOrUpdateBillingAddress",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrUpdateBillingInfoRequest"
+              },
+              "example": {
+                "name": "Juan De La Torre",
+                "line1": "Av. Siempre Viva 742",
+                "line2": "Apto 3B",
+                "city": "Bogotá",
+                "state": "Cundinamarca",
+                "postalCode": "110111",
+                "country": "CO",
+                "identificationNumber": "1234567890",
+                "identificationType": "CC",
+                "firstName": "Juan",
+                "lastName": "De La Torre",
+                "phone": "+573001234567"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Billing address saved successfully"
+          },
+          "400": {
+            "description": "Validation error in billing address fields"
+          },
+          "401": {
+            "description": "User is not authenticated"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      },
+      "get": {
+        "tags": ["Account"],
+        "summary": "Get saved billing address",
+        "description": "Returns the billing address saved for the currently authenticated user.",
+        "operationId": "Account_GetBillingAddress",
+        "responses": {
+          "200": {
+            "description": "Billing address retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingAddress"
+                },
+                "example": {
+                  "name": "Juan De La Torre",
+                  "line1": "Av. Siempre Viva 742",
+                  "line2": "Apto 3B",
+                  "city": "Bogotá",
+                  "state": "Cundinamarca",
+                  "postal_code": "110111",
+                  "country": "CO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "User is not authenticated"
+          },
+          "404": {
+            "description": "No billing address found for the user"
+          }
+        },
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ]
+      }
+    },
+    "/api/Account/forgot-password": {
+      "post": {
+        "tags": ["Account"],
+        "summary": "Request password reset",
+        "description": "Sends a password reset code to the provided email address if a user with that email exists. Always returns 200 to avoid user enumeration.",
+        "operationId": "Account_ForgotPassword",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequest"
+              },
+              "example": {
+                "email": "user@example.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset email sent (or silently ignored if user not found)"
+          }
+        }
+      }
+    },
+    "/api/Account/reset-password": {
+      "post": {
+        "tags": ["Account"],
+        "summary": "Reset user password",
+        "description": "Resets the user's password using the reset code received by email. Always returns 200 if the user is not found to avoid enumeration.",
+        "operationId": "Account_ResetPassword",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              },
+              "example": {
+                "email": "user@example.com",
+                "code": "CfDJ8Kx...",
+                "newPassword": "NewP@ssw0rd!"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successfully (or silently ignored if user not found)"
+          },
+          "400": {
+            "description": "Invalid or expired reset code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "InvalidToken": ["Invalid token."]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RegisterDto": {
+        "type": "object",
+        "description": "Payload for user registration",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address used as username",
+            "example": "newuser@example.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "Account password",
+            "example": "P@ssw0rd123!"
+          }
+        }
+      },
+      "UserInfoResponse": {
+        "type": "object",
+        "description": "Basic info of the currently authenticated user",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email address",
+            "example": "user@example.com"
+          },
+          "userName": {
+            "type": "string",
+            "description": "Username (same as email)",
+            "example": "user@example.com"
+          },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of roles assigned to the user",
+            "example": ["Enrolled"]
+          }
+        }
+      },
+      "CreateOrUpdateBillingInfoRequest": {
+        "type": "object",
+        "description": "Billing address and contact information for the user",
+        "required": ["name", "line1", "city", "state", "postalCode", "country", "identificationNumber", "identificationType", "firstName", "lastName", "phone"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Full name on the billing address",
+            "example": "Juan De La Torre"
+          },
+          "line1": {
+            "type": "string",
+            "description": "Primary address line",
+            "example": "Av. Siempre Viva 742"
+          },
+          "line2": {
+            "type": "string",
+            "nullable": true,
+            "description": "Secondary address line (optional)",
+            "example": "Apto 3B"
+          },
+          "city": {
+            "type": "string",
+            "description": "City",
+            "example": "Bogotá"
+          },
+          "state": {
+            "type": "string",
+            "description": "State or department",
+            "example": "Cundinamarca"
+          },
+          "postalCode": {
+            "type": "string",
+            "description": "Postal or ZIP code",
+            "example": "110111"
+          },
+          "country": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "CO"
+          },
+          "identificationNumber": {
+            "type": "string",
+            "description": "Government-issued identification number",
+            "example": "1234567890"
+          },
+          "identificationType": {
+            "type": "string",
+            "description": "Type of identification document",
+            "example": "CC"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "First name of the account holder",
+            "example": "Juan"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Last name of the account holder",
+            "example": "De La Torre"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Contact phone number",
+            "example": "+573001234567"
+          }
+        }
+      },
+      "BillingAddress": {
+        "type": "object",
+        "description": "Saved billing address of the user",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Full name on the billing address",
+            "example": "Juan De La Torre"
+          },
+          "line1": {
+            "type": "string",
+            "description": "Primary address line",
+            "example": "Av. Siempre Viva 742"
+          },
+          "line2": {
+            "type": "string",
+            "nullable": true,
+            "description": "Secondary address line",
+            "example": "Apto 3B"
+          },
+          "city": {
+            "type": "string",
+            "description": "City",
+            "example": "Bogotá"
+          },
+          "state": {
+            "type": "string",
+            "description": "State or department",
+            "example": "Cundinamarca"
+          },
+          "postal_code": {
+            "type": "string",
+            "description": "Postal or ZIP code",
+            "example": "110111"
+          },
+          "country": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2 country code",
+            "example": "CO"
+          }
+        }
+      },
+      "ForgotPasswordRequest": {
+        "type": "object",
+        "description": "Request to initiate password reset",
+        "required": ["email"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address of the account",
+            "example": "user@example.com"
+          }
+        }
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "description": "Request to complete password reset",
+        "required": ["email", "code", "newPassword"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address of the account",
+            "example": "user@example.com"
+          },
+          "code": {
+            "type": "string",
+            "description": "Password reset token received by email",
+            "example": "CfDJ8Kx..."
+          },
+          "newPassword": {
+            "type": "string",
+            "format": "password",
+            "description": "New password to set",
+            "example": "NewP@ssw0rd!"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": ".AspNetCore.Identity.Application",
+        "description": "ASP.NET Identity authentication cookie. Obtained via POST /api/login?useCookies=true."
+      }
+    }
+  }
+}

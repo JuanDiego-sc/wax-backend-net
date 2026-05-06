@@ -135,7 +135,7 @@ public class AddCommentCommandHandlerTests
         var result = await _handler.Handle(command, CancellationToken.None);
 
         result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be("Could not delete the comment");
+        result.Error.Should().Be("Could not add the comment");
     }
 
     [Fact]

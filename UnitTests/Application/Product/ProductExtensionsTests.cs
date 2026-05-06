@@ -6,7 +6,7 @@ namespace UnitTests.Application.Product;
 
 public class ProductExtensionsTests
 {
-    private ProductDto CreateDto(string name = "N", long price = 0, string brand = "B", string type = "T") => new()
+    private static ProductDto CreateDto(string name = "N", long price = 0, string brand = "B", string type = "T") => new()
     {
         Id = Guid.NewGuid().ToString(),
         Name = name,

@@ -262,4 +262,47 @@ public class CreateOrderCommandHandlerTests
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be("Failed to create order");
     }
+
+    [Fact]
+    public async Task Handle_PublishesOrderCreatedEvent_WithUserIdPopulated()
+    {
+        var user = new DomainUser
+        {
+            Id = "user-id-xyz",
+            Email = "buyer@test.com",
+            UserName = "buyer",
+            BillingAddress = OrderFixtures.CreateBillingAddress(),
+            BillingAddressId = "addr-1"
+        };
+        var basket = BasketFixtures.CreateBasketWithItems(paymentIntentId: "pi_userid");
+
+        _basketRepo
+            .Setup(r => r.GetBasketWithItemsAsync(basket.BasketId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(basket);
+        _userAccessor
+            .Setup(u => u.GetUserWithBillingAddressAsync())
+            .ReturnsAsync(user);
+        _userAccessor
+            .Setup(u => u.GetUserRolesAsync())
+            .ReturnsAsync([Roles.Registered]);
+        _orderRepo
+            .Setup(r => r.GetByPaymentIntentIdAsync("pi_userid", It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Order?)null);
+        _unitOfWork
+            .Setup(u => u.CompleteAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        OrderCreatedIntegrationEvent? capturedEvent = null;
+        _eventPublisher
+            .Setup(e => e.PublishEventAsync(It.IsAny<OrderCreatedIntegrationEvent>(), It.IsAny<CancellationToken>()))
+            .Callback<OrderCreatedIntegrationEvent, CancellationToken>((evt, _) => capturedEvent = evt)
+            .Returns(Task.CompletedTask);
+
+        var command = new CreateOrderCommand { BasketId = basket.BasketId, OrderDto = BuildOrderDto() };
+        var result = await _handler.Handle(command, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        capturedEvent.Should().NotBeNull();
+        capturedEvent!.UserId.Should().Be("user-id-xyz");
+    }
 }

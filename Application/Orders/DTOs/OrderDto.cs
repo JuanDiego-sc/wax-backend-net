@@ -4,6 +4,7 @@ public record OrderDto
 {
     public required string Id { get; set; }
     public required string BuyerEmail { get; set; }
+    public string? UserId { get; set; }
     public required BillingAddressDto BillingAddress { get; set; }
     public List<OrderItemDto> OrderItems { get; set; } = [];
     public long Subtotal { get; set; }
@@ -12,6 +13,6 @@ public record OrderDto
     public long Total { get; set; }
     public required string OrderStatus { get; set; } 
     public required PaymentSummaryDto PaymentSummary { get; set; }
-    public DateTime CreateAt { get; set; }
+    public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }

@@ -1,4 +1,4 @@
-using Application.Interfaces;
+using Application.Interfaces.Services;
 using Application.Payment.DTOs;
 using Application.Payment.Events;
 using Domain.Entities;
@@ -18,7 +18,6 @@ public class PaymentService(IConfiguration configuration, ILogger<PaymentService
 
         var intent = new PaymentIntent();
         var subtotal = basket.Items.Sum(item => item.Quantity * item.Product.Price);
-        var deliveryFee = subtotal > 10000 ? 0 : 500;
 
         if (string.IsNullOrEmpty(basket.PaymentIntentId))
         {

@@ -17,7 +17,9 @@ public class BasketCookieService(IHttpContextAccessor contextAccessor) : IBasket
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Expires = DateTime.UtcNow.AddDays(30)
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTime.UtcNow.AddDays(30),
         };
         
         contextAccessor.HttpContext?.Response.Cookies.Append(BasketIdCookieName, basketId, cookieOptions);

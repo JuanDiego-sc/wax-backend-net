@@ -8,7 +8,7 @@ namespace UnitTests.Application.Product;
 
 public class GetProductDetailsQueryHandlerTests
 {
-    private ProductDto CreateDto(string id, string name = "N") => new()
+    private static ProductDto CreateDto(string id, string name = "N") => new()
     {
         Id = id,
         Name = name,

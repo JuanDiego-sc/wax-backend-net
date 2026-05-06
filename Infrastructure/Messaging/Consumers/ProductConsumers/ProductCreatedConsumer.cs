@@ -18,7 +18,7 @@ public class ProductCreatedConsumer(ReadDbContext readContext, ILogger<ProductCr
             .AnyAsync(p => p.Id == message.ProductId, context.CancellationToken);
         if (alreadyExists)
         {
-            logger.LogInformation($"Product with id {message.ProductId} has already been added");
+            logger.LogInformation("Product with id {MessageProductId} has already been added", message.ProductId);
             return;
         }
         
@@ -39,6 +39,6 @@ public class ProductCreatedConsumer(ReadDbContext readContext, ILogger<ProductCr
         
         readContext.Products.Add(readModel);
         await readContext.SaveChangesAsync(context.CancellationToken);
-        logger.LogInformation($"Product with id {message.ProductId} has been added");
+        logger.LogInformation("Product with id {MessageProductId} has been added", message.ProductId);
     }
 }

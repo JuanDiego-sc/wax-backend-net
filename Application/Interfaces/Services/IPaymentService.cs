@@ -2,7 +2,7 @@ using Application.Payment.DTOs;
 using Application.Payment.Events;
 using DomainBasket = Domain.Entities.Basket;
 
-namespace Application.Interfaces;
+namespace Application.Interfaces.Services;
 
 public interface IPaymentService
 {   

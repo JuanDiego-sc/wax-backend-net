@@ -4,25 +4,48 @@ using Application.Orders.Commands;
 using Application.Orders.DTOs;
 using Application.Orders.Extensions;
 using Application.Orders.Queries;
+using Domain.Enumerators;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers;
 
 public class OrderController(IBasketProvider basketProvider) : BaseApiController
 {
+    [Authorize(Policy = "RegisterOrAdmin")]
     [HttpGet]
-    public async Task<ActionResult<InfinityPagedList<OrderDto, DateTime?>>> GetOrders([FromQuery] OrderParams orderParams)
+    [ProducesResponseType(typeof(List<OrderDto>), 200)]
+    [ProducesResponseType(401)]
+    public async Task<ActionResult<PagedList<OrderDto>>> GetOrders([FromQuery] OrderParams orderParams)
     {
-        return await HandleQuery(new GetOrdersQuery { OrderParams = orderParams });
+        return await HandlePagedQuery(new GetOrdersQuery { OrderParams = orderParams });
     }
 
+    [Authorize(Roles = Roles.Registered)]
+    [HttpGet("my")]
+    [ProducesResponseType(typeof(List<OrderDto>), 200)]
+    [ProducesResponseType(401)]
+    [ProducesResponseType(403)]
+    public async Task<ActionResult<PagedList<OrderDto>>> GetMyOrders([FromQuery] OrderParams parameters)
+    {
+        return await HandlePagedQuery(new GetMyOrdersQuery(parameters));
+    }
+
+    [Authorize(Policy = "RegisterOrAdmin")]
     [HttpGet("{id}")]
+    [ProducesResponseType(typeof(OrderDto), 200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
     public async Task<ActionResult<OrderDto>> GetOrderDetails(string id)
     {
         return await HandleQuery(new GetOrderDetailsQuery { OrderId = id });
     }
 
+    [Authorize(Roles = Roles.Registered)]
     [HttpPost]
+    [ProducesResponseType(typeof(OrderDto), 200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
     public async Task<ActionResult<OrderDto>> CreateOrder(CreateOrderDto orderDto)
     {
         var basketId = basketProvider.GetBasketId() ?? string.Empty;

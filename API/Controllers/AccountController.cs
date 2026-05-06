@@ -6,7 +6,6 @@ using Domain.Enumerators;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
@@ -14,6 +13,8 @@ public class AccountController(SignInManager<User> signInManager, IEmailSender<U
     : BaseApiController
 {
     [HttpPost("register")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
     public async Task<ActionResult> RegisterUser(RegisterDto registerDto)
     {
         var user = new User{UserName = registerDto.Email, Email = registerDto.Email};
@@ -36,8 +37,11 @@ public class AccountController(SignInManager<User> signInManager, IEmailSender<U
 
     }   
 
-    //[Authorize]
+    
     [HttpGet("user-info")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(204)]
+    [ProducesResponseType(401)]
     public async Task<ActionResult> GetUserInfo()
     {
         if(User.Identity?.IsAuthenticated == false) return NoContent();
@@ -57,28 +61,35 @@ public class AccountController(SignInManager<User> signInManager, IEmailSender<U
     }
 
     [HttpPost("logout")]
+    [ProducesResponseType(204)]
     public async Task<ActionResult> Logout()
     {
         await signInManager.SignOutAsync();
 
         return NoContent();
     }
-
-    [Authorize]
+    
     [HttpPost("billing-address")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
     public async Task<ActionResult> CreateOrUpdateBillingAddress( CreateOrUpdateBillingInfoRequest billingInfo)
     {
         return await HandleCommand(new CreateOrUpdateBillingAddressCommand { BillingInfo = billingInfo });
     }
 
-    [Authorize]
     [HttpGet("billing-address")]
+    [ProducesResponseType(typeof(BillingAddress), 200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
     public async Task<ActionResult<BillingAddress>> GetSavedAddress()
     {
         return await HandleQuery(new GetBillingAddressQuery());
     }
     
+    [Authorize(Roles = Roles.Registered)]
     [HttpPost("forgot-password")]
+    [ProducesResponseType(200)]
     public async Task<ActionResult> ForgotPassword(ForgotPasswordRequest forgotPasswordRequest)
     {
         var user = await signInManager.UserManager.FindByEmailAsync(forgotPasswordRequest.Email);
@@ -93,7 +104,10 @@ public class AccountController(SignInManager<User> signInManager, IEmailSender<U
         return Ok();
     }
     
+    [Authorize(Roles = Roles.Registered)]
     [HttpPost("reset-password")]
+    [ProducesResponseType(200)]
+    [ProducesResponseType(400)]
     public async Task<ActionResult> ResetPassword(ResetPasswordRequest passwordRequest)
     {
         var user = await signInManager.UserManager.FindByEmailAsync(passwordRequest.Email);

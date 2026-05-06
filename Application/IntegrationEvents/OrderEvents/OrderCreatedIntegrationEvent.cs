@@ -25,6 +25,8 @@ public class OrderCreatedIntegrationEvent
     public required string OrderItems { get; init; }
     public required string PaymentIntentId { get; init; }
 
+    public string? UserId { get; init; }
+
     public DateTime OccurredAt { get; init; } = DateTime.UtcNow;
 }
     

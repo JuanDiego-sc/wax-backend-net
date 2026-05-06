@@ -1,0 +1,431 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "WAX API - Product",
+    "description": "Endpoints for product catalog management: listing, detail retrieval, creation, update, and deletion.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "WAX Backend Team"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://localhost:5007",
+      "description": "Local development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Product",
+      "description": "Product catalog: browsing, filtering, and CRUD operations"
+    }
+  ],
+  "paths": {
+    "/api/Product": {
+      "get": {
+        "tags": ["Product"],
+        "summary": "List products",
+        "description": "Returns a paginated list of products. Supports filtering by brand and type, full-text search, and sorting.",
+        "operationId": "Product_GetProducts",
+        "parameters": [
+          {
+            "name": "pageNumber",
+            "in": "query",
+            "description": "Page number (1-based)",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "example": 1
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "Number of items per page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 6
+            },
+            "example": 6
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "description": "Sort field. Accepted values: 'price', 'priceDesc', 'name'",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "price"
+          },
+          {
+            "name": "searchTerm",
+            "in": "query",
+            "description": "Free-text search term applied to product name and description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "vinyl"
+          },
+          {
+            "name": "brands",
+            "in": "query",
+            "description": "Comma-separated list of brands to filter by",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Sony,Pioneer"
+          },
+          {
+            "name": "types",
+            "in": "query",
+            "description": "Comma-separated list of product types to filter by",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Turntable,Mixer"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of products retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ProductDto"
+                      }
+                    },
+                    "pageNumber": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "totalPages": {
+                      "type": "integer",
+                      "example": 5
+                    },
+                    "totalCount": {
+                      "type": "integer",
+                      "example": 28
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Product"],
+        "summary": "Create a product",
+        "description": "Creates a new product in the catalog. Requires a multipart/form-data request including product fields and an image file.",
+        "operationId": "Product_CreateProduct",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "description", "price", "type", "brand", "quantityInStock", "file"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Product name",
+                    "example": "Technics SL-1200"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Product description",
+                    "example": "Professional direct-drive turntable"
+                  },
+                  "price": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Price in cents",
+                    "example": 120000
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "Product category type",
+                    "example": "Turntable"
+                  },
+                  "brand": {
+                    "type": "string",
+                    "description": "Product brand",
+                    "example": "Technics"
+                  },
+                  "quantityInStock": {
+                    "type": "integer",
+                    "description": "Available stock quantity",
+                    "example": 10
+                  },
+                  "pictureUrl": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Optional existing image URL",
+                    "example": null
+                  },
+                  "publicId": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Optional Cloudinary public ID",
+                    "example": null
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Product image file"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error or image upload failure"
+          }
+        }
+      },
+      "put": {
+        "tags": ["Product"],
+        "summary": "Update a product",
+        "description": "Updates an existing product. Requires a multipart/form-data request. The image file is optional; if omitted, the existing image is preserved.",
+        "operationId": "Product_UpdateProduct",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["id", "name", "description", "price", "type", "brand", "quantityInStock"],
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Unique identifier of the product to update",
+                    "example": "prod-abc-123"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Updated product name",
+                    "example": "Technics SL-1200 MK7"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "Updated product description",
+                    "example": "Latest generation direct-drive turntable"
+                  },
+                  "price": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Updated price in cents",
+                    "example": 135000
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "Updated product type",
+                    "example": "Turntable"
+                  },
+                  "brand": {
+                    "type": "string",
+                    "description": "Updated product brand",
+                    "example": "Technics"
+                  },
+                  "quantityInStock": {
+                    "type": "integer",
+                    "description": "Updated stock quantity",
+                    "example": 8
+                  },
+                  "pictureUrl": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Existing image URL (kept if no new file is provided)",
+                    "example": "https://cdn.example.com/products/sl1200.jpg"
+                  },
+                  "publicId": {
+                    "type": "string",
+                    "nullable": true,
+                    "description": "Cloudinary public ID of the existing image",
+                    "example": "products/sl1200"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "New product image file (optional)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product updated successfully"
+          },
+          "400": {
+            "description": "Validation error or image upload failure"
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        }
+      }
+    },
+    "/api/Product/{id}": {
+      "get": {
+        "tags": ["Product"],
+        "summary": "Get product details",
+        "description": "Returns the full details of a single product by its identifier.",
+        "operationId": "Product_GetProductDetails",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique identifier of the product",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "prod-abc-123"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                },
+                "example": {
+                  "id": "prod-abc-123",
+                  "name": "Technics SL-1200",
+                  "description": "Professional direct-drive turntable",
+                  "price": 120000,
+                  "pictureUrl": "https://cdn.example.com/products/sl1200.jpg",
+                  "type": "Turntable",
+                  "brand": "Technics",
+                  "quantityInStock": 10,
+                  "publicId": "products/sl1200"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Product"],
+        "summary": "Delete a product",
+        "description": "Permanently removes a product from the catalog by its identifier.",
+        "operationId": "Product_DeleteProduct",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Unique identifier of the product to delete",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "prod-abc-123"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product deleted successfully"
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ProductDto": {
+        "type": "object",
+        "description": "Product representation returned by the API",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique product identifier",
+            "example": "prod-abc-123"
+          },
+          "name": {
+            "type": "string",
+            "description": "Product name",
+            "example": "Technics SL-1200"
+          },
+          "description": {
+            "type": "string",
+            "description": "Product description",
+            "example": "Professional direct-drive turntable"
+          },
+          "price": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Price in cents",
+            "example": 120000
+          },
+          "pictureUrl": {
+            "type": "string",
+            "description": "URL of the product image",
+            "example": "https://cdn.example.com/products/sl1200.jpg"
+          },
+          "type": {
+            "type": "string",
+            "description": "Product category type",
+            "example": "Turntable"
+          },
+          "brand": {
+            "type": "string",
+            "description": "Product brand",
+            "example": "Technics"
+          },
+          "quantityInStock": {
+            "type": "integer",
+            "description": "Available stock quantity",
+            "example": 10
+          },
+          "publicId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cloudinary public ID of the product image",
+            "example": "products/sl1200"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": ".AspNetCore.Identity.Application",
+        "description": "ASP.NET Identity authentication cookie. Obtained via POST /api/login?useCookies=true."
+      }
+    }
+  }
+}

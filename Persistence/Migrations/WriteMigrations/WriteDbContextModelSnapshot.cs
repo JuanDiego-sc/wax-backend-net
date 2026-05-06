@@ -75,9 +75,11 @@ namespace Persistence.Migrations.WriteMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BasketId");
-
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("BasketId", "ProductId")
+                        .IsUnique()
+                        .HasDatabaseName("UniqueBasketItem");
 
                     b.ToTable("BasketItems", (string)null);
                 });

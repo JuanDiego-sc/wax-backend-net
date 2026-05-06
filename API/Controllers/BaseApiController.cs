@@ -1,7 +1,9 @@
 
+using System.Text.Json;
 using API.Logging;
 using Application.Core;
 using Application.Core.Validations;
+using Application.Core.Pagination;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,6 +37,30 @@ namespace API.Controllers
             Logger.SendingQuery(query.GetType().Name, query);
             var result = await Mediator.Send(query);
             return HandleResult(result);
+        }
+
+        protected async Task<ActionResult> HandleInfinityPagedQuery<T, TCursor>(IRequest<Result<InfinityPagedList<T, TCursor>>> query)
+        {
+            Logger.SendingQuery(query.GetType().Name, query);
+            var result = await Mediator.Send(query);
+
+            if (result is not { IsSuccess: true, Value: not null })
+                return result.Code == 404 ? NotFound() : BadRequest(result.Error);
+
+            Response.Headers.Append("NextCursor", JsonSerializer.Serialize(result.Value.NextCursor));
+            return Ok(result.Value.Items);
+        }
+
+        protected async Task<ActionResult> HandlePagedQuery<T>(IRequest<Result<PagedList<T>>> query)
+        {
+            Logger.SendingQuery(query.GetType().Name, query);
+            var result = await Mediator.Send(query);
+
+            if (result is not { IsSuccess: true, Value: not null })
+                return result.Code == 404 ? NotFound() : BadRequest(result.Error);
+            Response.Headers.Append("Pagination", JsonSerializer.Serialize(result.Value.Metadata));
+            return Ok(result.Value);
+
         }
 
         protected ActionResult HandleResult<T>(Result<T> result) =>

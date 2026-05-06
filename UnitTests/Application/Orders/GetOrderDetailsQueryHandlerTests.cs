@@ -52,7 +52,7 @@ public class GetOrderDetailsQueryHandlerTests
             Subtotal = 1000,
             DeliveryFee = 100,
             Total = 1100,
-            CreateAt = DateTime.UtcNow,
+            CreatedAt = DateTime.UtcNow,
             BillingAddress = new BillingAddressDto
             {
                 Name = "Test User",

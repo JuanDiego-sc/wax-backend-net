@@ -1,5 +1,6 @@
 using Application.Interfaces;
 using Application.Interfaces.Repositories.WriteRepositories;
+using Application.Interfaces.Services;
 using Application.Payment.Commands;
 using Application.Payment.DTOs;
 using UnitTests.Helpers.Fixtures;

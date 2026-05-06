@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Application.Core;
 using Application.Core.Validations;
 using Application.IntegrationEvents.OrderEvents;
 using Application.IntegrationEvents.ProductEvents;
@@ -77,7 +76,7 @@ public class CreateOrderCommandHandler(
             Subtotal = order.Subtotal,
             DeliveryFee = order.DeliveryFee,
             Total = order.GetTotal(),
-            BillingName = order.BillingAddress!.Name,
+            BillingName = order.BillingAddress.Name,
             BillingLine1 = order.BillingAddress.Line1,
             BillingLine2 = order.BillingAddress.Line2,
             BillingCity = order.BillingAddress.City,
@@ -88,8 +87,15 @@ public class CreateOrderCommandHandler(
             PaymentBrand = order.PaymentSummary.Brand,
             PaymentExpMonth = order.PaymentSummary.ExpMonth,
             PaymentExpYear = order.PaymentSummary.ExpYear,
-            OrderItems = JsonSerializer.Serialize(order.OrderItems),
+            OrderItems = JsonSerializer.Serialize(order.OrderItems.Select(item => new
+            {
+                item.ItemOrdered.Name,
+                item.ItemOrdered.ProductId,
+                item.Price,
+                item.Quantity
+            })),
             PaymentIntentId = order.PaymentIntentId,
+            UserId = user.Id,
             OccurredAt = DateTime.UtcNow
         }, cancellationToken);
         
