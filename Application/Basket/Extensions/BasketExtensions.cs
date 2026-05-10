@@ -1,4 +1,5 @@
 using Application.Basket.DTOs;
+using Domain.ProductAggregate;
 using Microsoft.EntityFrameworkCore;
 using DomainBasket = Domain.Entities.Basket;
 
@@ -16,12 +17,14 @@ public static class BasketExtensions
                 Items = [.. basket.Items.Select(x => new BasketItemDto
                 {
                     ProductId = x.ProductId,
-                    ProductName = x.Product.Name,
-                    Price = x.Product.Price,
-                    PictureUrl = x.Product.PictureUrl,
-                    Brand = x.Product.Brand,
-                    Type = x.Product.Type,
-                    Quantity = x.Quantity
+                    ProductName = x.Product.Name,                                                                                                                    
+                    Price = x.Product.Price,                                                                                                                       
+                    PictureUrl = x.Product.PictureUrl,                                                                                                               
+                    Kind = x.Product.Kind,
+                    Brand = (x.Product as CatalogProduct)?.Brand,                                                                                                    
+                    Type = (x.Product as CatalogProduct)?.Type,                                                                                                      
+                    GlbUrl = (x.Product as CustomProduct)?.GlbUrl,
+                    Quantity = x.Quantity 
                 })]
             };
     }

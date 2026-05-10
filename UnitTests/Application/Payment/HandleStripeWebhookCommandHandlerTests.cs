@@ -351,7 +351,7 @@ public class HandleStripeWebhookCommandHandlerTests
 
         _productRepo
             .Setup(r => r.GetByIdAsync("missing-product", It.IsAny<CancellationToken>()))
-            .ReturnsAsync((global::Domain.Entities.Product?)null);
+            .ReturnsAsync((global::Domain.ProductAggregate.CatalogProduct?)null);
 
         var result = await _handler.Handle(CreateCommand(), CancellationToken.None);
 

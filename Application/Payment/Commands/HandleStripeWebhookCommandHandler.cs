@@ -55,11 +55,7 @@ public class HandleStripeWebhookCommandHandler(
         foreach (var item in order.OrderItems)
         {
             var productItem = await productRepository.GetByIdAsync(item.ItemOrdered.ProductId, cancellationToken);
-            if (productItem is null)
-            {
-                Result<Unit>.Failure("Product not found", 404);
-                return;
-            }
+            if (productItem is null) continue;
 
             productItem.QuantityInStock += item.Quantity;
 

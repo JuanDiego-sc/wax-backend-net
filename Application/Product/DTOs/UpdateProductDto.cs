@@ -1,4 +1,4 @@
-using ProductDomain = Domain.Entities.Product;
+using Domain.ProductAggregate;
 
 namespace Application.Product.DTOs;
 
@@ -14,7 +14,7 @@ public class UpdateProductDto
     public int QuantityInStock { get; set; }
     public string? PublicId { get; set; }
     
-    public void ApplyTo(ProductDomain product)
+    public void ApplyTo(CatalogProduct product)
     {
         product.Name = Name;
         product.Description = Description;

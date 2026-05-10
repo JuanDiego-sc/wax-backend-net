@@ -1,13 +1,13 @@
 using Domain.Entities;
 using Domain.OrderAggregate;
+using Domain.ProductAggregate;
 
 namespace UnitTests.Helpers.Fixtures;
 
 public static class ProductFixtures
 {
-    public static Product CreateProduct(
-        string? id = null,
-        string name = "Test Product",
+    public static CatalogProduct CreateProduct( // NOSONAR
+        string? name = "Test Product",
         string description = "A test product description",
         long price = 1500,
         string pictureUrl = "https://example.com/image.jpg",
@@ -16,7 +16,7 @@ public static class ProductFixtures
         int quantityInStock = 10,
         string? publicId = null)
     {
-        return new Product
+        return new CatalogProduct
         {
             Name = name,
             Description = description,

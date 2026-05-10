@@ -1,6 +1,7 @@
 using Domain.Entities;
 using Domain.Enumerators;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Persistence;
@@ -28,11 +29,20 @@ public class DbInitializerTests
         _logger = new Mock<ILogger<DbInitializer>>();
     }
 
-    private DbInitializer CreateInitializer() => new(
-        _userManager.Object,
-        _roleManager.Object,
-        _configuration.Object,
-        _logger.Object);
+    private DbInitializer CreateInitializer()
+    {
+        var options = new DbContextOptionsBuilder<WriteDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+        var context = new WriteDbContext(options);
+
+        return new DbInitializer(
+            _userManager.Object,
+            _roleManager.Object,
+            _configuration.Object,
+            context,
+            _logger.Object);
+    }
 
     [Fact]
     public async Task InitializeAsync_WhenRolesDoNotExist_CreatesAllRoles()

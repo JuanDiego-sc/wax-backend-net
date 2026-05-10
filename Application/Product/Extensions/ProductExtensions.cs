@@ -1,11 +1,11 @@
 using Application.Product.DTOs;
-using ProductDomain = Domain.Entities.Product;
+using Domain.ProductAggregate;
 
 namespace Application.Product.Extensions;
 
 public static class ProductExtensions
 {
-    public static ProductDto ToDto(this ProductDomain product)
+    public static ProductDto ToDto(this CatalogProduct product)
     {
         return new ProductDto
         {
