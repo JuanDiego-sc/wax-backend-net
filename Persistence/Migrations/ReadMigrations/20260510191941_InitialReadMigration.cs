@@ -12,11 +12,40 @@ namespace Persistence.Migrations.ReadMigrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "CustomProductsRead",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Price = table.Column<long>(type: "bigint", nullable: false),
+                    PictureUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    TaskId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    GlbUrl = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    OwnerUserId = table.Column<string>(type: "character varying(450)", maxLength: 450, nullable: false),
+                    Status = table.Column<string>(type: "character varying(40)", maxLength: 40, nullable: false),
+                    DesignType = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    DesignMaterial = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    DesignColor = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    DesignShape = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    DesignDimensions = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    DesignDetails = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    AgreedPrice = table.Column<long>(type: "bigint", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomProductsRead", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Orders",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
                     BuyerEmail = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    UserId = table.Column<string>(type: "text", nullable: true),
                     OrderStatus = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Subtotal = table.Column<long>(type: "bigint", nullable: false),
                     DeliveryFee = table.Column<long>(type: "bigint", nullable: false),
@@ -88,9 +117,25 @@ namespace Persistence.Migrations.ReadMigrations
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_CustomProductsRead_OwnerUserId_Status",
+                table: "CustomProductsRead",
+                columns: new[] { "OwnerUserId", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomProductsRead_TaskId",
+                table: "CustomProductsRead",
+                column: "TaskId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Orders_BuyerEmail",
                 table: "Orders",
                 column: "BuyerEmail");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_OrderStatus",
+                table: "Orders",
+                column: "OrderStatus");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_PaymentIntentId",
@@ -98,14 +143,29 @@ namespace Persistence.Migrations.ReadMigrations
                 column: "PaymentIntentId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Orders_UserId",
+                table: "Orders",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_Brand",
                 table: "Products",
                 column: "Brand");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Products_Brand_PublicId",
+                table: "Products",
+                columns: new[] { "Brand", "PublicId" });
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Products_Name",
                 table: "Products",
                 column: "Name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Products_PictureUrl",
+                table: "Products",
+                column: "PictureUrl");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_Type",
@@ -136,6 +196,9 @@ namespace Persistence.Migrations.ReadMigrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "CustomProductsRead");
+
             migrationBuilder.DropTable(
                 name: "Orders");
 

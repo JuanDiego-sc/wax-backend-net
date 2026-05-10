@@ -19,11 +19,11 @@ public class DbInitializerTests
     {
         var userStore = new Mock<IUserStore<User>>();
         _userManager = new Mock<UserManager<User>>(
-            userStore.Object, null, null, null, null, null, null, null, null);
+            userStore.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
         var roleStore = new Mock<IRoleStore<IdentityRole>>();
         _roleManager = new Mock<RoleManager<IdentityRole>>(
-            roleStore.Object, null, null, null, null);
+            roleStore.Object, null!, null!, null!, null!);
 
         _configuration = new Mock<IConfiguration>();
         _logger = new Mock<ILogger<DbInitializer>>();
