@@ -20,7 +20,9 @@ public class CustomProductPriceAgreedConsumerTests
 
     private static ReadDbContext CreateReadContext() =>
         new(new DbContextOptionsBuilder<ReadDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+            .Options);
 
     private CustomProductPriceAgreedConsumer BuildConsumer(ReadDbContext ctx) =>
         new(_basketRepo.Object, _customProductRepo.Object, _unitOfWork.Object, ctx,
@@ -65,6 +67,7 @@ public class CustomProductPriceAgreedConsumerTests
             CreatedAt = DateTime.UtcNow
         });
         ctx.SaveChanges();
+        ctx.ChangeTracker.Clear();
     }
 
     [Fact]
@@ -100,7 +103,7 @@ public class CustomProductPriceAgreedConsumerTests
     }
 
     [Fact]
-    public async Task Consume_WhenBasketNotFound_DoesNotThrowAndSkipsAddToCart()
+    public async Task Consume_WhenBasketNotFound_CreatesBasketAndAddsItem()
     {
         using var ctx = CreateReadContext();
         var product = CustomProductFixtures.CreateCustomProduct("cp-1", status: CustomProductStatus.Approved);
@@ -110,13 +113,16 @@ public class CustomProductPriceAgreedConsumerTests
         _basketRepo
             .Setup(b => b.GetBasketWithItemsAsync("basket-1", It.IsAny<CancellationToken>()))
             .ReturnsAsync((Basket?)null);
+        _unitOfWork
+            .Setup(u => u.CompleteAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
 
         var consumer = BuildConsumer(ctx);
+        await consumer.Consume(BuildContext(BuildEvent("cp-1", "basket-1")));
 
-        var act = () => consumer.Consume(BuildContext(BuildEvent("cp-1", "basket-1")));
-
-        await act.Should().NotThrowAsync();
-        _unitOfWork.Verify(u => u.CompleteAsync(It.IsAny<CancellationToken>()), Times.Never);
+        _basketRepo.Verify(b => b.Add(It.Is<Basket>(x => x.BasketId == "basket-1")), Times.Once);
+        _unitOfWork.Verify(u => u.CompleteAsync(It.IsAny<CancellationToken>()), Times.Once);
+        product.Status.Should().Be(CustomProductStatus.AddedToBasket);
     }
 
     [Fact]

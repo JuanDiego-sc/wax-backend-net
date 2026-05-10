@@ -6,6 +6,7 @@ using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.WriteRepositories;
 using Domain.ProductAggregate;
 using MediatR;
+using DomainBasket = Domain.Entities.Basket;
 
 namespace Application.CustomProducts.Commands;
 
@@ -55,7 +56,11 @@ public class ApproveCustomProductPriceCommandHandler(
             return Result<CustomProductDto>.Failure("BasketId is required to approve");
 
         var basket = await basketRepository.GetBasketWithItemsAsync(request.BasketId, cancellationToken);
-        if (basket == null) return Result<CustomProductDto>.Failure("Basket not found", 404);
+        if (basket == null)
+        {
+            basket = new DomainBasket { BasketId = request.BasketId };
+            basketRepository.Add(basket);
+        }
 
         product.BasketId = request.BasketId;
         return null;

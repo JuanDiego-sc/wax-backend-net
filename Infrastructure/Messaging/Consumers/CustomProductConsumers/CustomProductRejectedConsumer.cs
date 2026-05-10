@@ -27,6 +27,7 @@ public class CustomProductRejectedConsumer(
         readModel.Status = CustomProductStatus.Rejected.ToString();
         readModel.UpdatedAt = message.OccurredAt;
 
+        readContext.Entry(readModel).State = EntityState.Modified;
         await readContext.SaveChangesAsync(context.CancellationToken);
         logger.LogInformation("CustomProduct {Id} marked as rejected in read model", message.CustomProductId);
     }

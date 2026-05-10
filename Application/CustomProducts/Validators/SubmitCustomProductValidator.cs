@@ -3,10 +3,9 @@ using FluentValidation;
 
 namespace Application.CustomProducts.Validators;
 
-public class SubmitCustomProductValidator : AbstractValidator<Commands.SubmitCustomProductCommand>
+public partial class SubmitCustomProductValidator : AbstractValidator<Commands.SubmitCustomProductCommand>
 {
-    private static readonly Regex DimensionsPattern = new(@"^\s*\d+\s*x\s*\d+\s*(x\s*\d+)?\s*cm\s*$",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
+    private static readonly Regex DimensionsPattern = CustomRegex();
 
     public SubmitCustomProductValidator()
     {
@@ -23,4 +22,6 @@ public class SubmitCustomProductValidator : AbstractValidator<Commands.SubmitCus
 
     private static bool IsAbsoluteUrl(string url)
         => Uri.TryCreate(url, UriKind.Absolute, out var uri) && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp);
+    [GeneratedRegex(@"^\s*\d+\s*x\s*\d+\s*(x\s*\d+)?\s*cm\s*$", RegexOptions.IgnoreCase | RegexOptions.Compiled, "es-EC")]
+    private static partial Regex CustomRegex();
 }

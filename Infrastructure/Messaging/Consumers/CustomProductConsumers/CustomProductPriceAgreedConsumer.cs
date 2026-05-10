@@ -1,5 +1,6 @@
 using Application.IntegrationEvents.CustomProductEvents;
 using Application.Interfaces.Repositories.WriteRepositories;
+using Domain.Entities;
 using Domain.ProductAggregate;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
@@ -34,9 +35,10 @@ public class CustomProductPriceAgreedConsumer(
         var basket = await basketRepository.GetBasketWithItemsAsync(message.BasketId, consumeContext.CancellationToken);
         if (basket == null)
         {
-            logger.LogWarning("Basket {BasketId} not found for CustomProduct {Id}; skipping add-to-cart",
+            basket = new Basket { BasketId = message.BasketId };
+            basketRepository.Add(basket);
+            logger.LogInformation("Basket {BasketId} did not exist; created on-the-fly for CustomProduct {Id}",
                 message.BasketId, message.CustomProductId);
-            return;
         }
 
         basket.AddItem(product, 1);
@@ -52,6 +54,7 @@ public class CustomProductPriceAgreedConsumer(
             readModel.AgreedPrice = message.AgreedPrice;
             readModel.Price = message.AgreedPrice;
             readModel.UpdatedAt = DateTime.UtcNow;
+            readContext.Entry(readModel).State = EntityState.Modified;
             await readContext.SaveChangesAsync(consumeContext.CancellationToken);
         }
 

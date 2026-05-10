@@ -82,7 +82,7 @@ public class ApproveCustomProductPriceCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_CustomerApprove_WhenBasketNotFound_ReturnsFailure()
+    public async Task Handle_CustomerApprove_WhenBasketNotFound_CreatesBasketAndSucceeds()
     {
         var product = CustomProductFixtures.CreateCustomProduct("cp-1").WithSystemQuotation().WithAdminProposal();
         _repo.Setup(r => r.GetByIdAsync("cp-1", It.IsAny<CancellationToken>())).ReturnsAsync(product);
@@ -90,8 +90,13 @@ public class ApproveCustomProductPriceCommandHandlerTests
 
         var result = await _handler.Handle(CustomerApproveCommand("cp-1", "b1"), CancellationToken.None);
 
-        result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Contain("Basket not found");
+        result.IsSuccess.Should().BeTrue();
+        product.BasketId.Should().Be("b1");
+        _basketRepo.Verify(b => b.Add(It.Is<DomainBasket>(x => x.BasketId == "b1")), Times.Once);
+        _events.Verify(e => e.PublishEventAsync(
+            It.Is<CustomProductPriceAgreedIntegrationEvent>(ev =>
+                ev.CustomProductId == "cp-1" && ev.BasketId == "b1"),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

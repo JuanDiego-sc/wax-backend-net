@@ -13,7 +13,9 @@ public class CustomProductPriceUpdatedConsumerTests
 {
     private static ReadDbContext CreateContext() =>
         new(new DbContextOptionsBuilder<ReadDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+            .Options);
 
     private static ConsumeContext<CustomProductPriceUpdatedIntegrationEvent> BuildContext(
         CustomProductPriceUpdatedIntegrationEvent evt)
@@ -24,7 +26,7 @@ public class CustomProductPriceUpdatedConsumerTests
         return mock.Object;
     }
 
-    private static CustomProductReadModel SeedReadModel(ReadDbContext ctx, string id = "cp-1",
+    private static void SeedReadModel(ReadDbContext ctx, string id = "cp-1",
         string status = "AwaitingCustomerReview")
     {
         var model = new CustomProductReadModel
@@ -47,7 +49,7 @@ public class CustomProductPriceUpdatedConsumerTests
         };
         ctx.CustomProducts.Add(model);
         ctx.SaveChanges();
-        return model;
+        ctx.ChangeTracker.Clear();
     }
 
     [Fact]

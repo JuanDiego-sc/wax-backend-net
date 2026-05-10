@@ -21,7 +21,7 @@ public class CustomProductController(IUserAccessor userAccessor, IBasketProvider
         {
             CustomProduct = dto,
             OwnerUserId = userAccessor.GetUserId(),
-            BasketId = basketProvider.GetBasketId()
+            BasketId = EnsureBasketId()
         });
     }
 
@@ -62,7 +62,7 @@ public class CustomProductController(IUserAccessor userAccessor, IBasketProvider
         {
             CustomProductId = id,
             OwnerUserId = userAccessor.GetUserId(),
-            BasketId = basketProvider.GetBasketId(),
+            BasketId = EnsureBasketId(),
             ProposeCustomPrice = dto
         });
 
@@ -72,7 +72,7 @@ public class CustomProductController(IUserAccessor userAccessor, IBasketProvider
     {
         var roles = await userAccessor.GetUserRolesAsync();
         var approver = roles.Contains(Roles.Admin) ? ProposalSource.Admin : ProposalSource.Customer;
-        var basketId = approver == ProposalSource.Customer ? basketProvider.GetBasketId() : null;
+        var basketId = approver == ProposalSource.Customer ? EnsureBasketId() : null;
 
         return await HandleCommand(new ApproveCustomProductPriceCommand
         {
@@ -81,6 +81,16 @@ public class CustomProductController(IUserAccessor userAccessor, IBasketProvider
             OwnerUserId = userAccessor.GetUserId(),
             BasketId = basketId
         });
+    }
+
+    private string EnsureBasketId()
+    {
+        var basketId = basketProvider.GetBasketId();
+        if (!string.IsNullOrWhiteSpace(basketId)) return basketId;
+
+        basketId = Guid.NewGuid().ToString();
+        basketProvider.SetBasketId(basketId);
+        return basketId;
     }
 
     [Authorize(Roles = Roles.Admin)]

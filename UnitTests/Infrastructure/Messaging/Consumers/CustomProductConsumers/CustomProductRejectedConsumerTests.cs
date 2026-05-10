@@ -13,7 +13,9 @@ public class CustomProductRejectedConsumerTests
 {
     private static ReadDbContext CreateContext() =>
         new(new DbContextOptionsBuilder<ReadDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+            .Options);
 
     private static ConsumeContext<CustomProductRejectedIntegrationEvent> BuildContext(
         CustomProductRejectedIntegrationEvent evt)
@@ -45,6 +47,7 @@ public class CustomProductRejectedConsumerTests
             CreatedAt = DateTime.UtcNow
         });
         ctx.SaveChanges();
+        ctx.ChangeTracker.Clear();
     }
 
     [Fact]

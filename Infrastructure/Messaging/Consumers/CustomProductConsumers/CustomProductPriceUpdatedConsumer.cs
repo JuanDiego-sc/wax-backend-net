@@ -31,6 +31,7 @@ public class CustomProductPriceUpdatedConsumer(
         if (message.Status == CustomProductStatus.Approved.ToString())
             readModel.AgreedPrice = message.Price;
 
+        readContext.Entry(readModel).State = EntityState.Modified;
         await readContext.SaveChangesAsync(context.CancellationToken);
         logger.LogInformation("CustomProduct {Id} price/status updated in read model", message.CustomProductId);
     }
