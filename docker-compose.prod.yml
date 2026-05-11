@@ -13,7 +13,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: "8080"
       ConnectionStrings__WriteConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=false"
-      ConnectionStrings__ReadConnection:  "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=false"
+      ConnectionStrings__ReadConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=false"
       RabbitMQ__Host: "rabbitmq"
       RabbitMQ__Username: "${RABBITMQ_USER}"
       RabbitMQ__Password: "${RABBITMQ_PASSWORD}"
@@ -24,21 +24,13 @@ services:
       Cloudinary__ApiKey: "${CLOUDINARY_API_KEY}"
       Cloudinary__ApiSecret: "${CLOUDINARY_API_SECRET}"
       EmailSettings__ApiToken: "${RESEND_API_TOKEN}"
-      EmailSettings__FromEmail: "${EMAIL_FROM}"
-      EmailSettings__FromName: "${EMAIL_FROM_NAME}"
-      EmailSettings__BaseUrl: "${PUBLIC_FRONTEND_ORIGIN}"
-      StripeSettings__PublishableKey: "${STRIPE_PUBLISHABLE_KEY}"
+      EmailSettings__From: "${EMAIL_FROM}"
       StripeSettings__SecretKey: "${STRIPE_SECRET_KEY}"
       StripeSettings__WebhookSecret: "${STRIPE_WEBHOOK_SECRET}"
+    ports:
+      - "80:8080"
     networks:
       - wax-internal
-    expose:
-      - "8080"
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "5"
 
   postgres:
     image: postgres:17-alpine
@@ -56,11 +48,6 @@ services:
       retries: 5
     networks:
       - wax-internal
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "5"
 
   rabbitmq:
     image: rabbitmq:4-management-alpine
@@ -77,33 +64,6 @@ services:
       retries: 5
     networks:
       - wax-internal
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "5"
-
-  caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
-    depends_on:
-      - api
-    ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      PUBLIC_DOMAIN: "${PUBLIC_DOMAIN}"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    networks:
-      - wax-internal
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "5"
 
 networks:
   wax-internal:
@@ -112,5 +72,3 @@ networks:
 volumes:
   postgres_data:
   rabbitmq_data:
-  caddy_data:
-  caddy_config:
