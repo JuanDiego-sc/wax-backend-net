@@ -5,17 +5,19 @@ ARG DOTNET_VERSION=10.0
 FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} AS build
 WORKDIR /src
 
-COPY wax-backend-net.sln ./
 COPY API/API.csproj                       API/
 COPY Application/Application.csproj       Application/
 COPY Domain/Domain.csproj                 Domain/
 COPY Infrastructure/Infrastructure.csproj Infrastructure/
 COPY Persistence/Persistence.csproj       Persistence/
-COPY UnitTests/UnitTests.csproj           UnitTests/
 
-RUN dotnet restore wax-backend-net.sln
+RUN dotnet restore API/API.csproj
 
-COPY . .
+COPY API/          API/
+COPY Application/  Application/
+COPY Domain/       Domain/
+COPY Infrastructure/ Infrastructure/
+COPY Persistence/  Persistence/
 
 RUN dotnet publish API/API.csproj \
     -c Release \
@@ -33,9 +35,7 @@ ENV ASPNETCORE_ENVIRONMENT=Production \
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends curl \
- && rm -rf /var/lib/apt/lists/* \
- && groupadd --system --gid 1001 app \
- && useradd --system --uid 1001 --gid app --no-create-home app
+ && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build --chown=app:app /app/publish ./
 
