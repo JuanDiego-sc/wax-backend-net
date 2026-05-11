@@ -1,0 +1,12 @@
+{$PUBLIC_DOMAIN} {
+    encode zstd gzip
+
+    @signalr path /comments*
+    reverse_proxy @signalr api:8080 {
+        transport http {
+            versions 1.1
+        }
+    }
+
+    reverse_proxy api:8080
+}

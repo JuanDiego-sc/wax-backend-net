@@ -23,6 +23,7 @@ using Infrastructure.Repositories.ReadRepositories;
 using Infrastructure.Repositories.WriteRepositories;
 using Infrastructure.Security;
 using MassTransit;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -31,8 +32,16 @@ using Resend;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddHealthChecks();
 
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddDbContext<WriteDbContext>(options =>
@@ -46,7 +55,21 @@ builder.Services.AddDbContext<ReadDbContext>(options =>
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
 
-builder.Services.AddCors();
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? [];
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials()
+              .WithExposedHeaders("Pagination", "NextCursor")
+              .WithOrigins(allowedOrigins);
+    });
+});
 builder.Services.AddSignalR();
 
 builder.Services.AddMediatR(x =>
@@ -133,24 +156,15 @@ builder.Services.AddAuthorization(options =>
 
 var app = builder.Build();
 
+app.UseForwardedHeaders();
 app.UseMiddleware<ExceptionMiddleware>();
+
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseCors(x => x
-    .AllowAnyMethod()
-    .AllowAnyHeader()
-    .AllowCredentials()
-    .WithExposedHeaders("Pagination", "NextCursor")
-    .WithOrigins(
-    "http://localhost:5005",
-    "http://localhost:5006",
-    "http://localhost:5007",
-    "https://localhost:5005",
-    "https://localhost:5006",
-    "https://localhost:5007"));
-
+app.MapHealthChecks("/health");
 app.MapControllers();
 app.MapGroup("api").MapIdentityApi<User>();
 app.MapHub<SupportHub>("/comments");
@@ -161,8 +175,25 @@ try
 {
     var writeContext = services.GetRequiredService<WriteDbContext>();
     var readContext = services.GetRequiredService<ReadDbContext>();
-    await writeContext.Database.MigrateAsync();
-    await readContext.Database.MigrateAsync();
+
+    const int maxAttempts = 10;
+    var attempt = 1;
+    while (attempt <= maxAttempts)
+    {
+        try
+        {
+            await writeContext.Database.MigrateAsync();
+            await readContext.Database.MigrateAsync();
+            break;
+        }
+        catch (Exception ex) when (attempt < maxAttempts && IsTransientConnectionError(ex))
+        {
+            services.GetRequiredService<ILogger<Program>>()
+                .LogWarning(ex, "Postgres not ready on attempt {Attempt}, retrying", attempt);
+            await Task.Delay(TimeSpan.FromSeconds(3));
+            attempt++;
+        }
+    }
     
     var initializer = new DbInitializer(
         services.GetRequiredService<UserManager<User>>(),
@@ -179,3 +210,16 @@ catch (Exception ex)
 }
 
 await app.RunAsync();
+
+static bool IsTransientConnectionError(Exception ex)
+{
+    for (var current = ex; current is not null; current = current.InnerException)
+    {
+        if (current is Npgsql.NpgsqlException or System.Net.Sockets.SocketException
+            or TimeoutException)
+        {
+            return true;
+        }
+    }
+    return false;
+}
