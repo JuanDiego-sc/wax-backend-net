@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.ProductAggregate;
 
 namespace UnitTests.Helpers.Fixtures;
 
@@ -33,7 +34,7 @@ public static class BasketFixtures
         int quantity = 2,
         Product? product = null)
     {
-        var resolvedProduct = product ?? ProductFixtures.CreateProduct(productId);
+        var resolvedProduct = product ?? ProductFixtures.CreateProduct(name: productId);
         return new BasketItem
         {
             ProductId = resolvedProduct.Id,

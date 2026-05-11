@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.ProductAggregate;
 using UnitTests.Helpers.Fixtures;
 
 namespace UnitTests.Domain;
@@ -25,7 +26,7 @@ public class ProductTests
     [Fact]
     public void Product_WhenCreated_AssignsNonEmptyId()
     {
-        var product = new Product
+        var product = new CatalogProduct
         {
             Name = "Test",
             Description = "Desc",

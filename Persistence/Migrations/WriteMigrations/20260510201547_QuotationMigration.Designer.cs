@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations.WriteMigrations
 {
     [DbContext(typeof(WriteDbContext))]
-    [Migration("20260418180940_InitialWriteMigration")]
-    partial class InitialWriteMigration
+    [Migration("20260510201547_QuotationMigration")]
+    partial class QuotationMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -78,9 +78,11 @@ namespace Persistence.Migrations.WriteMigrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BasketId");
-
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("BasketId", "ProductId")
+                        .IsUnique()
+                        .HasDatabaseName("UniqueBasketItem");
 
                     b.ToTable("BasketItems", (string)null);
                 });
@@ -167,56 +169,6 @@ namespace Persistence.Migrations.WriteMigrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Comments");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Product", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Brand")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<string>("PictureUrl")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<long>("Price")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("PublicId")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<int>("QuantityInStock")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>
@@ -373,6 +325,119 @@ namespace Persistence.Migrations.WriteMigrations
                     b.HasIndex("OrderId");
 
                     b.ToTable("OrderItems", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.ProductAggregate.PriceProposal", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<long>("Amount")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Comment")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomProductId")
+                        .IsRequired()
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.Property<bool>("IsAccepted")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Source")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomProductId", "CreatedAt");
+
+                    b.ToTable("PriceProposals", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.ProductAggregate.Product", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("PictureUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<long>("Price")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ProductKind")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Product", (string)null);
+
+                    b.HasDiscriminator<string>("ProductKind").HasValue("Product");
+
+                    b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("Domain.ProductAggregate.QuotationRule", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("Value")
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("QuotationRules", (string)null);
                 });
 
             modelBuilder.Entity("Domain.SupportAssistAggregate.SupportTicket", b =>
@@ -717,6 +782,75 @@ namespace Persistence.Migrations.WriteMigrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.ProductAggregate.CatalogProduct", b =>
+                {
+                    b.HasBaseType("Domain.ProductAggregate.Product");
+
+                    b.Property<string>("Brand")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("PublicId")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("QuantityInStock")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasDiscriminator().HasValue("catalog");
+                });
+
+            modelBuilder.Entity("Domain.ProductAggregate.CustomProduct", b =>
+                {
+                    b.HasBaseType("Domain.ProductAggregate.Product");
+
+                    b.Property<long?>("AgreedPrice")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("BasketId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("GlbUrl")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("OwnerUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("RawDescription")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TaskId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasIndex("TaskId")
+                        .IsUnique();
+
+                    b.HasIndex("OwnerUserId", "Status");
+
+                    b.HasDiscriminator().HasValue("custom");
+                });
+
             modelBuilder.Entity("Domain.Entities.BasketItem", b =>
                 {
                     b.HasOne("Domain.Entities.Basket", "Basket")
@@ -725,7 +859,7 @@ namespace Persistence.Migrations.WriteMigrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.Product", "Product")
+                    b.HasOne("Domain.ProductAggregate.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -848,6 +982,15 @@ namespace Persistence.Migrations.WriteMigrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Domain.ProductAggregate.PriceProposal", b =>
+                {
+                    b.HasOne("Domain.ProductAggregate.CustomProduct", null)
+                        .WithMany("Proposals")
+                        .HasForeignKey("CustomProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Domain.SupportAssistAggregate.SupportTicket", b =>
                 {
                     b.HasOne("Domain.OrderAggregate.Order", "Order")
@@ -930,6 +1073,60 @@ namespace Persistence.Migrations.WriteMigrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Domain.ProductAggregate.CustomProduct", b =>
+                {
+                    b.OwnsOne("Domain.ProductAggregate.CustomProductDesign", "Design", b1 =>
+                        {
+                            b1.Property<string>("CustomProductId")
+                                .HasColumnType("text");
+
+                            b1.Property<string>("Color")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("character varying(50)")
+                                .HasColumnName("Design_Color");
+
+                            b1.Property<string>("Details")
+                                .HasMaxLength(500)
+                                .HasColumnType("character varying(500)")
+                                .HasColumnName("Design_Details");
+
+                            b1.Property<string>("Dimensions")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("character varying(50)")
+                                .HasColumnName("Design_Dimensions");
+
+                            b1.Property<string>("Material")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("Design_Material");
+
+                            b1.Property<string>("Shape")
+                                .IsRequired()
+                                .HasMaxLength(50)
+                                .HasColumnType("character varying(50)")
+                                .HasColumnName("Design_Shape");
+
+                            b1.Property<string>("Type")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("Design_Type");
+
+                            b1.HasKey("CustomProductId");
+
+                            b1.ToTable("Product");
+
+                            b1.WithOwner()
+                                .HasForeignKey("CustomProductId");
+                        });
+
+                    b.Navigation("Design")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Domain.Entities.Basket", b =>
                 {
                     b.Navigation("Items");
@@ -943,6 +1140,11 @@ namespace Persistence.Migrations.WriteMigrations
             modelBuilder.Entity("Domain.SupportAssistAggregate.SupportTicket", b =>
                 {
                     b.Navigation("Comments");
+                });
+
+            modelBuilder.Entity("Domain.ProductAggregate.CustomProduct", b =>
+                {
+                    b.Navigation("Proposals");
                 });
 #pragma warning restore 612, 618
         }

@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace Persistence.Migrations.WriteMigrations
+namespace Persistence.Migrations.ReadMigrations
 {
     /// <inheritdoc />
-    public partial class OrderMigration : Migration
+    public partial class QuotationReadMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

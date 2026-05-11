@@ -1,4 +1,5 @@
 using Domain.Entities;
+using Domain.ProductAggregate;
 using Infrastructure.Repositories.WriteRepositories;
 using Microsoft.EntityFrameworkCore;
 using Persistence;
@@ -15,7 +16,7 @@ public class UnitOfWorkTests
         return new WriteDbContext(options);
     }
 
-    private static Product CreateProduct(string? id = null) => new()
+    private static CatalogProduct CreateProduct(string? id = null) => new()
     {
         Id = id ?? Guid.NewGuid().ToString(),
         Name = "Test Product",
@@ -107,7 +108,7 @@ public class UnitOfWorkTests
         using var context = CreateInMemoryContext();
         var unitOfWork = new UnitOfWork(context);
         context.Products.Add(CreateProduct());
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
 
         var result = await unitOfWork.CompleteAsync(cts.Token);
 

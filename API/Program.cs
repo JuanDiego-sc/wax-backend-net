@@ -18,6 +18,7 @@ using Infrastructure.Email.Services;
 using Infrastructure.Images;
 using Infrastructure.Messaging;
 using Infrastructure.Payments;
+using Infrastructure.Quotation;
 using Infrastructure.Repositories.ReadRepositories;
 using Infrastructure.Repositories.WriteRepositories;
 using Infrastructure.Security;
@@ -105,6 +106,12 @@ builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IProductReadRepository, ProductReadRepository>();
+builder.Services.AddScoped<ICustomProductRepository, CustomProductRepository>();
+builder.Services.AddScoped<ICustomProductReadRepository, CustomProductReadRepository>();
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<IQuotationRulesCache, QuotationRulesCache>();
+builder.Services.AddScoped<IDimensionParser, DimensionParser>();
+builder.Services.AddScoped<IQuotationService, QuotationService>();
 builder.Services.AddScoped<IOrderReadRepository, OrderReadRepository>();
 builder.Services.AddScoped<ISupportTicketReadRepository, SupportTicketReadRepository>();
 
@@ -161,6 +168,7 @@ try
         services.GetRequiredService<UserManager<User>>(),
         services.GetRequiredService<RoleManager<IdentityRole>>(),
         services.GetRequiredService<IConfiguration>(),
+        services.GetRequiredService<WriteDbContext>(),
         services.GetRequiredService<ILogger<DbInitializer>>());
     await initializer.InitializeAsync();
 }
