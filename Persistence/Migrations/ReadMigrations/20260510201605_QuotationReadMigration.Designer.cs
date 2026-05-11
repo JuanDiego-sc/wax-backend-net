@@ -12,8 +12,8 @@ using Persistence;
 namespace Persistence.Migrations.ReadMigrations
 {
     [DbContext(typeof(ReadDbContext))]
-    [Migration("20260418181005_InitialReadMigration")]
-    partial class InitialReadMigration
+    [Migration("20260510201605_QuotationReadMigration")]
+    partial class QuotationReadMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,96 @@ namespace Persistence.Migrations.ReadMigrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Persistence.ReadModels.CustomProductReadModel", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("text");
+
+                    b.Property<long?>("AgreedPrice")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DesignColor")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("DesignDetails")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("DesignDimensions")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("DesignMaterial")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("DesignShape")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("DesignType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("GlbUrl")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("OwnerUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("character varying(450)");
+
+                    b.Property<string>("PictureUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<long>("Price")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("TaskId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TaskId")
+                        .IsUnique();
+
+                    b.HasIndex("OwnerUserId", "Status");
+
+                    b.ToTable("CustomProductsRead", (string)null);
+                });
 
             modelBuilder.Entity("Persistence.ReadModels.OrderReadModel", b =>
                 {
@@ -115,11 +205,18 @@ namespace Persistence.Migrations.ReadMigrations
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BuyerEmail");
 
+                    b.HasIndex("OrderStatus");
+
                     b.HasIndex("PaymentIntentId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Orders", (string)null);
                 });
@@ -179,7 +276,11 @@ namespace Persistence.Migrations.ReadMigrations
 
                     b.HasIndex("Name");
 
+                    b.HasIndex("PictureUrl");
+
                     b.HasIndex("Type");
+
+                    b.HasIndex("Brand", "PublicId");
 
                     b.ToTable("Products", (string)null);
                 });

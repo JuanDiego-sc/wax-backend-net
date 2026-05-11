@@ -1,3 +1,5 @@
+using Domain.ProductAggregate;
+
 namespace Domain.Entities;
 
 public class BasketItem : BaseEntity

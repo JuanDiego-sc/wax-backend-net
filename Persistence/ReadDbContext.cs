@@ -9,6 +9,7 @@ namespace Persistence;
 public class ReadDbContext(DbContextOptions<ReadDbContext> options) : DbContext(options)
 {
     public DbSet<ProductReadModel> Products { get; set; }
+    public DbSet<CustomProductReadModel> CustomProducts { get; set; }
     public DbSet<OrderReadModel> Orders { get; set; }
     public DbSet<SupportTicketReadModel> SupportTickets { get; set; }
 
@@ -17,6 +18,7 @@ public class ReadDbContext(DbContextOptions<ReadDbContext> options) : DbContext(
         base.OnModelCreating(modelBuilder);
         
         modelBuilder.ApplyConfiguration(new ProductReadConfiguration());
+        modelBuilder.ApplyConfiguration(new CustomProductReadConfiguration());
         modelBuilder.ApplyConfiguration(new OrderReadConfigurations());
         modelBuilder.ApplyConfiguration(new SupportTicketReadConfiguration());
     }

@@ -1,4 +1,5 @@
 using System;
+using Domain.ProductAggregate;
 
 namespace Domain.Entities;
 

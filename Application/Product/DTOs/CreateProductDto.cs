@@ -1,4 +1,4 @@
-using ProductDomain = Domain.Entities.Product;
+using Domain.ProductAggregate;
 
 namespace Application.Product.DTOs;
 
@@ -14,7 +14,7 @@ public record CreateProductDto
     public int QuantityInStock { get; set; }
     public string? PublicId { get; set; }
     
-    public ProductDomain ToEntity() => new()
+    public CatalogProduct ToEntity() => new()
     {
         Name = Name,
         Description = Description,

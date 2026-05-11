@@ -28,7 +28,7 @@ public class DeleteProductCommandHandlerTests
     {
         _productRepo
             .Setup(r => r.GetByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((global::Domain.Entities.Product?)null);
+            .ReturnsAsync((global::Domain.ProductAggregate.CatalogProduct?)null);
 
         var result = await _handler.Handle(new DeleteProductCommand { ProductId = "missing" }, CancellationToken.None);
 

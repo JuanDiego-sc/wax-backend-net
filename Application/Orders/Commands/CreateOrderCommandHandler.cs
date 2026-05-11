@@ -10,6 +10,7 @@ using Application.Orders.Extensions;
 using Domain.Entities;
 using Domain.Enumerators;
 using Domain.OrderAggregate;
+using Domain.ProductAggregate;
 using MediatR;
 
 namespace Application.Orders.Commands;
@@ -99,12 +100,12 @@ public class CreateOrderCommandHandler(
             OccurredAt = DateTime.UtcNow
         }, cancellationToken);
         
-        foreach (var product in basket.Items.Select(basketItem => basketItem.Product))
+        foreach (var catalog in basket.Items.Select(i => i.Product).OfType<CatalogProduct>())
         {
             await eventPublisher.PublishEventAsync(new ProductStockChangedIntegrationEvent
             {
-                ProductId = product.Id,
-                NewQuantity = product.QuantityInStock
+                ProductId = catalog.Id,
+                NewQuantity = catalog.QuantityInStock
             }, cancellationToken);
         }
 
@@ -123,9 +124,13 @@ public class CreateOrderCommandHandler(
 
         foreach (var item in items)
         {
-            if (item.Product.QuantityInStock < item.Quantity) return null;
+            if (item.Product is CatalogProduct catalog)
+            {
+                if (catalog.QuantityInStock < item.Quantity) return null;
+                catalog.QuantityInStock -= item.Quantity;
+            }
 
-            var orderItem = new OrderItem
+            orderItems.Add(new OrderItem
             {
                 ItemOrdered = new ProductOrderItem
                 {
@@ -134,11 +139,7 @@ public class CreateOrderCommandHandler(
                 },
                 Price = item.Product.Price,
                 Quantity = item.Quantity
-            };
-
-            orderItems.Add(orderItem);
-
-            item.Product.QuantityInStock -= item.Quantity;
+            });
         }
 
         return orderItems;

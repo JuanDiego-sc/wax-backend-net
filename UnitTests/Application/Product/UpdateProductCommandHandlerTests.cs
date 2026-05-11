@@ -32,7 +32,7 @@ public class UpdateProductCommandHandlerTests
     {
         _productRepo
             .Setup(r => r.GetByIdAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((global::Domain.Entities.Product?)null);
+            .ReturnsAsync((global::Domain.ProductAggregate.CatalogProduct?)null);
 
         var dto = new UpdateProductDto { Id = "missing", Name = "X", Description = "X", Price = 100, Type = "T", Brand = "B" };
         var result = await _handler.Handle(new UpdateProductCommand { ProductDto = dto }, CancellationToken.None);
@@ -44,7 +44,7 @@ public class UpdateProductCommandHandlerTests
     [Fact]
     public async Task Handle_WhenImageUploadFails_ReturnsFailure()
     {
-        var product = ProductFixtures.CreateProduct(publicId: "old-pub");
+        var product = ProductFixtures.CreateProduct(name: "old-pub");
         _productRepo
             .Setup(r => r.GetByIdAsync(product.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(product);

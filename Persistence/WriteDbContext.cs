@@ -1,5 +1,6 @@
 using Domain.Entities;
 using Domain.OrderAggregate;
+using Domain.ProductAggregate;
 using Domain.SupportAssistAggregate;
 using MassTransit;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -14,6 +15,9 @@ namespace Persistence;
 public class WriteDbContext(DbContextOptions<WriteDbContext> options) : IdentityDbContext<User>(options)
 {
     public DbSet<Product> Products { get; set; }
+    public DbSet<CustomProduct> CustomProducts { get; set; }
+    public DbSet<PriceProposal> PriceProposals { get; set; }
+    public DbSet<QuotationRule> QuotationRules { get; set; }
     public DbSet<Basket> Baskets { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<SupportTicket> SupportTickets { get; set; }
@@ -24,6 +28,10 @@ public class WriteDbContext(DbContextOptions<WriteDbContext> options) : Identity
     {
         base.OnModelCreating(builder);
         builder.ApplyConfiguration(new ProductConfiguration());
+        builder.ApplyConfiguration(new CatalogProductConfiguration());
+        builder.ApplyConfiguration(new CustomProductConfiguration());
+        builder.ApplyConfiguration(new PriceProposalConfiguration());
+        builder.ApplyConfiguration(new QuotationRuleConfiguration());
         builder.ApplyConfiguration(new OrderConfiguration());
         builder.ApplyConfiguration(new OrderItemConfiguration());
         builder.ApplyConfiguration(new BasketConfiguration());

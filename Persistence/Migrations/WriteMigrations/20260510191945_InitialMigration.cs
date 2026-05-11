@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Persistence.Migrations.WriteMigrations
 {
     /// <inheritdoc />
-    public partial class InitialWriteMigration : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -102,7 +102,7 @@ namespace Persistence.Migrations.WriteMigrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Products",
+                name: "Product",
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "text", nullable: false),
@@ -110,16 +110,48 @@ namespace Persistence.Migrations.WriteMigrations
                     Description = table.Column<string>(type: "text", nullable: false),
                     Price = table.Column<long>(type: "bigint", nullable: false),
                     PictureUrl = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    Type = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Brand = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    QuantityInStock = table.Column<int>(type: "integer", nullable: false),
-                    PublicId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    ProductKind = table.Column<string>(type: "character varying(8)", maxLength: 8, nullable: false),
+                    Type = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Brand = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    QuantityInStock = table.Column<int>(type: "integer", nullable: true),
+                    PublicId = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    TaskId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    GlbUrl = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    RawDescription = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                    OwnerUserId = table.Column<string>(type: "character varying(450)", maxLength: 450, nullable: true),
+                    BasketId = table.Column<string>(type: "text", nullable: true),
+                    Status = table.Column<int>(type: "integer", nullable: true),
+                    Design_Type = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Design_Material = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    Design_Color = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Design_Shape = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Design_Dimensions = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    Design_Details = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    AgreedPrice = table.Column<long>(type: "bigint", nullable: true),
+                    RejectionReason = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.PrimaryKey("PK_Product", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "QuotationRules",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    Key = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Value = table.Column<decimal>(type: "numeric(18,4)", precision: 18, scale: 4, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_QuotationRules", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -272,9 +304,33 @@ namespace Persistence.Migrations.WriteMigrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_BasketItems_Products_ProductId",
+                        name: "FK_BasketItems_Product_ProductId",
                         column: x => x.ProductId,
-                        principalTable: "Products",
+                        principalTable: "Product",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PriceProposals",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "text", nullable: false),
+                    CustomProductId = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: false),
+                    Amount = table.Column<long>(type: "bigint", nullable: false),
+                    Source = table.Column<int>(type: "integer", nullable: false),
+                    Comment = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    IsAccepted = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PriceProposals", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PriceProposals_Product_CustomProductId",
+                        column: x => x.CustomProductId,
+                        principalTable: "Product",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -496,14 +552,15 @@ namespace Persistence.Migrations.WriteMigrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_BasketItems_BasketId",
-                table: "BasketItems",
-                column: "BasketId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_BasketItems_ProductId",
                 table: "BasketItems",
                 column: "ProductId");
+
+            migrationBuilder.CreateIndex(
+                name: "UniqueBasketItem",
+                table: "BasketItems",
+                columns: new[] { "BasketId", "ProductId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Baskets_BasketId",
@@ -569,6 +626,28 @@ namespace Persistence.Migrations.WriteMigrations
                 column: "Created");
 
             migrationBuilder.CreateIndex(
+                name: "IX_PriceProposals_CustomProductId_CreatedAt",
+                table: "PriceProposals",
+                columns: new[] { "CustomProductId", "CreatedAt" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Product_OwnerUserId_Status",
+                table: "Product",
+                columns: new[] { "OwnerUserId", "Status" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Product_TaskId",
+                table: "Product",
+                column: "TaskId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_QuotationRules_Key",
+                table: "QuotationRules",
+                column: "Key",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_SupportTickets_OrderId",
                 table: "SupportTickets",
                 column: "OrderId");
@@ -610,13 +689,16 @@ namespace Persistence.Migrations.WriteMigrations
                 name: "OutboxMessage");
 
             migrationBuilder.DropTable(
+                name: "PriceProposals");
+
+            migrationBuilder.DropTable(
+                name: "QuotationRules");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "Baskets");
-
-            migrationBuilder.DropTable(
-                name: "Products");
 
             migrationBuilder.DropTable(
                 name: "SupportTickets");
@@ -626,6 +708,9 @@ namespace Persistence.Migrations.WriteMigrations
 
             migrationBuilder.DropTable(
                 name: "OutboxState");
+
+            migrationBuilder.DropTable(
+                name: "Product");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

@@ -8,6 +8,7 @@ using Application.Orders.DTOs;
 using Domain.Entities;
 using Domain.Enumerators;
 using Domain.OrderAggregate;
+using Domain.ProductAggregate;
 using DomainUser = Domain.Entities.User;
 using UnitTests.Helpers.Fixtures;
 
@@ -136,7 +137,7 @@ public class CreateOrderCommandHandlerTests
     {
         var product = ProductFixtures.CreateProduct(quantityInStock: 0);
         var item = BasketFixtures.CreateBasketItem(product.Id, quantity: 5);
-        item.Product.QuantityInStock = 0;
+        ((CatalogProduct)item.Product).QuantityInStock = 0;
         var basket = BasketFixtures.CreateBasketWithItems(
             paymentIntentId: "pi_test",
             items: [item]);
