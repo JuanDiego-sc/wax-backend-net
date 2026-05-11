@@ -18,7 +18,7 @@ public class BasketCookieService(IHttpContextAccessor contextAccessor) : IBasket
         {
             HttpOnly = true,
             Secure = true,
-            SameSite = SameSiteMode.Strict,
+            SameSite = SameSiteMode.None,
             Expires = DateTime.UtcNow.AddDays(30),
         };
         
