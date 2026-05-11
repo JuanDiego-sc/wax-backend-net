@@ -12,8 +12,8 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: "8080"
-      ConnectionStrings__WriteConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=false"
-      ConnectionStrings__ReadConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=false"
+      ConnectionStrings__WriteConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB_WRITE};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=false"
+      ConnectionStrings__ReadConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB_READ};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=false"
       RabbitMQ__Host: "rabbitmq"
       RabbitMQ__Username: "${RABBITMQ_USER}"
       RabbitMQ__Password: "${RABBITMQ_PASSWORD}"
