@@ -13,7 +13,7 @@ public class ProductReadConfiguration: IEntityTypeConfiguration<ProductReadModel
         
         builder.Property(p => p.Name).IsRequired().HasMaxLength(200);
         builder.Property(p => p.Description).IsRequired().HasMaxLength(500);
-        builder.Property(p => p.PictureUrl).IsRequired().HasMaxLength(500);
+        builder.Property(p => p.PictureUrl).IsRequired().HasMaxLength(1000);
         builder.Property(p => p.Type).IsRequired().HasMaxLength(100);
         builder.Property(p => p.Brand).IsRequired().HasMaxLength(100);
         builder.Property(p => p.PublicId).HasMaxLength(100);
