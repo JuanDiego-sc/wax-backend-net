@@ -24,6 +24,15 @@ public class ProductDeletedConsumerTests
         return logger.Object;
     }
 
+    private static Mock<ConsumeContext<ProductDeletedIntegrationEvent>> CreateConsumeContext(string productId)
+    {
+        var @event = new ProductDeletedIntegrationEvent { ProductId = productId };
+        var contextMock = new Mock<ConsumeContext<ProductDeletedIntegrationEvent>>();
+        contextMock.Setup(c => c.Message).Returns(@event);
+        contextMock.Setup(c => c.CancellationToken).Returns(CancellationToken.None);
+        return contextMock;
+    }
+
     private static ProductReadModel CreateProductReadModel(string productId) => new()
     {
         Id = productId,
@@ -37,47 +46,83 @@ public class ProductDeletedConsumerTests
         CreatedAt = DateTime.UtcNow
     };
 
+    private static CustomProductReadModel CreateCustomProductReadModel(string productId) => new()
+    {
+        Id = productId,
+        Name = "Custom Product To Delete",
+        Description = "Description",
+        Price = 200,
+        PictureUrl = "https://example.com/img.jpg",
+        TaskId = "task-123",
+        GlbUrl = "https://example.com/model.glb",
+        OwnerUserId = "user-123",
+        Status = "Approved",
+        DesignType = "Custom",
+        DesignMaterial = "Resin",
+        DesignColor = "Red",
+        DesignShape = "Round",
+        DesignDimensions = "10x10x10",
+        CreatedAt = DateTime.UtcNow
+    };
+
     [Fact]
-    public async Task Consume_WhenProductExists_RemovesFromDatabase()
+    public async Task Consume_WhenOnlyCatalogProductExists_RemovesProductFromDatabase()
     {
         using var context = CreateInMemoryContext();
         var productId = Guid.NewGuid().ToString();
         context.Products.Add(CreateProductReadModel(productId));
         await context.SaveChangesAsync();
 
-        var logger = CreateLogger();
-        var consumer = new ProductDeletedConsumer(context, logger);
-        var @event = new ProductDeletedIntegrationEvent
-        {
-            ProductId = productId
-        };
+        var consumer = new ProductDeletedConsumer(context, CreateLogger());
 
-        var contextMock = new Mock<ConsumeContext<ProductDeletedIntegrationEvent>>();
-        contextMock.Setup(c => c.Message).Returns(@event);
-        contextMock.Setup(c => c.CancellationToken).Returns(CancellationToken.None);
-
-        await consumer.Consume(contextMock.Object);
+        await consumer.Consume(CreateConsumeContext(productId).Object);
 
         var product = await context.Products.FirstOrDefaultAsync(p => p.Id == productId);
         product.Should().BeNull();
     }
 
     [Fact]
+    public async Task Consume_WhenOnlyCustomProductExists_RemovesCustomProductFromDatabase()
+    {
+        using var context = CreateInMemoryContext();
+        var productId = Guid.NewGuid().ToString();
+        context.CustomProducts.Add(CreateCustomProductReadModel(productId));
+        await context.SaveChangesAsync();
+
+        var consumer = new ProductDeletedConsumer(context, CreateLogger());
+
+        await consumer.Consume(CreateConsumeContext(productId).Object);
+
+        var customProduct = await context.CustomProducts.FirstOrDefaultAsync(p => p.Id == productId);
+        customProduct.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Consume_WhenBothExist_RemovesBothFromDatabase()
+    {
+        using var context = CreateInMemoryContext();
+        var productId = Guid.NewGuid().ToString();
+        context.Products.Add(CreateProductReadModel(productId));
+        context.CustomProducts.Add(CreateCustomProductReadModel(productId));
+        await context.SaveChangesAsync();
+
+        var consumer = new ProductDeletedConsumer(context, CreateLogger());
+
+        await consumer.Consume(CreateConsumeContext(productId).Object);
+
+        var product = await context.Products.FirstOrDefaultAsync(p => p.Id == productId);
+        var customProduct = await context.CustomProducts.FirstOrDefaultAsync(p => p.Id == productId);
+        product.Should().BeNull();
+        customProduct.Should().BeNull();
+    }
+
+    [Fact]
     public async Task Consume_WhenProductNotFound_DoesNothing()
     {
         using var context = CreateInMemoryContext();
-        var logger = CreateLogger();
-        var consumer = new ProductDeletedConsumer(context, logger);
-        var @event = new ProductDeletedIntegrationEvent
-        {
-            ProductId = "non-existent"
-        };
+        var consumer = new ProductDeletedConsumer(context, CreateLogger());
 
-        var contextMock = new Mock<ConsumeContext<ProductDeletedIntegrationEvent>>();
-        contextMock.Setup(c => c.Message).Returns(@event);
-        contextMock.Setup(c => c.CancellationToken).Returns(CancellationToken.None);
-
-        var act = async () => await consumer.Consume(contextMock.Object);
+        var act = async () => await consumer.Consume(CreateConsumeContext("non-existent").Object);
 
         await act.Should().NotThrowAsync();
     }
@@ -92,18 +137,9 @@ public class ProductDeletedConsumerTests
         context.Products.Add(CreateProductReadModel(productIdToKeep));
         await context.SaveChangesAsync();
 
-        var logger = CreateLogger();
-        var consumer = new ProductDeletedConsumer(context, logger);
-        var @event = new ProductDeletedIntegrationEvent
-        {
-            ProductId = productIdToDelete
-        };
+        var consumer = new ProductDeletedConsumer(context, CreateLogger());
 
-        var contextMock = new Mock<ConsumeContext<ProductDeletedIntegrationEvent>>();
-        contextMock.Setup(c => c.Message).Returns(@event);
-        contextMock.Setup(c => c.CancellationToken).Returns(CancellationToken.None);
-
-        await consumer.Consume(contextMock.Object);
+        await consumer.Consume(CreateConsumeContext(productIdToDelete).Object);
 
         var count = await context.Products.CountAsync();
         count.Should().Be(1);

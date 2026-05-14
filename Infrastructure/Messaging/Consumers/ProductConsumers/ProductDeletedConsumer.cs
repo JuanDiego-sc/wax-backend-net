@@ -16,12 +16,16 @@ public class ProductDeletedConsumer(ReadDbContext readContext, ILogger<ProductDe
         var readCustomModel = await readContext.CustomProducts
             .FirstOrDefaultAsync(p => p.Id == context.Message.ProductId, context.CancellationToken);
 
-        if (readModel != null && readCustomModel != null)
-        {
+        if (readModel == null && readCustomModel == null)
+            return;
+
+        if (readModel != null)
             readContext.Products.Remove(readModel);
+
+        if (readCustomModel != null)
             readContext.CustomProducts.Remove(readCustomModel);
-            await readContext.SaveChangesAsync(context.CancellationToken);
-            logger.LogInformation("Product with id {ProductId} has been deleted", context.Message.ProductId);
-        }
+
+        await readContext.SaveChangesAsync(context.CancellationToken);
+        logger.LogInformation("Product with id {ProductId} has been deleted", context.Message.ProductId);
     }
 }
