@@ -8,6 +8,7 @@ using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.ReadRepositories;
 using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Interfaces.Services;
+using Application.Product.Commands.Delete;
 using Domain.Entities;
 using Domain.Enumerators;
 using Infrastructure.Cookies;
@@ -139,6 +140,9 @@ builder.Services.AddScoped<IOrderReadRepository, OrderReadRepository>();
 builder.Services.AddScoped<ISupportTicketReadRepository, SupportTicketReadRepository>();
 
 builder.Services.AddScoped<IEventPublisher, EventPublisher>();
+
+builder.Services.AddScoped<IProductDeletionStrategy, CatalogProductDeletionStrategy>();
+builder.Services.AddScoped<IProductDeletionStrategy, CustomProductDeletionStrategy>();
 
 builder.Services.AddIdentityApiEndpoints<User>(options =>
 {

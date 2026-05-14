@@ -18,6 +18,8 @@ services:
       RabbitMQ__Username: "${RABBITMQ_USER}"
       RabbitMQ__Password: "${RABBITMQ_PASSWORD}"
       Cors__AllowedOrigins__0: "${PUBLIC_FRONTEND_ORIGIN}"
+      Cors__AllowedOrigins__1: "${PUBLIC_FRONTEND_ORIGIN_1}"
+      Cors__AllowedOrigins__3: "${PUBLIC_FRONTEND_ORIGIN_2}"
       Admin__Email: "${ADMIN_EMAIL}"
       Admin__Password: "${ADMIN_PASSWORD}"
       Cloudinary__CloudName: "${CLOUDINARY_CLOUD_NAME}"

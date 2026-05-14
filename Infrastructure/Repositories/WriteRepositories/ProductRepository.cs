@@ -12,6 +12,12 @@ public class ProductRepository(WriteDbContext context) : IProductRepository
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
+    public async Task<Product?> FindAnyByIdAsync(string id, CancellationToken cancellationToken = default)
+    {
+        return await context.Products
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+    }
+
     public IQueryable<CatalogProduct> GetQueryable()
     {
         return context.Products.OfType<CatalogProduct>().AsQueryable();
