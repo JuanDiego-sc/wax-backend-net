@@ -152,6 +152,13 @@ builder.Services.AddIdentityApiEndpoints<User>(options =>
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<WriteDbContext>();
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("RegisterOrAdmin", policy =>
