@@ -12,12 +12,14 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_HTTP_PORTS: "8080"
-      ConnectionStrings__WriteConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=false"
-      ConnectionStrings__ReadConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=false"
+      ConnectionStrings__WriteConnection: "Host=postgres;Port=5432;Database=Wax_Write;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=false"
+      ConnectionStrings__ReadConnection: "Host=postgres;Port=5432;Database=Wax_Read;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Include Error Detail=false"
       RabbitMQ__Host: "rabbitmq"
       RabbitMQ__Username: "${RABBITMQ_USER}"
       RabbitMQ__Password: "${RABBITMQ_PASSWORD}"
       Cors__AllowedOrigins__0: "${PUBLIC_FRONTEND_ORIGIN}"
+      Cors__AllowedOrigins__1: "${PUBLIC_FRONTEND_ORIGIN_1}"
+      Cors__AllowedOrigins__3: "${PUBLIC_FRONTEND_ORIGIN_2}"
       Admin__Email: "${ADMIN_EMAIL}"
       Admin__Password: "${ADMIN_PASSWORD}"
       Cloudinary__CloudName: "${CLOUDINARY_CLOUD_NAME}"
@@ -38,11 +40,10 @@ services:
     environment:
       POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
-      POSTGRES_DB: "${POSTGRES_DB}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5

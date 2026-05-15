@@ -8,6 +8,7 @@ using Application.Interfaces.Publish;
 using Application.Interfaces.Repositories.ReadRepositories;
 using Application.Interfaces.Repositories.WriteRepositories;
 using Application.Interfaces.Services;
+using Application.Product.Commands.Delete;
 using Domain.Entities;
 using Domain.Enumerators;
 using Infrastructure.Cookies;
@@ -140,6 +141,9 @@ builder.Services.AddScoped<ISupportTicketReadRepository, SupportTicketReadReposi
 
 builder.Services.AddScoped<IEventPublisher, EventPublisher>();
 
+builder.Services.AddScoped<IProductDeletionStrategy, CatalogProductDeletionStrategy>();
+builder.Services.AddScoped<IProductDeletionStrategy, CustomProductDeletionStrategy>();
+
 builder.Services.AddIdentityApiEndpoints<User>(options =>
 {
     options.User.RequireUniqueEmail = true;
@@ -147,6 +151,13 @@ builder.Services.AddIdentityApiEndpoints<User>(options =>
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<WriteDbContext>();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
 
 builder.Services.AddAuthorization(options =>
 {

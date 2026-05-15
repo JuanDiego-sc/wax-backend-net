@@ -14,7 +14,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         
         builder.Property(p => p.Name).IsRequired().HasMaxLength(200);
         builder.Property(p => p.Description).IsRequired();
-        builder.Property(p => p.PictureUrl).IsRequired().HasMaxLength(500);
+        builder.Property(p => p.PictureUrl).IsRequired().HasMaxLength(1000);
 
         builder.Ignore(p => p.Kind);
         builder.Ignore(p => p.DomainEvents);

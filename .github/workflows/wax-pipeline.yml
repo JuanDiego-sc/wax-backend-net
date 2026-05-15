@@ -143,6 +143,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd /opt/wax
+            git pull origin main
             export IMAGE_TAG=sha-$(echo ${{ github.sha }} | cut -c1-7)
             docker compose -f docker-compose.prod.yml pull api
             docker compose -f docker-compose.prod.yml up -d
