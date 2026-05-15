@@ -13,7 +13,7 @@ public class CustomProductReadConfiguration : IEntityTypeConfiguration<CustomPro
 
         builder.Property(p => p.Name).IsRequired().HasMaxLength(200);
         builder.Property(p => p.Description).IsRequired();
-        builder.Property(p => p.PictureUrl).IsRequired().HasMaxLength(500);
+        builder.Property(p => p.PictureUrl).IsRequired().HasMaxLength(1000);
         builder.Property(p => p.TaskId).IsRequired().HasMaxLength(100);
         builder.HasIndex(p => p.TaskId).IsUnique();
 
