@@ -155,8 +155,10 @@ builder.Services.AddIdentityApiEndpoints<User>(options =>
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SameSite = SameSiteMode.Lax;
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.Domain = ".waxweb.shop";
+    options.Cookie.Name = ".AspNetCore.Identity.Application";
 });
 
 builder.Services.AddAuthorization(options =>
@@ -170,7 +172,20 @@ var app = builder.Build();
 app.UseForwardedHeaders();
 app.UseMiddleware<ExceptionMiddleware>();
 
-app.UseCors();
+app.UseCors(x => x
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowCredentials()
+    .WithExposedHeaders("Pagination", "NextCursor")
+    .WithOrigins(
+        "http://localhost:5005",
+        "http://localhost:5006",
+        "http://localhost:5007",
+        "https://localhost:5005",
+        "https://localhost:5006",
+        "https://localhost:5007",
+        "https://waxweb.shop",
+        "https://app.waxweb.shop"));
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -18,7 +18,8 @@ public class BasketCookieService(IHttpContextAccessor contextAccessor) : IBasket
         {
             HttpOnly = true,
             Secure = true,
-            SameSite = SameSiteMode.None,
+            SameSite = SameSiteMode.Lax,
+            Domain = ".waxweb.shop",
             Expires = DateTime.UtcNow.AddDays(30),
         };
         
