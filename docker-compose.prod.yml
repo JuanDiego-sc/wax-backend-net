@@ -29,8 +29,23 @@ services:
       EmailSettings__From: "${EMAIL_FROM}"
       StripeSettings__SecretKey: "${STRIPE_SECRET_KEY}"
       StripeSettings__WebhookSecret: "${STRIPE_WEBHOOK_SECRET}"
+    expose:
+      - "8080"
+    networks:
+      - wax-internal
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - api
     ports:
-      - "80:8080"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
     networks:
       - wax-internal
 
@@ -73,3 +88,5 @@ networks:
 volumes:
   postgres_data:
   rabbitmq_data:
+  caddy_data:
+  caddy_config:
