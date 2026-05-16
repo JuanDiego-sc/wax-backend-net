@@ -172,20 +172,7 @@ var app = builder.Build();
 app.UseForwardedHeaders();
 app.UseMiddleware<ExceptionMiddleware>();
 
-app.UseCors(x => x
-    .AllowAnyMethod()
-    .AllowAnyHeader()
-    .AllowCredentials()
-    .WithExposedHeaders("Pagination", "NextCursor")
-    .WithOrigins(
-        "http://localhost:5005",
-        "http://localhost:5006",
-        "http://localhost:5007",
-        "https://localhost:5005",
-        "https://localhost:5006",
-        "https://localhost:5007",
-        "https://waxweb.shop",
-        "https://app.waxweb.shop"));
+app.UseCors();
 
 app.UseAuthentication();
 app.UseAuthorization();
