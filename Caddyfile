@@ -13,5 +13,5 @@ api.waxweb.shop {
 
 n8n.waxweb.shop {
     encode zstd gzip
-    reverse_proxy 172.17.0.1:5678
+    reverse_proxy 172.19.0.1:5678
 }
